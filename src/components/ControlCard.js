@@ -15,8 +15,23 @@ import Table from 'react-bootstrap/Table';
 import * as Icon from 'react-bootstrap-icons';
 
 import React, { useState } from 'react';
+import OdinToggleButtons from './OdinToggleButtons';
 
 function ControlCard(props) {
+
+    const specEndpoint = props.specEndpoint;
+    const acqEndpoint = props.acqEndpoint;
+
+    const binningModeButtons = [
+      {id: "bin-mode-full", value: "FullSensor", text:"Full Sensor"},
+      {id: "bin-mode-bin", value: "BinnedSensor", text:"Full Sensor (Binned)"},
+      {id: "bin-mode-row", value: "LineSensor", text:"Rows Binned"},
+    ]
+
+    const photoModeButtons = [
+      {id: "acq-mode-photo", value: true, text:"Photoluminescence Mode"},
+      {id: "acq-mode-thermo", value: false, text:"Thermoluminescence Mode"}
+    ]
 
     return (
       <Card>
@@ -35,28 +50,29 @@ function ControlCard(props) {
               </Col>
             </Row>
             <Row className="mb-2">
-                <ToggleButtonGroup type='radio' name='acq-mode' defaultValue="photo">
+              <OdinToggleButtons
+              name="photoModeButtons"
+              endpoint={acqEndpoint}
+              path="photo_lum_mode"
+              buttons={photoModeButtons}
+              />
+                {/* <ToggleButtonGroup type='radio' name='acq-mode' defaultValue="photo" onChange={handleModeChange}>
                   <ToggleButton id="acq-mode-photo" value="photo" variant='outline-primary'>
                     Photoluminescence Mode
                   </ToggleButton>
                   <ToggleButton id="acq-mode-thermo" value="thermo" variant='outline-primary'>
                     Thermoluminescence Mode
                   </ToggleButton>
-                </ToggleButtonGroup>
+                </ToggleButtonGroup> */}
             </Row>
             <Row>
               <Col>
-                <ToggleButtonGroup type='radio' name='bin-mode' defaultValue='full'>
-                  <ToggleButton id='bin-mode-full' value='full' variant='outline-primary'>
-                    Full Sensor
-                  </ToggleButton>
-                  <ToggleButton id='bin-mode-bin' value='bin' variant='outline-primary'>
-                    Full Sensor (Binned)
-                  </ToggleButton>
-                  <ToggleButton id='bin-mode-row' value='row' variant='outline-primary'>
-                    Rows Binned
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                <OdinToggleButtons
+                name="binModeButtons"
+                endpoint={specEndpoint}
+                path="binning/binning_mode"
+                buttons={binningModeButtons}
+                />
                 <hr />
                 <InputGroup>
                     <InputGroup.Text id='lbl-row-bin-size'>Row Bin Size</InputGroup.Text>

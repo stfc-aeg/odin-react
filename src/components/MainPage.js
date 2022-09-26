@@ -32,7 +32,7 @@ function MainPage(props) {
     const [cryo_status, changeCryoStatus] = useState('None');
     const cryoStatus = [[{id: "cryo-temp-main",
                           variant:"secondary",
-                          text:`ATSM Temperature: ${atsmTemp}k`}]];
+                          text:`ATSM Temperature: ${atsmTemp.toFixed(5)}k`}]];
 
     const statuses_list = [
         {id: "spec_status", variant: 'success', text: "Spectrometer Ready"},
@@ -100,6 +100,8 @@ function MainPage(props) {
       <Col>
         <ControlCard
           title="Basic Controls"
+          specEndpoint={props.specEndpoint}
+          acqEndpoint={props.acqEndpoint}
         />
       </Col>
     </Row>

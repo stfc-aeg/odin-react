@@ -38,6 +38,8 @@ function App() {
     <Tab eventKey='main' title="Main Page">
       <MainPage
         cryoEndpoint={cryoAdapter}
+        specEndpoint={specAdapter}
+        acqEndpoint={acqAdapter}
         cryoResult={cryoResult}
         name="Main"
       />
