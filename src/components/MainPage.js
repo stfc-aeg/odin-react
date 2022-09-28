@@ -23,21 +23,27 @@ import React, { useEffect, useState } from 'react';
 
 function MainPage(props) {
     const cryoResult = props.cryoResult;
+    const specResult = props.specResult;
+    const attoResult = props.attoResult;
+    
     const atsmTemp = cryoResult ? cryoResult.atsm.temperature : 0;
     const cryoGoal = cryoResult ? cryoResult.system_goal.split(":")[0].trim() : "Unknown";
-    
-    
-    // const [cryo_temp, temp_change] = useState(0);
-    const [cryo_label_colour, changeCryoColor] = useState('success');
-    const [cryo_status, changeCryoStatus] = useState('None');
+    // const cryoColor = (cryoGoal == "None") ? "success" : (cryoGoal == "Unknown") ? "danger" : "warning";
+
+    const attoState = attoResult ? (attoResult.device_connected ? "Connected" : "Disconnected") : "Unknown";
+    // const attoColour = (attoState == "Connected") ? 'success' : 'danger';
+
+    const [cryoColour, changeCryoColour] = useState('primary');
+    const [attoColour, changeAttoColor] = useState('primary');
+
     const cryoStatus = [[{id: "cryo-temp-main",
                           variant:"secondary",
                           text:`ATSM Temperature: ${atsmTemp.toFixed(5)}k`}]];
 
     const statuses_list = [
         {id: "spec_status", variant: 'success', text: "Spectrometer Ready"},
-        {id: "cryo_status", variant: cryo_label_colour, text: `Cryo Status: ${cryoGoal}`},
-        {id: "atto_status", variant: 'danger', text: "Attocube Disconnected"}
+        {id: "cryo_status", variant: cryoColour, text: `Cryo Status: ${cryoGoal}`},
+        {id: "atto_status", variant: attoColour, text: `Attocube: ${attoState}`}
       ]
       
     const status_labels = [
@@ -45,40 +51,25 @@ function MainPage(props) {
         [{id:"acq_run", variant:'success', text:"Acquisition NOT Running: temp.hdf5"}]
       ]
 
-    function updateCryoStatus(system_goal_string)
-      {
-        var goal = system_goal_string.split(":")[0].trim();
-        var state = system_goal_string.split(":")[1].trim();
-      
-        switch(goal){
-          case "None":
-            changeCryoStatus("None");
-            changeCryoColor("success");
-            break;
-          case "PullVacuum":
-            changeCryoStatus("Pull Vacuum");
-            changeCryoColor("warning");
-            break;
-         case "Vent":
-            changeCryoStatus("Venting");
-            changeCryoColor("warning");
-            break;
-          case "Cooldown":
-            changeCryoStatus("Cooldown");
-            changeCryoColor("warning");
-            break;
-          case "Warmup":
-            changeCryoStatus("Warmup");
-            changeCryoColor("warning");
-            break;
-          case "UNKNOWN":
-          default:
-            changeCryoStatus("Unknown");
-            changeCryoColor("danger");
-            break;
-        }
+    useEffect(() => 
+    {
+      console.log("cryo colour effect called");
+      switch(cryoGoal.toLowerCase()){
+        case "none": changeCryoColour("success"); break;
+        case "unknown": changeCryoColour("danger"); break;
+        default: changeCryoColour("warning");
       }
+    }, [cryoGoal]);
 
+    useEffect(() =>
+    {
+      console.log("Atto State Colour Effect Called");
+      switch(attoState.toLowerCase()){
+        case "connected": changeAttoColor("success"); break;
+        default: changeAttoColor("danger");
+      }
+    }, [attoState]);
+    
     return (
     <Container fluid className="mt-4">
     <Row>

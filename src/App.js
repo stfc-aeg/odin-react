@@ -10,7 +10,8 @@ import AdapterEndpoint from './odin_control.js';
 import usePeriodicFetch from './services/usePeriodicFetch';
 
 
-import React, { useEffect, useState } from 'react';
+import React, {useState} from 'react';
+import SpectrometerPage from './components/SpectrometerPage';
 
 
 function App() {
@@ -29,33 +30,45 @@ function App() {
   // const [attoResult, changeAtto] = useState(null);
   // const [acqResult, changeAcq] = useState(null);
 
-  return (
-  <>
-  <OdinNav title="Spectrometer Integration"
-           defaultPage="main"
-           navLinks={["main", "spectrometer", "cryo", "attocube"]}/>
-  <Tabs defaultActiveKey='main' id="main-tabs">
-    <Tab eventKey='main' title="Main Page">
-      <MainPage
-        cryoEndpoint={cryoAdapter}
-        specEndpoint={specAdapter}
-        acqEndpoint={acqAdapter}
-        cryoResult={cryoResult}
-        name="Main"
-      />
-    </Tab>
-    <Tab eventKey='spectrometer' title="Spectrometer" disabled></Tab>
-    <Tab eventKey='cryo' title="Cryostat">
-      <CryoPage
-        cryoEndpoint={cryoAdapter}
-        cryoResult={cryoResult}
-      />
-    </Tab>
-    <Tab eventKey='attocube' title="Attocube" disabled></Tab>
-    
-    </Tabs>
+  const [tabKey, setKey] = useState("Main Page");
 
-    {/* <p>cryoAdapter.get("")</p> */}
+  return (
+    <>
+    <OdinNav title="Spectrometer Integration"
+            defaultPage="main"
+            navLinks={["Main Page", "Spectrometer", "Cryostat", "Attocube"]}
+            tabKey={tabKey}
+            setKey={setKey}/>
+    <Tab.Container id="app-tabs" defaultActiveKey="Main Page" activeKey={tabKey}>
+    <Tab.Content>
+      <Tab.Pane eventKey='Main Page' title="Main Page">
+        <MainPage
+          cryoEndpoint={cryoAdapter}
+          specEndpoint={specAdapter}
+          acqEndpoint={acqAdapter}
+          cryoResult={cryoResult}
+          specResult={specResult}
+          attoResult={attoResult}
+          name="Main"
+        />
+      </Tab.Pane>
+      <Tab.Pane eventKey='Spectrometer' title="Spectrometer">
+        <SpectrometerPage
+          specEndpoint={specAdapter}
+          acqEndpoint={acqAdapter}
+        />
+      </Tab.Pane>
+      <Tab.Pane eventKey='Cryostat' title="Cryostat">
+        <CryoPage
+          cryoEndpoint={cryoAdapter}
+          cryoResult={cryoResult}
+        />
+      </Tab.Pane>
+      <Tab.Pane eventKey='Attocube' title="Attocube" disabled></Tab.Pane>
+    </Tab.Content>
+    {/* </Tabs> */}
+  </Tab.Container>
+
   </>
   );
 }

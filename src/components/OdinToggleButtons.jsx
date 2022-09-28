@@ -1,7 +1,7 @@
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 
-import React, { useState } from 'react';
+import React from 'react';
 
 function OdinToggleButtons(props) {
     const endpoint = props.endpoint;
@@ -9,7 +9,7 @@ function OdinToggleButtons(props) {
     let valueName = "";
     if(props.path.includes("/"))
     {
-        [path, valueName] = props.path.split(/\/(.*)/, 2);
+        [path, valueName] = props.path.split(/\/(?!.*\/)(.*)/, 2);
     }else{
         // const path = "";
         valueName = props.path;
@@ -26,8 +26,8 @@ function OdinToggleButtons(props) {
 
     const handleChange = (val) =>
     {
-        const sendVal = {};
-        sendVal[valueName] = val;
+        const sendVal = {[valueName]: val};
+        // sendVal[valueName] = val;
         console.log(sendVal);
         endpoint.put(sendVal, path);
     }

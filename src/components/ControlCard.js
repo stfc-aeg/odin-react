@@ -4,8 +4,6 @@ import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
-import ToggleButton from 'react-bootstrap/ToggleButton';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -16,16 +14,31 @@ import * as Icon from 'react-bootstrap-icons';
 
 import React, { useState } from 'react';
 import OdinToggleButtons from './OdinToggleButtons';
+import OdinForm from './OdinForm';
 
 function ControlCard(props) {
 
     const specEndpoint = props.specEndpoint;
     const acqEndpoint = props.acqEndpoint;
 
+    // console.log(specEndpoint);
+
     const binningModeButtons = [
       {id: "bin-mode-full", value: "FullSensor", text:"Full Sensor"},
       {id: "bin-mode-bin", value: "BinnedSensor", text:"Full Sensor (Binned)"},
       {id: "bin-mode-row", value: "LineSensor", text:"Rows Binned"},
+      // {id: "bin-mode-stupid", value: "StupidSensor", text:"Stupid Binned"}
+    ]
+
+    const inputListBinSize = [
+      {id: 'lbl-row-bin-size', label: "Row Bin Size", endpoint:specEndpoint, path:"binning/bin_height", defaultValue:0},
+      {id: 'col-bin-size', label: "Column Bin Size", endpoint:specEndpoint, path:"binning/bin_width", defaultValue:0},
+      {id: 'line-bin-size', label: "Line Bin Count", endpoint:specEndpoint, path:"binning/row_bin_centre", defaultValue:0}
+    ]
+
+    const inputListExposure = [
+      {id: 'exposure', label: "Exposure (Milliseconds)", endpoint:specEndpoint, path:"acquisition/exposure", defaultValue:1000},
+      {id: "center-wave", label: "Centre Wavelength (nm)", endpoint:specEndpoint, path:"acquisition/acquisition", defaultValue:1400}
     ]
 
     const photoModeButtons = [
@@ -56,14 +69,6 @@ function ControlCard(props) {
               path="photo_lum_mode"
               buttons={photoModeButtons}
               />
-                {/* <ToggleButtonGroup type='radio' name='acq-mode' defaultValue="photo" onChange={handleModeChange}>
-                  <ToggleButton id="acq-mode-photo" value="photo" variant='outline-primary'>
-                    Photoluminescence Mode
-                  </ToggleButton>
-                  <ToggleButton id="acq-mode-thermo" value="thermo" variant='outline-primary'>
-                    Thermoluminescence Mode
-                  </ToggleButton>
-                </ToggleButtonGroup> */}
             </Row>
             <Row>
               <Col>
@@ -74,25 +79,12 @@ function ControlCard(props) {
                 buttons={binningModeButtons}
                 />
                 <hr />
-                <InputGroup>
-                    <InputGroup.Text id='lbl-row-bin-size'>Row Bin Size</InputGroup.Text>
-                    <Form.Control type='number'/>
-                    <InputGroup.Text id='lbl-col-bin-size'>Column Bin Size</InputGroup.Text>
-                    <Form.Control type='number'/>
-                </InputGroup>
-                <InputGroup>
-                    <InputGroup.Text id="lbl-line-bin-size">Line Bin Count</InputGroup.Text>
-                    <Form.Control type='number'/>
-                </InputGroup>
-                <InputGroup className="mt-2">
-                    <InputGroup.Text id='lbl-exposure'>Exposure</InputGroup.Text>
-                    <Form.Control type='number'/>
-                    <Form.Select aria-label="Select Exposure timescale">
-                        <option selected value="1">Milliseconds</option>
-                        <option value="1000">Seconds</option>
-                        <option value="60000">Minutes</option>
-                    </Form.Select>
-                </InputGroup>
+                <OdinForm
+                  inputs={inputListBinSize}
+                />
+                <OdinForm
+                  inputs={inputListExposure}
+                  />
               </Col>
               <Col>
                 <ButtonGroup>

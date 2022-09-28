@@ -9,7 +9,6 @@ function usePeriodicFetch(url, adapter)
     {
         const interval = setInterval(() =>
         {
-            console.log(`useFetch effect: ${adapter.adapter}`);
             adapter.get(url)
             .then(result => {
                 setResponse(result);
@@ -25,7 +24,5 @@ function usePeriodicFetch(url, adapter)
 
     return {response};
 }
-
-
 
 export default usePeriodicFetch;
