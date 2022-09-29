@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 
-function usePeriodicFetch(url, adapter)
+function usePeriodicFetch(url, adapter, intervalTime=1000)
 {
     const [response, setResponse] = useState(null);
-    
 
     useEffect(() => 
     {
@@ -17,7 +16,7 @@ function usePeriodicFetch(url, adapter)
                 console.log(error.message);
                 // throw(error);
             })
-        }, 1000);
+        }, intervalTime);
         
         return () => clearInterval(interval);
     }, [url]);

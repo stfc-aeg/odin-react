@@ -2,9 +2,13 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import ProgressBar from 'react-bootstrap/ProgressBar'
+import Card from 'react-bootstrap/Card';
+import OdinCard from './OdinCard';
 
 import StatusCard from './StatusCard'
 import ControlCard from './ControlCard'
+import LiveImage from './LiveImage';
+import StatusBox from './StatusBox';
 
 import React, { useEffect, useState } from 'react';
 
@@ -26,7 +30,7 @@ function MainPage(props) {
     const specResult = props.specResult;
     const attoResult = props.attoResult;
     
-    const atsmTemp = cryoResult ? cryoResult.atsm.temperature : 0;
+    const atsmTemp = cryoResult ? `${cryoResult.atsm.temperature.toFixed(5)}k` : "0k";
     const cryoGoal = cryoResult ? cryoResult.system_goal.split(":")[0].trim() : "Unknown";
     // const cryoColor = (cryoGoal == "None") ? "success" : (cryoGoal == "Unknown") ? "danger" : "warning";
 
@@ -35,21 +39,6 @@ function MainPage(props) {
 
     const [cryoColour, changeCryoColour] = useState('primary');
     const [attoColour, changeAttoColor] = useState('primary');
-
-    const cryoStatus = [[{id: "cryo-temp-main",
-                          variant:"secondary",
-                          text:`ATSM Temperature: ${atsmTemp.toFixed(5)}k`}]];
-
-    const statuses_list = [
-        {id: "spec_status", variant: 'success', text: "Spectrometer Ready"},
-        {id: "cryo_status", variant: cryoColour, text: `Cryo Status: ${cryoGoal}`},
-        {id: "atto_status", variant: attoColour, text: `Attocube: ${attoState}`}
-      ]
-      
-    const status_labels = [
-        statuses_list,
-        [{id:"acq_run", variant:'success', text:"Acquisition NOT Running: temp.hdf5"}]
-      ]
 
     useEffect(() => 
     {
@@ -74,19 +63,23 @@ function MainPage(props) {
     <Container fluid className="mt-4">
     <Row>
       <Col md="5">
-        <StatusCard id="main-status"
-          statuses={status_labels}
-          title="System Status"
-        //   children={<AddProgressBar/>}
-          >
+        <OdinCard title="System Status">
+          <Row>
             <Col>
-                <ProgressBar now={40} />
+              <StatusBox text="Spectrometer Ready"/>
             </Col>
-        </StatusCard>
-        <StatusCard id="cryo-temp-main"
-            title="Cryostat Temperature"
-            statuses={cryoStatus}
-        />
+            <Col>
+              <StatusBox type={cryoColour} label="Cryostat" text={cryoGoal}/>
+            </Col>
+            <Col>
+              <StatusBox type={attoColour} label="AttoCube" text={attoState}/>
+            </Col>
+          </Row>
+          <ProgressBar now={40}/>
+        </OdinCard>
+        <OdinCard title="Cryostat Temperature">
+          <StatusBox label="ATSM Temperature" text={atsmTemp}/>
+        </OdinCard>
       </Col>
       <Col>
         <ControlCard
@@ -94,6 +87,11 @@ function MainPage(props) {
           specEndpoint={props.specEndpoint}
           acqEndpoint={props.acqEndpoint}
         />
+      </Col>
+    </Row>
+    <Row>
+      <Col>
+      {/* <LiveImage title="Spectrometer Image" path="image" adapter={props.specEndpoint}/> */}
       </Col>
     </Row>
   </Container>
