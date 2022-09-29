@@ -1,12 +1,15 @@
 import NavBar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import React from 'react';
+import Tab from 'react-bootstrap/Tab';
+import React, {useState} from 'react';
 
 function OdinNav(props) {
-    const key = props.tabKey;
-    const setKey = props.setKey;
+    // const key = props.tabKey;
+    // const setKey = props.setKey;
+    
 
     const navList = props.navLinks;
+    const [key, setKey] = useState(navList[0]);
     const createNavList = navList.map((nav) =>
         <Nav.Item>
             <Nav.Link key={nav} eventKey={nav}>{nav}</Nav.Link>
@@ -16,10 +19,17 @@ function OdinNav(props) {
 
     const onSelect = (selectedKey) => {
         console.log(selectedKey);
-        props.setKey(selectedKey);
+        setKey(selectedKey);
     }
 
+    const childList = props.children ? props.children.map((child, index) =>
+        <Tab.Pane eventKey={navList[index]}>
+            {child}
+        </Tab.Pane>
+    ) : null;
+
     return (
+        <>
         <NavBar bg='dark' variant='dark'>
                 <NavBar.Brand href='#'>
                     <img
@@ -32,7 +42,8 @@ function OdinNav(props) {
                     {props.title}
                 </NavBar.Brand>
                 <Nav
-                    // variant='tabs'
+    
+    // variant='tabs'
                     activeKey={key}
                     defaultActiveKey={navList[0]}
                     onSelect={onSelect}
@@ -40,6 +51,12 @@ function OdinNav(props) {
                     {createNavList}
                 </Nav>
         </NavBar>
+        <Tab.Container id="app-tabs" defaultActiveKey={navList[0]} activeKey={key}>
+        <Tab.Content>
+            {childList}
+        </Tab.Content>
+        </Tab.Container>
+        </>
     )
 }
 
