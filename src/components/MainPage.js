@@ -3,12 +3,16 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import ProgressBar from 'react-bootstrap/ProgressBar'
 import Card from 'react-bootstrap/Card';
-import OdinCard from './OdinCard';
+import ToggleButton from 'react-bootstrap/ToggleButton';
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 
+import OdinCard from './OdinCard';
 import StatusCard from './StatusCard'
 import ControlCard from './ControlCard'
 import LiveImage from './LiveImage';
 import StatusBox from './StatusBox';
+
+import withEndpoint from '../services/withEndpoint';
 
 import React, { useEffect, useState } from 'react';
 
@@ -23,12 +27,16 @@ import React, { useEffect, useState } from 'react';
 //     [{id:"acq_run", variant:'success', text:"Acquisition NOT Running: temp.hdf5"}]
 //   ]
 
-
+// const InternalTestButton = 
+const TestButton = withEndpoint(ToggleButton);
+const testToggleGroup = withEndpoint(ToggleButtonGroup);
 
 function MainPage(props) {
-    const cryoResult = props.cryoResult;
-    const specResult = props.specResult;
-    const attoResult = props.attoResult;
+  const {cryoResult, specResult, attoResult} = props;
+  const {cryoEndpoint, specEndpoint, acqEndpoint} = props;
+    // const cryoResult = props.cryoResult;
+    // const specResult = props.specResult;
+    // const attoResult = props.attoResult;
     
     const atsmTemp = cryoResult ? `${cryoResult.atsm.temperature.toFixed(5)}k` : "0k";
     const cryoGoal = cryoResult ? cryoResult.system_goal.split(":")[0].trim() : "Unknown";
@@ -84,14 +92,17 @@ function MainPage(props) {
       <Col>
         <ControlCard
           title="Basic Controls"
-          specEndpoint={props.specEndpoint}
-          acqEndpoint={props.acqEndpoint}
+          specEndpoint={specEndpoint}
+          acqEndpoint={acqEndpoint}
         />
       </Col>
     </Row>
     <Row>
       <Col>
-      {/* <LiveImage title="Spectrometer Image" path="image" adapter={props.specEndpoint}/> */}
+      <TestButton id="testButton" value={false} endpoint={cryoEndpoint} fullpath="bakeout/enabled">Test</TestButton>
+      </Col>
+      <Col>
+      {/* <TestToggleGroup id="testGroup" type='radio' defaultValue={0} fullPath="" */}
       </Col>
     </Row>
   </Container>
