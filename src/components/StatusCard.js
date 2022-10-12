@@ -3,6 +3,8 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
+import OdinCard from './OdinCard';
+import StatusBox from './StatusBox';
 
 import React, { useState } from 'react';
 
@@ -35,17 +37,9 @@ function StatusCard(props) {
   const [state, changeState] = useState(true);
 
   return (
-    <Card className="mb-4">
-      <Card.Header>{props.title}</Card.Header>
-      <Card.Body>
-        <Container>
-            {listAllStatuses}
-          <Row>
-              {props.children}
-          </Row>
-        </Container>
-      </Card.Body>
-    </Card>
+    <OdinCard title={props.title}>
+      {listAllStatuses}
+    </OdinCard>
   );
 }
 

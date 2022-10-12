@@ -14,7 +14,7 @@ function usePeriodicFetch(url, adapter, intervalTime=1000)
             })
             .catch(error => {
                 console.log(error.message);
-                // throw(error);
+                throw(error);
             })
         }, intervalTime);
         

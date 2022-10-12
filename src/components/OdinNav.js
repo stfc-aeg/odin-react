@@ -1,6 +1,8 @@
 import NavBar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Tab from 'react-bootstrap/Tab';
+
+import ErrorBoundary from './ErrorBoundary';
 import React, {useState} from 'react';
 
 function OdinNav(props) {
@@ -11,7 +13,7 @@ function OdinNav(props) {
     const navList = props.navLinks;
     const [key, setKey] = useState(navList[0]);
     const createNavList = navList.map((nav) =>
-        <Nav.Item>
+        <Nav.Item key={nav}>
             <Nav.Link key={nav} eventKey={nav}>{nav}</Nav.Link>
         </Nav.Item>
 
@@ -23,7 +25,7 @@ function OdinNav(props) {
     }
 
     const childList = props.children ? props.children.map((child, index) =>
-        <Tab.Pane eventKey={navList[index]}>
+        <Tab.Pane eventKey={navList[index]} key={index}>
             {child}
         </Tab.Pane>
     ) : null;
@@ -42,18 +44,17 @@ function OdinNav(props) {
                     {props.title}
                 </NavBar.Brand>
                 <Nav
-    
-    // variant='tabs'
                     activeKey={key}
                     defaultActiveKey={navList[0]}
-                    onSelect={onSelect}
-                >
-                    {createNavList}
+                    onSelect={onSelect}>
+                        {createNavList}
                 </Nav>
         </NavBar>
         <Tab.Container id="app-tabs" defaultActiveKey={navList[0]} activeKey={key}>
         <Tab.Content>
-            {childList}
+            <ErrorBoundary>
+                {childList}
+            </ErrorBoundary>
         </Tab.Content>
         </Tab.Container>
         </>

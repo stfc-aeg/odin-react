@@ -1,9 +1,7 @@
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-
 import OdinNav from './components/OdinNav';
 import MainPage from './components/MainPage';
 import CryoPage from './components/CryoPage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import AdapterEndpoint from './odin_control.js';
 
@@ -16,40 +14,40 @@ import SpectrometerPage from './components/SpectrometerPage';
 
 function App() {
   
-  const cryoAdapter = new AdapterEndpoint("cryostat", process.env.REACT_APP_ENDPOINT_URL);
-  const specAdapter = new AdapterEndpoint("spectrometer", process.env.REACT_APP_ENDPOINT_URL);
-  const attoAdapter = new AdapterEndpoint("attocube", process.env.REACT_APP_ENDPOINT_URL);
-  const acqAdapter  = new AdapterEndpoint("acquisition", process.env.REACT_APP_ENDPOINT_URL);
+  const cryoEndpoint = new AdapterEndpoint("cryostat", process.env.REACT_APP_ENDPOINT_URL);
+  const specEndpoint = new AdapterEndpoint("spectrometer", process.env.REACT_APP_ENDPOINT_URL);
+  const attoEndpoint = new AdapterEndpoint("attocube", process.env.REACT_APP_ENDPOINT_URL);
+  const acqEndpoint  = new AdapterEndpoint("acquisition", process.env.REACT_APP_ENDPOINT_URL);
 
   // const [cryoResult, changeCryo] = useState(null);
-  const {response: cryoResult} = usePeriodicFetch("", cryoAdapter);
-  const {response: specResult} = usePeriodicFetch("", specAdapter);
-  const {response: attoResult} = usePeriodicFetch("", attoAdapter);
-  const {response: acqResult}  = usePeriodicFetch("", acqAdapter);
+  const {response: cryoResult} = usePeriodicFetch("", cryoEndpoint);
+  const {response: specResult} = usePeriodicFetch("", specEndpoint);
+  const {response: attoResult} = usePeriodicFetch("", attoEndpoint);
+  const {response: acqResult}  = usePeriodicFetch("", acqEndpoint);
 
   return (
-    <>
+    // <OdinContext.Provider value={{cryoEndpoint, specEndpoint, attoEndpoint, acqEndpoint}}>
     <OdinNav title="Spectrometer Integration"
             navLinks={["Main Page", "Spectrometer", "Cryostat", "Attocube"]}>
-        <MainPage
-          cryoEndpoint={cryoAdapter}
-          specEndpoint={specAdapter}
-          acqEndpoint={acqAdapter}
-          cryoResult={cryoResult}
-          specResult={specResult}
-          attoResult={attoResult}
-          name="Main"
-        />
+          <MainPage
+            cryoResult={cryoResult}
+            specResult={specResult}
+            attoResult={attoResult}
+            cryoEndpoint={cryoEndpoint}
+            specEndpoint={specEndpoint}
+            acqEndpoint={acqEndpoint}
+            name="Main"
+          />
         <SpectrometerPage
-          specEndpoint={specAdapter}
-          acqEndpoint={acqAdapter}
+          specEndpoint={specEndpoint}
+          acqEndpoint={acqEndpoint}
         />
         <CryoPage
-          cryoEndpoint={cryoAdapter}
+          cryoEndpoint={cryoEndpoint}
           cryoResult={cryoResult}
         />
     </OdinNav>
-  </>
+  // </OdinContext.Provider>
   );
 }
 

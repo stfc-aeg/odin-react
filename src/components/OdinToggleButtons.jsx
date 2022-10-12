@@ -1,9 +1,10 @@
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
+import OdinToggleButtonGroup from './OdinToggleButtonGroup';
 
 import React from 'react';
 
-function OdinToggleButtons(props) {
+function OdinEndpointToggleButtons(props) {
     const endpoint = props.endpoint;
     let path = "";
     let valueName = "";
@@ -19,7 +20,7 @@ function OdinToggleButtons(props) {
     const buttonList = props.buttons;
 
     const createButtons = buttonList.map((button) =>
-        <ToggleButton id={button.id} variant='outline-primary' value={button.value}>
+        <ToggleButton key={button.id} variant='outline-primary' value={button.value}>
             {button.text}
         </ToggleButton>
     )
@@ -33,15 +34,11 @@ function OdinToggleButtons(props) {
     }
 
     return (
-        <ToggleButtonGroup 
-            type="radio" 
-            name={props.name}
-            defaultValue={buttonList[0].value}
-            onChange={handleChange}>
+        <OdinToggleButtonGroup onChangeHandler={handleChange} name={props.name} defaultValue={buttonList[0].value}>
             
             {createButtons}
-        </ToggleButtonGroup>
+        </OdinToggleButtonGroup>
     )
 }
 
-export default OdinToggleButtons;
+export default OdinEndpointToggleButtons;

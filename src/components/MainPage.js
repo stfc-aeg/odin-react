@@ -11,27 +11,17 @@ import StatusCard from './StatusCard'
 import ControlCard from './ControlCard'
 import LiveImage from './LiveImage';
 import StatusBox from './StatusBox';
+// import { useOdinContext } from '../services/odinContext';
 
 import withEndpoint from '../services/withEndpoint';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 
-// const statuses_list = [
-//     {id: "spec_status", variant: 'success', text: "Spectrometer Ready"},
-//     {id: "cryo_status", variant: 'success', text: `Cryo Status: ${cryo_temp}`},
-//     {id: "atto_status", variant: 'danger', text: "Attocube Disconnected"}
-//   ]
-  
-// const status_labels = [
-//     statuses_list,
-//     [{id:"acq_run", variant:'success', text:"Acquisition NOT Running: temp.hdf5"}]
-//   ]
-
-// const InternalTestButton = 
 const TestButton = withEndpoint(ToggleButton);
 const testToggleGroup = withEndpoint(ToggleButtonGroup);
 
 function MainPage(props) {
+  // const {cryoEndpoint, specEndpoint, acqEndpoint} = useOdinContext();
   const {cryoResult, specResult, attoResult} = props;
   const {cryoEndpoint, specEndpoint, acqEndpoint} = props;
     // const cryoResult = props.cryoResult;

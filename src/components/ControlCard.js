@@ -4,24 +4,24 @@ import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Table from 'react-bootstrap/Table';
+import ToggleSwitch from './ToggleSwitch';
 
 import * as Icon from 'react-bootstrap-icons';
 
 import React, { useState } from 'react';
-import OdinToggleButtons from './OdinToggleButtons';
+import OdinEndpointToggleButtons from './OdinToggleButtons';
+import WithEndpoint from '../services/withEndpoint';
 import OdinForm from './OdinForm';
+
+const EndpointButton = WithEndpoint(Button);
 
 function ControlCard(props) {
 
     const specEndpoint = props.specEndpoint;
     const acqEndpoint = props.acqEndpoint;
-
-    // console.log(specEndpoint);
 
     const binningModeButtons = [
       {id: "bin-mode-full", value: "FullSensor", text:"Full Sensor"},
@@ -53,17 +53,17 @@ function ControlCard(props) {
           <Container>
             <Row className="mb-2">
               <Col>
-                <ButtonGroup size='lg'>
-                  <Button >Begin Acquisition</Button>
+                {/* <ButtonGroup size='lg'> */}
+                  <EndpointButton id="begin_acquisition" value={true} endpoint={acqEndpoint} fullpath="start_acquisition">Begin Acquisition</EndpointButton>
                   <Button disabled>Stop Acquisition</Button>
-                </ButtonGroup>
+                {/* </ButtonGroup> */}
               </Col>
               <Col>
                 <Button disabled>Begin Cooldown</Button>
               </Col>
             </Row>
             <Row className="mb-2">
-              <OdinToggleButtons
+              <OdinEndpointToggleButtons
               name="photoModeButtons"
               endpoint={acqEndpoint}
               path="photo_lum_mode"
@@ -72,7 +72,7 @@ function ControlCard(props) {
             </Row>
             <Row>
               <Col>
-                <OdinToggleButtons
+                <OdinEndpointToggleButtons
                 name="binModeButtons"
                 endpoint={specEndpoint}
                 path="binning/binning_mode"
@@ -102,6 +102,8 @@ function ControlCard(props) {
                     </thead>
                 </Table>
               </Col>
+            </Row>
+            <Row>
             </Row>
           </Container>
         </Card.Body>
