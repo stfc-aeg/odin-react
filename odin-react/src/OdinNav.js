@@ -2,7 +2,7 @@ import NavBar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Tab from 'react-bootstrap/Tab';
 
-import ErrorBoundary from './ErrorBoundary';
+// import ErrorBoundary from './ErrorBoundary';
 import React, {useState} from 'react';
 
 function OdinNav(props) {
@@ -31,7 +31,7 @@ function OdinNav(props) {
     ) : null;
 
     return (
-        <>
+        <div>
         <NavBar bg='dark' variant='dark'>
                 <NavBar.Brand href='#'>
                     <img
@@ -52,12 +52,12 @@ function OdinNav(props) {
         </NavBar>
         <Tab.Container id="app-tabs" defaultActiveKey={navList[0]} activeKey={key}>
         <Tab.Content>
-            <ErrorBoundary>
+            {/* <ErrorBoundary> */}
                 {childList}
-            </ErrorBoundary>
+            {/* </ErrorBoundary> */}
         </Tab.Content>
         </Tab.Container>
-        </>
+        </div>
     )
 }
 
