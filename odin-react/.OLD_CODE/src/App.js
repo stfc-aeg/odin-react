@@ -1,15 +1,15 @@
 import OdinNav from './components/OdinNav';
-import MainPage from './components/MainPage';
+import MainPage from '../odin-react/example/src/MainPage';
 import CryoPage from './components/CryoPage';
 import ErrorBoundary from './components/ErrorBoundary';
 
-import AdapterEndpoint from './odin_control.js';
+import AdapterEndpoint from '../odin-react/example/src/odin_control.js';
 
 import usePeriodicFetch from './services/usePeriodicFetch';
 
 
 import React, {useState} from 'react';
-import SpectrometerPage from './components/SpectrometerPage';
+import SpectrometerPage from '../odin-react/example/src/SpectrometerPage';
 
 
 function App() {

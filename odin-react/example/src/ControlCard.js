@@ -7,13 +7,13 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Table from 'react-bootstrap/Table';
-import ToggleSwitch from './ToggleSwitch';
+import {ToggleSwitch} from 'odin-react';
 
 import * as Icon from 'react-bootstrap-icons';
 
 import React, { useState } from 'react';
-import OdinEndpointToggleButtons from './OdinToggleButtons';
-import WithEndpoint from '../services/withEndpoint';
+import {OdinToggleButtonGroup} from 'odin-react';
+import {WithEndpoint} from 'odin-react';
 import {OdinForm} from 'odin-react';
 
 const EndpointButton = WithEndpoint(Button);
@@ -63,7 +63,7 @@ function ControlCard(props) {
               </Col>
             </Row>
             <Row className="mb-2">
-              <OdinEndpointToggleButtons
+              <OdinToggleButtonGroup
               name="photoModeButtons"
               endpoint={acqEndpoint}
               path="photo_lum_mode"
@@ -72,7 +72,7 @@ function ControlCard(props) {
             </Row>
             <Row>
               <Col>
-                <OdinEndpointToggleButtons
+                <OdinToggleButtonGroup
                 name="binModeButtons"
                 endpoint={specEndpoint}
                 path="binning/binning_mode"

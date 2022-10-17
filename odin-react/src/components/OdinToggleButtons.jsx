@@ -1,6 +1,6 @@
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
-import OdinToggleButtonGroup from './OdinToggleButtonGroup';
+import OdinToggleButtonGroup from '../../../src/components/OdinToggleButtonGroup';
 
 import React from 'react';
 

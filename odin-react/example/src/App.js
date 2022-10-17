@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { OdinNav, OdinCard, StatusBox, usePeriodicFetch} from 'odin-react';
+import { OdinApp, usePeriodicFetch } from 'odin-react';
 
 import MainPage from './MainPage';
 import 'odin-react/dist/index.css'
@@ -20,10 +20,10 @@ const App = () => {
   const {response: cryoResult} = usePeriodicFetch("", cryoEndpoint);
   const {response: specResult} = usePeriodicFetch("", specEndpoint);
   const {response: attoResult} = usePeriodicFetch("", attoEndpoint);
-  const {response: acqResult}  = usePeriodicFetch("", acqEndpoint);
+  // const {response: acqResult}  = usePeriodicFetch("", acqEndpoint);
 
   return (
-  <OdinNav title="Spectrometer Integration"
+  <OdinApp title="Spectrometer Integration"
   navLinks={["Main Page", "Spectrometer", "Cryostat", "Attocube"]}>
       <MainPage
             cryoResult={cryoResult}
@@ -42,7 +42,7 @@ const App = () => {
         cryoEndpoint={cryoEndpoint}
         cryoResult={cryoResult}
       />
-    </OdinNav> 
+    </OdinApp> 
   )
 }
 

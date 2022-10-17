@@ -12,6 +12,7 @@
   "dependencies": {
     "odin-react": "file:..",
     "react": "file:../node_modules/react",
+    "react-bootstrap-icons": "^1.9.1",
     "react-dom": "file:../node_modules/react-dom",
     "react-scripts": "file:../node_modules/react-scripts"
   },
