@@ -11,6 +11,7 @@ export { default as OdinCard } from './components/OdinCard';
 export { default as StatusBox } from './components/StatusBox';
 export { default as ToggleSwitch} from './components/ToggleSwitch';
 export { default as ErrorBoundary} from './components/ErrorBoundary';
+export { default as OdinForm} from './components/OdinForm';
 
 export { default as useApiPut } from './services/useApiPut';
 export { default as usePeriodicFetch } from './services/usePeriodicFetch';

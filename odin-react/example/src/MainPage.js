@@ -6,19 +6,19 @@ import Card from 'react-bootstrap/Card';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 
-import OdinCard from './OdinCard';
+import {OdinCard} from 'odin-react';
 import StatusCard from './StatusCard'
-import ControlCard from './ControlCard'
-import LiveImage from './LiveImage';
-import StatusBox from './StatusBox';
+// import ControlCard from './ControlCard'
+// import LiveImage from '../../../src/components/LiveImage';
+import {StatusBox} from 'odin-react';
 // import { useOdinContext } from '../services/odinContext';
 
-import withEndpoint from '../services/withEndpoint';
+import {WithEndpoint} from 'odin-react';
 
 import React, { useEffect, useState, useContext } from 'react';
 
-const TestButton = withEndpoint(ToggleButton);
-const testToggleGroup = withEndpoint(ToggleButtonGroup);
+const TestButton = WithEndpoint(ToggleButton);
+const testToggleGroup = WithEndpoint(ToggleButtonGroup);
 
 function MainPage(props) {
   // const {cryoEndpoint, specEndpoint, acqEndpoint} = useOdinContext();
@@ -80,11 +80,11 @@ function MainPage(props) {
         </OdinCard>
       </Col>
       <Col>
-        <ControlCard
-          title="Basic Controls"
+        {/* <ControlCard */}
+          {/* title="Basic Controls"
           specEndpoint={specEndpoint}
-          acqEndpoint={acqEndpoint}
-        />
+          acqEndpoint={acqEndpoint} */}
+        {/* /> */}
       </Col>
     </Row>
     <Row>

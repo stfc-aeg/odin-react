@@ -14,7 +14,7 @@ import * as Icon from 'react-bootstrap-icons';
 import React, { useState } from 'react';
 import OdinEndpointToggleButtons from './OdinToggleButtons';
 import WithEndpoint from '../services/withEndpoint';
-import OdinForm from './OdinForm';
+import {OdinForm} from 'odin-react';
 
 const EndpointButton = WithEndpoint(Button);
 

@@ -3,8 +3,7 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Alert from 'react-bootstrap/Alert';
-import OdinCard from './OdinCard';
-import StatusBox from './StatusBox';
+import {OdinCard, StatusBox} from 'odin-react';
 
 import React, { useState } from 'react';
 
