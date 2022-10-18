@@ -2,7 +2,7 @@ import Card from 'react-bootstrap/Card';
 
 import React from 'react';
 
-function OdinCard({title, children}) {
+function TitleCard({title, children}) {
 
     return (
         <Card className='mb-4'>
@@ -14,4 +14,4 @@ function OdinCard({title, children}) {
     );
 }
 
-export default OdinCard;
+export default TitleCard;

@@ -25,11 +25,11 @@ function OdinApp(props) {
         setKey(selectedKey);
     }
 
-    const childList = props.children ? props.children.map((child, index) =>
+    const childList = React.Children.map(props.children, (child, index) =>
         <Tab.Pane eventKey={navList[index]} key={index}>
             {child}
         </Tab.Pane>
-    ) : null;
+    );
 
     return (
         <ErrorBoundary>

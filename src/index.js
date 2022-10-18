@@ -7,12 +7,13 @@ import styles from './styles.module.css'
 // }
 
 export { default as OdinApp } from './components/OdinApp';
-export { default as OdinCard } from './components/OdinCard';
+export { default as TitleCard } from './components/TitleCard';
 export { default as StatusBox } from './components/StatusBox';
 export { default as ToggleSwitch} from './components/ToggleSwitch';
 export { default as ErrorBoundary} from './components/ErrorBoundary';
 export { default as OdinForm} from './components/OdinForm';
-export { default as OdinToggleButtonGroup} from './components/OdinToggleButtons'
+export { default as ParameterTable} from './components/ParameterTable';
+// export { default as OdinToggleButtonGroup} from './components/OdinToggleButtons';
 
 export { default as useApiPut } from './services/useApiPut';
 export { default as usePeriodicFetch } from './services/usePeriodicFetch';
