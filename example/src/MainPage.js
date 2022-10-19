@@ -6,7 +6,7 @@ import Card from 'react-bootstrap/Card';
 import ToggleButton from 'react-bootstrap/ToggleButton';
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 
-import {OdinCard} from 'odin-react';
+import {TitleCard} from 'odin-react';
 import StatusCard from './StatusCard'
 import ControlCard from './ControlCard'
 // import LiveImage from '../../../src/components/LiveImage';
@@ -61,7 +61,7 @@ function MainPage(props) {
     <Container fluid className="mt-4">
     <Row>
       <Col md="5">
-        <OdinCard title="System Status">
+        <TitleCard title="System Status">
           <Row>
             <Col>
               <StatusBox text="Spectrometer Ready"/>
@@ -74,17 +74,17 @@ function MainPage(props) {
             </Col>
           </Row>
           <ProgressBar now={40}/>
-        </OdinCard>
-        <OdinCard title="Cryostat Temperature">
+        </TitleCard>
+        <TitleCard title="Cryostat Temperature">
           <StatusBox label="ATSM Temperature" text={atsmTemp}/>
-        </OdinCard>
+        </TitleCard>
       </Col>
       <Col>
-        <ControlCard
+        {/* <ControlCard
           title="Basic Controls"
           specEndpoint={specEndpoint}
           acqEndpoint={acqEndpoint}
-        />
+        /> */}
       </Col>
     </Row>
     <Row>
@@ -92,9 +92,9 @@ function MainPage(props) {
       <TestButton id="testButton" value={false} endpoint={cryoEndpoint} fullpath="bakeout/enabled">Test</TestButton>
       </Col>
       <Col>
-      <TestToggleGroup id="testGroup" type='radio' defaultValue={0} fullPath="">
+      {/* <TestToggleGroup id="testGroup" type='radio' defaultValue={0} fullPath="">
 
-        </TestToggleGroup>
+        </TestToggleGroup> */}
       </Col>
     </Row>
   </Container>
