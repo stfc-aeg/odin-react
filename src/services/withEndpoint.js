@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from "react";
-import Alert from 'react-bootstrap/Alert';
 
 function WithEndpoint(WrappedComponent)
 {
@@ -13,12 +12,15 @@ function WithEndpoint(WrappedComponent)
             console.log(event);
             console.log(eventKey);
             let val = null;
-            if(event && event.target.value){
-                val = event.target.value;
+            if(event?.target?.value != null){
+                                val = event.target.value;
+                console.log(`Event Target Value: ${val}`);
             }else if(eventKey){
                 val = eventKey;
+                console.log(`Event Key: ${val}`);
             }else{
                 val = value;
+                console.log(`Value: ${val}`);
             }
 
             const sendVal = {[valueName]: val};
@@ -55,7 +57,7 @@ function WithEndpoint(WrappedComponent)
 
                 case "change":
                 default:
-                    setEventProp({onChange: event => onEventHandler(event, _path, _valueName, eventKey)});
+                    setEventProp({onChange: event => onEventHandler(event, _path, _valueName)});
                 break;
             }
         }, [fullpath, type]);

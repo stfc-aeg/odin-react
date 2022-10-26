@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { OdinApp, usePeriodicFetch } from 'odin-react';
+import { OdinApp, ToggleSwitch, usePeriodicFetch } from 'odin-react';
 
 // import MainPage from './MainPage';
 import 'odin-react/dist/index.css'
@@ -22,25 +22,15 @@ import Button from 'react-bootstrap/Button';
 const EndpointDropdown = WithEndpoint(DropdownSelector);
 const EndpointButton = WithEndpoint(Button);
 
+const EndpointToggleButton = WithEndpoint(ToggleSwitch)
+
 const App = () => {
 
-  const cryoEndpoint = useAdapterEndpoint("cryostat", process.env.REACT_APP_ENDPOINT_URL, {interval: 500});
-  // const specEndpoint = new AdapterEndpoint("spectrometer", process.env.REACT_APP_ENDPOINT_URL);
-  // const attoEndpoint = new AdapterEndpoint("attocube", process.env.REACT_APP_ENDPOINT_URL);
-  // const acqEndpoint  = new AdapterEndpoint("acquisition", process.env.REACT_APP_ENDPOINT_URL);
+  const exampleEndpoint = useAdapterEndpoint("react", process.env.REACT_APP_ENDPOINT_URL, {interval: 500});
 
-  // const {response: cryoResult} = usePeriodicFetch("", cryoEndpoint);
-  // const {response: specResult} = usePeriodicFetch("", specEndpoint);
-  // const {response: attoResult} = usePeriodicFetch("", attoEndpoint);
-  // // const {response: acqResult}  = usePeriodicFetch("", acqEndpoint);
-
-  const atsmTemp = cryoEndpoint.data ? `${cryoEndpoint.data.atsm.temperature.toFixed(5)}k` : "0k";
-  
-  const powerSchedule = cryoEndpoint.data ? cryoEndpoint.data.atsm.power_schedule : {0: 0, 1: 0};
-  const powerScheduleSelected = cryoEndpoint.data ? cryoEndpoint.data.atsm.power_schedule_selected : null;
-  const scheduleList = cryoEndpoint.data ? cryoEndpoint.data.atsm.power_schedules_avail : ["None", "None2"];
-
-  
+  const rand_num = exampleEndpoint.data ? exampleEndpoint.data.rand_num : 0;
+  const select_list = exampleEndpoint.data ? exampleEndpoint.data.select_list : [];
+  const selected = exampleEndpoint.data ? exampleEndpoint.data.selected : null;
 
   return (
   <OdinApp title="Spectrometer Integration"
@@ -49,23 +39,17 @@ const App = () => {
       <Row>
       <Col>
       <TitleCard title="Odin React Example">
-        <StatusBox label="Test" text={atsmTemp}/>
+        <StatusBox label="Test" text={rand_num}/>
       </TitleCard>
     </Col>
     <Col>
-      <TitleCard title="Table Example">
-        <EndpointDropdown buttonText="Test Dropdown" id="testDrop"
-          endpoint={cryoEndpoint} type="select" fullpath="atsm/power_schedule_selected">
-          {scheduleList.map(
-            (schedule) => (
-              <Dropdown.Item eventKey={schedule} active={powerScheduleSelected == schedule}>{schedule}</Dropdown.Item>
-            ))}
-        </EndpointDropdown>
-        <ParameterTable unit={false} paramTitle="Temperature">
-          {Object.keys(powerSchedule).map((param, index) => (
-            <ParameterEntry key={index} name={param} value={powerSchedule[param]} unit="None"/>
-          ))}
-        </ParameterTable>
+      <TitleCard title="Button Example">
+
+        <EndpointButton endpoint={exampleEndpoint} type="click" fullpath="trigger" id="testButton"
+          value="Test Button">
+            Test Trigger
+        </EndpointButton>
+        <EndpointToggleButton endpoint={exampleEndpoint} fullpath="toggle" id="testToggle" label="Test Toggle"/>
       </TitleCard>
     </Col>
     </Row>
@@ -74,7 +58,13 @@ const App = () => {
       <Row>
         <Col>
         <TitleCard title="Dropdown Example">
-        
+          <EndpointDropdown buttonText="Test Dropdown" id="testDrop"
+            endpoint={exampleEndpoint} type="select" fullpath="selected"  >
+            {select_list.map(
+              (selection) => (
+                <Dropdown.Item eventKey={selection} key={selection} active={selected=== selection}>{selection}</Dropdown.Item>
+              ))}
+          </EndpointDropdown>
         </TitleCard>
         </Col>
       </Row>

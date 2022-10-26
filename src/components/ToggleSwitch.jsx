@@ -29,12 +29,17 @@ const BootstrapSwitchButton = ({
 	const toggle = event => {
 		if (!disabled) {
 			const newState = !checked;
+			console.log(newState);
 
+			
 			setChecked(newState);
-			onChange(newState);
+			event.target.value = newState;
+			console.log(event.target);
+			onChange(event);
 		}
 
 		event.stopPropagation();
+		event.persist();
 	};
 
 	let switchStyle = {};
@@ -73,6 +78,7 @@ const BootstrapSwitchButton = ({
 						(size ? 'btn-' + size : '')
 					)}
 					style={labelStyle}
+					value={true}
 				>
 					{onlabel}
 				</span>
@@ -83,6 +89,7 @@ const BootstrapSwitchButton = ({
 						(size ? 'btn-' + size : '')
 					)}
 					style={labelStyle}
+					value={false}
 				>
 					{offlabel}
 				</span>
@@ -99,7 +106,7 @@ const BootstrapSwitchButton = ({
 };
 
 BootstrapSwitchButton.defaultProps = {
-	checked: false,
+	checked: true,
 	onChange: () => {},
 	disabled: false,
 	onlabel: 'On',
