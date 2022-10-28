@@ -6,26 +6,15 @@ import Image from "react-bootstrap/Image";
 
 function LiveViewImage(props) {
 
-    const {src, refreshRate = 1000, endpoint, imgpath} = props;
+    const {src, refreshRate = 1000, adapter, imgpath} = props;
 
-    const [imgSource, setImgSource] = useState(src);
     const [imgPath, setImgPath] = useState(src);
     
     const refreshImage = useCallback(async (path=imgpath) => {
-        let fullPath = `${process.env.REACT_APP_ENDPOINT_URL}/api/0.1/${endpoint}/${path}`;
+        let fullPath = `${process.env.REACT_APP_ENDPOINT_URL}/api/0.1/${adapter}/${path}`;
         let timestampPath = fullPath + "?" + new Date().getTime();
         console.log(timestampPath);
         setImgPath(timestampPath);
-        // endpoint.get(timestampPath)
-        // .then(result => {
-        //     console.log(result);
-            
-        //     let binaryData = Buffer.from(result);
-        //     // binaryData.push(result.split(""));
-        //     console.log(binaryData);
-        //     // setImgSource(binaryData);
-        //     setImgSource(URL.createObjectURL(new Blob(binaryData, {type: "image/png"})));
-        // });
     })
 
     useEffect(() => {

@@ -59,7 +59,7 @@ const App = () => {
       <Row>
         <Col>
         <TitleCard title="Live Image Example">
-          <LiveViewImage endpoint="react" imgpath="image" src="odin.png"/>
+          <LiveViewImage adapter="react" imgpath="image" src="odin.png"/>
         </TitleCard>
         </Col>
       </Row>

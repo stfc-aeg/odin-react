@@ -49,23 +49,6 @@ export const useAdapterEndpoint = (
         return result;
     }, [base_url, handleError]);
 
-    const updateData = useCallback(async (path='') => {
-        const url = `${base_url}/${path}`;
-        // let result = null;
-        try {
-            setLoading(true);
-            const response = await axios.get(url);
-            // result = response.data;
-            setData(response.data);
-        }
-        catch (err) {
-            handleError(err);
-        }
-        finally {
-            setLoading(false);
-        }
-    }, [base_url, handleError]);
-
     const put = useCallback(async (data, path='') => {
         const url = `${base_url}/${path}`;
         let result = null;
@@ -87,7 +70,12 @@ export const useAdapterEndpoint = (
     useEffect(() => {
         let timer_id = null;
         if (interval) {
-            timer_id = setInterval(updateData, interval);
+            timer_id = setInterval(() => {
+                get('')
+                .then(result => {
+                    setData(result);
+                });
+            }, interval);
         }
         get();
         return () => {
