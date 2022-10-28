@@ -6,6 +6,11 @@ from odin.util import decode_request_body
 from tornado.ioloop import PeriodicCallback
 import logging
 
+# stuff added for live image sim? might not want to be kept
+import numpy as np
+import cv2
+
+
 class ReactAdapter(ApiAdapter):
 
     def __init__(self, **kwargs):
@@ -17,15 +22,21 @@ class ReactAdapter(ApiAdapter):
             "select_list": (lambda: self.client.selection_list, None),
             "selected":(lambda: self.client.selected, self.client.set_selection),
             "toggle": (lambda: self.client.toggle, self.client.set_toggle),
-            "trigger": (None, self.client.trigger_event)
+            "trigger": (None, self.client.trigger_event),
+            # "image": (lambda: self.client.rendered_image, None)
         })
 
-    @response_types('application/json', default='application/json')
+    @response_types('application/json', "image/*", default='application/json')
     def get(self, path, request):
         try:
-            response = self.param_tree.get(path)
-            content_type = 'application/json'
-            status = 200
+            if path == "image":
+                response = self.client.rendered_image
+                content_type = 'image/png'
+                status = 200
+            else:
+                response = self.param_tree.get(path)
+                content_type = 'application/json'
+                status = 200
         except ParameterTreeError as param_error:
             response = {'response': 'ZeroRPC GET error: {}'.format(param_error)}
             content_type = 'application/json'
@@ -64,12 +75,19 @@ class ReactClient:
         self.selected = "item 1"
         self.toggle = True
 
+        self.img_data = np.random.randint(255, size=(255, 255))
+
+        self.rendered_image = self.render_image(self.img_data)
+
         self.loop.start()
 
 
     def looping_update(self):
         # logging.debug("Loop Called")
         self.random_num = random.randint(0, 100)
+        self.img_data = np.random.randint(255, size=(255, 255))
+
+        self.rendered_image = self.render_image(self.img_data)
 
     def set_selection(self, val):
         if val in self.selection_list:
@@ -84,5 +102,11 @@ class ReactClient:
     def trigger_event(self, val):
         logging.info("Event Triggered by API with value: %s", val)
 
+    def render_image(self, data):
+
+        image = cv2.imencode(
+            ".png", data, params=[cv2.IMWRITE_PNG_COMPRESSION, 0])[1].tostring()
+        return image
+        
 
 

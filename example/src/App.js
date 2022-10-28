@@ -9,13 +9,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // import AdapterEndpoint from './odin_control';
 // import SpectrometerPage from './SpectrometerPage';
 // import CryoPage from './CryoPage';
-import { TitleCard, StatusBox, ParameterTable,ParameterEntry, DropdownSelector } from 'odin-react';
+import { TitleCard, StatusBox, ParameterTable,ParameterEntry, DropdownSelector, LiveViewImage } from 'odin-react';
 import { WithEndpoint, useAdapterEndpoint } from 'odin-react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Button from 'react-bootstrap/Button';
+
 // import { ParameterTable } from 'odin-react';
 // import { StatusBox } from '../../src';
 
@@ -34,7 +35,7 @@ const App = () => {
 
   return (
   <OdinApp title="Spectrometer Integration"
-  navLinks={["Main Page", "Spectrometer", "Cryostat", "Attocube"]}>
+  navLinks={["Page 1", "Page 2", "Page 3", "Attocube"]}>
     <Container>
       <Row>
       <Col>
@@ -57,6 +58,15 @@ const App = () => {
     <Container>
       <Row>
         <Col>
+        <TitleCard title="Live Image Example">
+          <LiveViewImage endpoint="react" imgpath="image" src="odin.png"/>
+        </TitleCard>
+        </Col>
+      </Row>
+    </Container>
+    <Container>
+      <Row>
+        <Col>
         <TitleCard title="Dropdown Example">
           <EndpointDropdown buttonText="Test Dropdown" id="testDrop"
             endpoint={exampleEndpoint} type="select" fullpath="selected"  >
@@ -69,6 +79,7 @@ const App = () => {
         </Col>
       </Row>
     </Container>
+
   </OdinApp> 
   )
 }
