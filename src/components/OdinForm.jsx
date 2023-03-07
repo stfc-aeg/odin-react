@@ -54,10 +54,10 @@ function OdinForm(props) {
             // const indivChangeHandler = e => onChangeHandler(endpoint, path, e);
             switch(getFormType(inputVal))
             {
-                case "boolean":
-                    return (
-                        <></>
-                    )
+                // case "boolean":
+                //     return (
+                //         <></>
+                //     )
                 case "number":
                     const overlay = <Tooltip id={`tooltip-${inputVal.id}`}>{inputVal.label}</Tooltip>
                     return (

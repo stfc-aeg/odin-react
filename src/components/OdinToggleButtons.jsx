@@ -1,9 +1,13 @@
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
-import OdinToggleButtonGroup from '../../../src/components/OdinToggleButtonGroup';
 
 import React from 'react';
 
+
+/**
+ * Custom Toggle Button, flips to on/off or allows for custom text
+ * @param  
+ */
 function OdinEndpointToggleButtons(props) {
     const endpoint = props.endpoint;
     let path = "";
@@ -34,10 +38,10 @@ function OdinEndpointToggleButtons(props) {
     }
 
     return (
-        <OdinToggleButtonGroup onChangeHandler={handleChange} name={props.name} defaultValue={buttonList[0].value}>
+        <ToggleButtonGroup onChange={handleChange} name={props.name} defaultValue={buttonList[0].value}>
             
             {createButtons}
-        </OdinToggleButtonGroup>
+        </ToggleButtonGroup>
     )
 }
 

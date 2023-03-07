@@ -6,6 +6,12 @@ import React, {useEffect, useState} from 'react';
 // import './style.css';
 import classNames from "classnames";
 
+/**
+ * Custom Toggle Button, flips to on/off or allows for custom text. Toggles between true and false
+ * like a checkbox
+ * @param onchange the event to be triggered by the toggling of the switch
+ * @returns 
+ */
 const BootstrapSwitchButton = ({
 	checked: defaultChecked,
 	onChange,
