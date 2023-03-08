@@ -77,7 +77,7 @@ export const useAdapterEndpoint = (
                 });
             }, interval);
         }
-        get();
+        setData(get());
         return () => {
             if (timer_id) {
                 clearInterval(timer_id);
