@@ -23,9 +23,9 @@ function ScopeCanvas(props) {
 
     const [scopeData, changeScopeData] = useState(data);
 
-    const [minX, changeMinX] = useState(xLowerBound ? xLowerBound: 0);
+    const [minX, changeMinX] = useState(xLowerBound);
     const [maxX, changeMaxX] = useState(xUpperBound);
-    const [minY, changeMinY] = useState(yLowerBound ? yLowerBound: 0);
+    const [minY, changeMinY] = useState(yLowerBound);
     const [maxY, changeMaxY] = useState(yUpperBound);
 
     const [graphX, changeGraphX] = useState([0, 0]);
@@ -72,10 +72,10 @@ function ScopeCanvas(props) {
         data.map(element => allYes.push(...element.y));
         data.map(element => temp_datasetLabels.push(element.label));
 
-        if(!xLowerBound){changeMinX(Math.min(...allXes))};
-        if(!xUpperBound){changeMaxX(Math.max(...allXes))};
-        if(!yLowerBound){changeMinY(Math.min(...allYes))};
-        if(!yUpperBound){changeMaxY(Math.max(...allYes))};
+        if(xLowerBound === null){changeMinX(Math.min(...allXes))};
+        if(xUpperBound === null){changeMaxX(Math.max(...allXes))};
+        if(yLowerBound === null){changeMinY(Math.min(...allYes))};
+        if(yUpperBound === null){changeMaxY(Math.max(...allYes))};
         changeDatasetLabels(datasetLabels);
 
     }, [data])
@@ -103,7 +103,7 @@ function ScopeCanvas(props) {
 
     useEffect(() => {
         //redraws the axis when their scale changes
-        console.log("Redrawing Axis")
+        // console.log("Redrawing Axis")
         const canvas = axisCanvasRef.current
         const context = canvas.getContext("2d")
 
@@ -191,7 +191,7 @@ function ScopeCanvas(props) {
         }
 
         ctx.textAlign = "right"
-        for(var i = minY; i<maxY+2; i++){
+        for(var i = Math.floor(minY); i<maxY+2; i++){
             let y = map(i, minY, maxY+1, graphY[1], graphY[0])
             ctx.moveTo(axis_pos, y);
             ctx.lineTo(axis_pos/2, y)
