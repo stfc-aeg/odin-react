@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from "axios";
 
 const DEF_API_VERSION = '0.1';
 
 export const useAdapterEndpoint = (
-    adapter, endpoint_url, { api_version=DEF_API_VERSION, interval=null }
+    adapter, endpoint_url, interval=null, api_version='0.1',
 ) => {
 
     const [data, setData] = useState(null);
@@ -77,7 +77,12 @@ export const useAdapterEndpoint = (
                 });
             }, interval);
         }
-        setData(get());
+        else{
+            get("")
+            .then(result => {
+                setData(result);
+            });
+        }
         return () => {
             if (timer_id) {
                 clearInterval(timer_id);
