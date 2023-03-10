@@ -37,7 +37,6 @@ export const useAdapterEndpoint = (
             setLoading(true);
             const response = await axios.get(url);
             result = response.data;
-            // setData(result);
         }
         catch (err) {
             handleError(err);
@@ -71,17 +70,11 @@ export const useAdapterEndpoint = (
         let timer_id = null;
         if (interval) {
             timer_id = setInterval(() => {
-                get('')
-                .then(result => {
-                    setData(result);
-                });
+                refreshData();
             }, interval);
         }
         else{
-            get("")
-            .then(result => {
-                setData(result);
-            });
+            refreshData();
         }
         return () => {
             if (timer_id) {
@@ -90,6 +83,12 @@ export const useAdapterEndpoint = (
         }
     }, [base_url, interval, get]);
 
-    return { data, error, loading, get, put };
+    const refreshData = () => {
+        get("")
+        .then(result => {
+            setData(result);
+        });
+    }
+    return { data, error, loading, get, put, refreshData };
 
 }

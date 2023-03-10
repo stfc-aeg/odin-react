@@ -5,7 +5,7 @@ function WithEndpoint(WrappedComponent)
 {
 
     const withEndpointComponent = (props) => {
-        const {endpoint, fullpath, value, type} = props;
+        const {endpoint, fullpath, value, event_type} = props;
         const [error, setError] = useState(null);
         const onEventHandler = (event, path, valueName, eventKey) => {
             console.log("OnEvent Handler");
@@ -26,7 +26,7 @@ function WithEndpoint(WrappedComponent)
             const sendVal = {[valueName]: val};
             console.log(path + ": " + valueName + ": " + val);
             endpoint.put(sendVal, path)
-            .then()
+            .then(endpoint.refreshData())
             .catch((err) => {
                 console.log(err);
                 setError(err)});
@@ -46,7 +46,7 @@ function WithEndpoint(WrappedComponent)
             }
 
             console.log(_path + ":" + _valueName);
-            switch(type){
+            switch(event_type){
                 case "select":
                     setEventProp({onSelect: (eventKey, event) => onEventHandler(event, _path, _valueName, eventKey)});
                 break;
@@ -60,7 +60,7 @@ function WithEndpoint(WrappedComponent)
                     setEventProp({onChange: event => onEventHandler(event, _path, _valueName)});
                 break;
             }
-        }, [fullpath, type]);
+        }, [fullpath, event_type]);
 
         
         if(error) 
