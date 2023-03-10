@@ -1,9 +1,9 @@
 import React from 'react'
 import Dropdown from 'react-bootstrap/Dropdown'
 
-
+/** */
 function DropdownSelector(props) {
-    const { buttonText="Dropdown", variant="primary", id, children, onSelect=null} = props;
+    const { buttonText="Dropdown", variant="primary", id, onSelect=null} = props;
     return (
         <Dropdown onSelect={onSelect}>
             <Dropdown.Toggle variant={variant} id={id}>

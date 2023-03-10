@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, Fragment } from 'react';
-import {Canvas, useCanvas} from 'odin-react';
 
 function ScopeCanvas(props) {
 
