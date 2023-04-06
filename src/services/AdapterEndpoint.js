@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from "axios";
 
 const DEF_API_VERSION = '0.1';
@@ -7,11 +7,14 @@ export const useAdapterEndpoint = (
     adapter, endpoint_url, interval=null, api_version='0.1',
 ) => {
 
-    const [data, setData] = useState(null);
+    const [data, setData] = useState({});
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const dataRef = useRef()
+    
     const base_url = `${endpoint_url ? endpoint_url : ""}/api/${api_version}/${adapter}`;
+    dataRef.current = data
 
     const handleError = useCallback((err) => {
 
@@ -32,6 +35,7 @@ export const useAdapterEndpoint = (
 
     const get = useCallback(async (path='') => {
         const url = `${base_url}/${path}`;
+        console.log("GET: " + url);
         let result = null;
         try {
             setLoading(true);
@@ -50,6 +54,7 @@ export const useAdapterEndpoint = (
 
     const put = useCallback(async (data, path='') => {
         const url = `${base_url}/${path}`;
+        console.log("PUT: " + url + " data: ", data);
         let result = null;
         try {
             setLoading(true);
@@ -62,7 +67,7 @@ export const useAdapterEndpoint = (
         finally {
             setLoading(false);
         }
-
+        console.log("RESPONSE: ", result)
         return result;
     }, [base_url, handleError]);
 
@@ -89,6 +94,26 @@ export const useAdapterEndpoint = (
             setData(result);
         });
     }
-    return { data, error, loading, get, put, refreshData };
+
+    const mergeData = (newData, path) => {
+        let splitPath = path.split("/")
+        let tmpData = dataRef.current
+        if(splitPath[0]){
+            splitPath.forEach((part_path, index) => {
+                if(index < splitPath.length-1){  //make sure position in nested dict is the same as response
+                    tmpData = tmpData[part_path]
+                }
+            })
+        }
+        for(var key in newData)
+        {
+            // for each value in the response data, add it to the data ref
+            tmpData[key] = newData[key]
+        }
+    };
+
+    
+
+    return { data: dataRef.current, error, loading, get, put, refreshData, mergeData };
 
 }
