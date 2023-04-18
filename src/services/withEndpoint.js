@@ -20,17 +20,15 @@ function WithEndpoint(WrappedComponent)
                     // console.log(response)
                     setDefaultValue(response[valueName]);
                 })
+                .catch((err) => {
+                    setError(err)
+                })
             }
             else{
                 console.log("Setting Default Value");
                 setDefaultValue(value);
             }
         }, []) // set to have no dependencies, so only runs when the component first mounts
-
-        useEffect(() => {
-            console.log("ENDPOINT CHANGED")
-            console.log(endpoint)
-        }, endpoint.data)
 
         const {path, valueName} = useMemo(() => {
             let path = "";
