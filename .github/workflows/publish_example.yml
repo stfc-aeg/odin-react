@@ -1,0 +1,59 @@
+name: publish_build
+run-name: Building and Publishing static Example site
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./example
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - name: Save Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: react_build
+          path: build
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Get Build Results
+        uses: actions/download-artifact@v3
+        with:
+          name: react_build
+          path: build
+      - name: Display Directory
+        run: ls -R
+      - name: Zip Build
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          filename: example_build.zip
+          path: build
+      - name: Save Zip Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: example_build.zip
+          path: example_build.zip
+      - name: Release Aritfact
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          artifacts: example_build.zip

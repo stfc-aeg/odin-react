@@ -1,70 +1,68 @@
-# Getting Started with Create React App
+# odin-react
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> Made with create-react-library
 
-## Available Scripts
+Component Library designed for Odin Control Interfaces. 
 
-In the project directory, you can run:
+[![NPM](https://img.shields.io/npm/v/odin-react.svg)](https://www.npmjs.com/package/odin-react) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-### `npm start`
+## Install
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### From Github Repository (recommended)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+cd <project_dir>
+npm install --save git@github.com:stfc-aeg/odin-react.git
+```
+### From Local Repository
 
-### `npm test`
+Installing from a local copy is more complicated due to some issues with React linking, and is only recommended if absolutely necessary.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+First, clone the odin-react rep, and set up the global npm directory for [Linking](https://docs.npmjs.com/cli/v9/commands/npm-link)
+```bash
+git clone ssh://git@github.com:stfc-aeg/odin-react.git <library_dir>
+cd <library_dir>
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+export PATH=~/.npm-global/bin:$PATH
+```
+Link the Odin React library to your App
 
-### `npm run build`
+```bash
+npm link
+cd <project_dir>
+npm link odin-react
+npm link <library_dir>/node_modules/react --save
+npm link <library_dir>/node_modules/react-dom --save
+npm link <library_dir>/node_modules/react-scipts --save
+npm link <library_dir>/node_modules/bootstrap --save
+npm link <library_dir>/node_modules/react-bootstrap --save
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Once done, check the `package.json` file within `<project_dir>`, and make sure the dependencies listed above show a relative path to the cloned library.
+For instance:
+```json
+"dependencies": {
+  "react": "file: <library_dir>/node_modules/react",
+  ...
+}
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This should allow you to use the local copy of the Odin React library with your App, and allow for changes to the components to be quickly seen in the App.
+## Usage
 
-### `npm run eject`
+Basic React knowledge will be required to use this component library. Below are links to some useful tutorials
+- https://reactjs.org/tutorial/tutorial.html
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+It's recommended that a React app is created using the [create-react-app](https://create-react-app.dev/) library to set up the initial version of the React App. This 
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Additonally, react-bootstrap is required. See the following link for information on react-bootstrap.
+- https://react-bootstrap.github.io/getting-started/introduction/
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+This git repository includes an Example app, along with an example odin-control adapter, that can be used as reference for how the components may look and interact with Odin Control.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+See docs folder for info on each component
 
-## Learn More
+## Building an App
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

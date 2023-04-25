@@ -2,9 +2,9 @@ import Alert from 'react-bootstrap/Alert';
 
 import React from 'react';
 
-function StatusBox({label, text, type})
+function StatusBox({label, type, children})
 {
-    const fullText = label ? `${label}: ${text}` : text;
+    const fullText = label ? `${label}: ${children}` : children;
 
     if(type == null)
     {

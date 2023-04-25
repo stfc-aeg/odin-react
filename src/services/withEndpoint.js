@@ -1,70 +1,115 @@
 
-import React, { useEffect, useState } from "react";
-import Alert from 'react-bootstrap/Alert';
-// import { useOdinContext } from "./odinContext";
+import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 
 function WithEndpoint(WrappedComponent)
 {
-    // const contextProps = useOdinContext();
     const withEndpointComponent = (props) => {
-        const {endpoint, fullpath, value, type} = props;
-        // const endpoint = contextProps[endpointName];
-        // const endpoint = endpoint;
-        // const [path, setPath] = useState("");
-        // const [valueName, setValueName] = useState("");
+        const {endpoint, fullpath, value, event_type, ...leftover_props} = props;
+
+        const data = useRef(value);
+
         const [error, setError] = useState(null);
-        const onEventHandler = (event, path, valueName) => {
-            console.log("OnEvent Handler");
-                console.log(event);
-                let val = null;
-                if(event.target.value){
-                    val = event.target.value;
-                }else{
-                    val = value;
-                }
-    
-                const sendVal = {[valueName]: val};
-                console.log(sendVal);
-                endpoint.put(sendVal, path)
-                .then()
-                .catch((err) => {
-                    console.log(err);
-                    setError(err)});
-        }
         const [eventProp, setEventProp] = useState(null);
 
+        const [defaultValue, setDefaultValue] = useState(value);
 
         useEffect(() => {
-            console.log("Use Effect");
-            let _path = fullpath.trim('/');
-            let _valueName = "";
-            if(_path.includes("/"))
+            if(value == null){
+                endpoint.get(fullpath)
+                .then((response) => {
+                    // console.log(response)
+                    setDefaultValue(response[valueName]);
+                })
+                .catch((err) => {
+                    setError(err)
+                })
+            }
+            else{
+                console.log("Setting Default Value");
+                setDefaultValue(value);
+            }
+        }, []) // set to have no dependencies, so only runs when the component first mounts
+
+        const {path, valueName} = useMemo(() => {
+            let path = "";
+            let valueName = fullpath.trim("/");
+            if(valueName.includes("/"))
             {
-                [_path, _valueName] = _path.split(/\/(?!.*\/)(.*)/, 2);
-            }else{
-                _valueName = _path;
-                _path = "";
+                [path, valueName] = valueName.split(/\/(?!.*\/)(.*)/, 2);
             }
+            return {path, valueName};
+        }, [fullpath])
 
-            console.log(_path + ":" + _valueName);
-            switch(type){
-                case "change":
-                    setEventProp({onChange: event => onEventHandler(event, _path, _valueName)});
-                break;
+        const onChangeHandler = (event) => {
+            console.log(event);
+            console.log(data.current);
+            let val = null;
+            if(event?.target?.value != null){
                 
-                case "click":
-                default:
-                    setEventProp({onClick: event => onEventHandler(event, _path, _valueName)});
-                break;
+                val = isNaN(event.target.value) ? event.target.value : +event.target.value;
+
+            }else{
+                val = isNaN(data.current.value) ? data.current.value : +data.current.value;
             }
-        }, [fullpath]);
+            sendRequest(val);
+        }
 
-        
-        if(error) 
-        // return (<Alert variant="danger">ERROR: {error.message}</Alert>);
-        throw error;
+        const onClickHandler = (event) => {
+            console.log(event)
+            let val = null;
+            if(data.current?.tagName?.toLowerCase() === "button")
+            {
+                // special case for buttons
+                val = value;
+            }
+            else if(data.current?.value != null && data.current?.value != undefined){
+                console.log("Data current")
+                console.log(data.current)
+                val = (typeof data.current.value === "number") ? Number(data.current.value) : data.current.value;
+            }
+            else if(event?.target?.value != null){
+                console.log("Target Value")
 
-        return (<WrappedComponent {...eventProp} {...props}/>);
+                val = (typeof event.target.value === "number") ? Number(event.target.value) : event.target.value;
+            }
+            else{
+                val = value;
+            }
+            sendRequest(val);
+        }
+
+        const onSelectHandler = (eventKey, event) => {
+            console.log(event);
+            console.log(eventKey);
+            sendRequest(eventKey);
+        }
+
+        const sendRequest = useCallback((val) => {
+            const sendVal = {[valueName]: val};
+            endpoint.put(sendVal, path)
+                .then((response) => { // some sort of refresh of the endpoints data dict
+                    endpoint.mergeData(response, path)
+                }) 
+                .catch((err) => {
+                    setError(err);
+                });
+        }, [endpoint]);
+
+        useMemo(() => {
+            switch(event_type){
+                case "select":
+                    setEventProp({onSelect: (eventKey, event) => onSelectHandler(eventKey, event)});
+                break;
+                case "click":
+                    setEventProp({onClick: event => onClickHandler(event)});
+                break;
+                case "change":
+                default:
+                    setEventProp({onChange: event => onChangeHandler(event)});
+            }
+        }, [event_type]);
+
+        return (<WrappedComponent {...eventProp} {...leftover_props} ref={data} defaultValue={defaultValue}/>);
 
 
     };

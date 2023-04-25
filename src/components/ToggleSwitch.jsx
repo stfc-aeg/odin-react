@@ -6,107 +6,38 @@ import React, {useEffect, useState} from 'react';
 // import './style.css';
 import classNames from "classnames";
 
-const BootstrapSwitchButton = ({
-	checked: defaultChecked,
-	onChange,
-	disabled,
-	onlabel,
-	offlabel,
-	onstyle,
-	offstyle,
-	size,
-	className,
-	width,
-	height,
-    label
-}) => {
-	const [checked, setChecked] = useState(defaultChecked);
+import Switch from "react-switch";
+
+
+const ToggleSwitch = (props) => {
+
+    const {checked, value, id, label, onClick, disabled} = props;
+    const [ischecked, setIsChecked] = useState(checked);
 
 	useEffect(() => {
-		setChecked(defaultChecked);
-	}, [defaultChecked]);
+		setIsChecked(!!checked);
+	}, [checked])
 
-	const toggle = event => {
-		if (!disabled) {
-			const newState = !checked;
-
-			setChecked(newState);
-			onChange(newState);
-		}
-
-		event.stopPropagation();
-	};
-
-	let switchStyle = {};
-	if (width) {
-		switchStyle.width = width;
-	}else{
-        switchStyle.width = "50%";
-    }
-	if (height) {
-		switchStyle.height = height + 'px';
+	const toggle = (check, event) => {
+		setIsChecked(check);
+		// console.log(check)
+		// console.log(event)
+		event.target.value = check;
+		onClick(event)
 	}
+    return (
+        <InputGroup.Text>
+            <label id={id} style={{marginRight: "4px"}}>
+				{label}:
+			</label>
+            <Switch
+			checked={ischecked} onChange={toggle} 
+			onColor="#86d3ff" onHandleColor="#2693e6" handleDiameter={25}
+			boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)" activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+            height={20} width={48}
+			aria-labelledby={id} />
+        </InputGroup.Text>
+    )
+}
 
-	let labelStyle = {};
-	if (height) {
-		labelStyle.lineHeight = 'calc(' + height + 'px * 0.8)';
-	}
-
-	return (
-        <Row>
-        <InputGroup.Text style={{textAlign: "center"}}>{label}</InputGroup.Text>
-		<div
-			className={classNames(
-				'switch btn',
-				(checked ? 'on btn-' + onstyle : 'off btn-' + offstyle),
-				(size ? 'btn-' + size : ''),
-				className || ''
-			)}
-			style={switchStyle}
-			onClick={toggle}
-		>
-			<div className="switch-group">
-				<span
-					className={classNames(
-						'switch-on btn',
-						'btn-' + onstyle,
-						(size ? 'btn-' + size : '')
-					)}
-					style={labelStyle}
-				>
-					{onlabel}
-				</span>
-				<span
-					className={classNames(
-						'switch-off btn',
-						'btn-' + offstyle,
-						(size ? 'btn-' + size : '')
-					)}
-					style={labelStyle}
-				>
-					{offlabel}
-				</span>
-				<span
-					className={classNames(
-						'switch-handle btn btn-light',
-						(size ? 'btn-' + size : '')
-					)}
-				/>
-			</div>
-		</div>
-        </Row>
-	);
-};
-
-BootstrapSwitchButton.defaultProps = {
-	checked: false,
-	onChange: () => {},
-	disabled: false,
-	onlabel: 'On',
-	offlabel: 'Off',
-	onstyle: 'primary',
-	offstyle: 'secondary',
-	className: '',
-};
-
-export default BootstrapSwitchButton;
+export default ToggleSwitch;
