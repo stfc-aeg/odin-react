@@ -1,9 +1,9 @@
 name: publish_build
 run-name: Building and Publishing static Example site
-on:
-  push:
-    tags:
-      - '*'
+on: [push]
+  # push:
+  #   tags:
+  #     - '*'
 
 jobs:
   build:
