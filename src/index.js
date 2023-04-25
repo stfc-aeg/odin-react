@@ -18,7 +18,7 @@ export { default as LiveViewImage} from './components/LiveViewImage';
 export { Canvas } from './components/Canvas';
 export {useCanvas} from './components/Canvas';
 export { default as ScopeCanvas } from './components/ScopeCanvas';
-export { default as OdinInput} from './components/OdinInput';
+// export { default as OdinInput} from './components/OdinInput';
 
 
 export { default as useApiPut } from './services/useApiPut';
