@@ -11,7 +11,7 @@ function DropdownSelector(props) {
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
-                {children}
+                {props.children}
             </Dropdown.Menu>
 
         </Dropdown>

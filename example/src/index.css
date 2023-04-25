@@ -160,5 +160,7 @@ opacity: 0.5;
 .switch-on.btn-xs { padding-right: .8rem; }
 .switch-off.btn-xs { padding-left: .8rem; }
 
-
-
+.canvas {
+  width:100%;
+  background-color: #181818;
+}

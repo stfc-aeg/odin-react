@@ -16,15 +16,34 @@ class ReactAdapter(ApiAdapter):
     def __init__(self, **kwargs):
         super(ReactAdapter, self).__init__(**kwargs)
         self.client = ReactClient()
+        self.deep_dict_val = "secret deep value"
+        deep_dict = {"long":{"nested": {"dict":{"path": {"val": self.deep_dict_val}}}}}
+        self.data_val = 10
         self.param_tree = ParameterTree({
-            "string_val": (lambda: self.client.string_val, None),
+            "string_val": (lambda: self.client.string_val, self.client.set_string),
+            "num_val": (lambda: self.client.num_val, self.client.set_num_val),
             "rand_num": (lambda: self.client.random_num, None),
             "select_list": (lambda: self.client.selection_list, None),
             "selected":(lambda: self.client.selected, self.client.set_selection),
             "toggle": (lambda: self.client.toggle, self.client.set_toggle),
             "trigger": (None, self.client.trigger_event),
+            "deep": deep_dict,
+            "data": {
+                "set_data": (lambda: self.data_val, self.set_data_val),
+                "dict": (self.get_data_dict, None)
+            }
             # "image": (lambda: self.client.rendered_image, None)
         })
+
+    def get_data_dict(self):
+        return {
+            "half": self.data_val / 2,
+            "is_even": not (self.data_val % 2)
+        }
+    
+    def set_data_val(self, val):
+        self.data_val = val
+
 
     @response_types('application/json', "image/*", default='application/json')
     def get(self, path, request):
@@ -67,6 +86,7 @@ class ReactClient:
     def __init__(self):
         pass
         self.string_val = "String Value Test"
+        self.num_val = 10
         self.random_num = random.randint(0, 100)
 
         self.loop = PeriodicCallback(self.looping_update, 500)
@@ -88,6 +108,12 @@ class ReactClient:
         self.img_data = np.random.randint(255, size=(255, 255))
 
         self.rendered_image = self.render_image(self.img_data)
+
+    def set_string(self, val):
+        self.string_val = val
+
+    def set_num_val(self, val):
+        self.num_val = val
 
     def set_selection(self, val):
         if val in self.selection_list:

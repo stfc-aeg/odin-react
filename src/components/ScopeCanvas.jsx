@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, Fragment } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 function ScopeCanvas(props) {
 
@@ -51,6 +51,7 @@ function ScopeCanvas(props) {
 
         changeScopeData(data);
         const canvas = dataCanvasRef.current
+        // console.log(canvas)
         const context = canvas.getContext("2d")
         canvas.style.width = "100%";
         canvas.style.height = "100%";
@@ -78,6 +79,44 @@ function ScopeCanvas(props) {
         changeDatasetLabels(datasetLabels);
 
     }, [data])
+
+    const doDrawData = (ctx, data) => {
+        // console.log("data")
+        let canvas = ctx.canvas
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = backColor;
+        // ctx.fillRect(graphX[0], graphY[0], graphX[1], graphY[1]);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = lineThickness
+        ctx.lineJoin = "round";
+
+        data.forEach((element, i) => {
+            ctx.strokeStyle = dataColor[i];
+            ctx.lineWidth = lineThickness
+            ctx.beginPath();
+            
+            element.x.forEach((xValue, j) => {
+                let x = map(xValue, minX, maxX, graphX[0], graphX[1])
+                let y = map(element.y[j], minY, maxY+1, graphY[1], graphY[0])
+                ctx.lineTo(x, y)
+            })
+            ctx.stroke();
+
+            
+            if(drawPoints){
+                ctx.fillStyle = dataColor[i];
+                element.x.forEach((xValue, j) => {
+                    ctx.beginPath();
+                    let x = map(xValue, minX, maxX, graphX[0], graphX[1])
+                    let y = map(element.y[j], minY, maxY+1, graphY[1], graphY[0])
+                    ctx.arc(x, y, (lineThickness/2)+2, 0, 2*Math.PI)
+                    ctx.fill()
+
+                })
+            }
+        });
+
+    }
 
     useEffect(() => {
         // effect that draws the datasets when data changes
@@ -201,43 +240,7 @@ function ScopeCanvas(props) {
         ctx.stroke()
     }
 
-    const doDrawData = (ctx, data) => {
-        // console.log(data)
-        let canvas = ctx.canvas
-        // ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = backColor;
-        // ctx.fillRect(graphX[0], graphY[0], graphX[1], graphY[1]);
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = lineThickness
-        ctx.lineJoin = "round";
 
-        data.forEach((element, i) => {
-            ctx.strokeStyle = dataColor[i];
-            ctx.lineWidth = lineThickness
-            ctx.beginPath();
-            
-            element.x.forEach((xValue, j) => {
-                let x = map(xValue, minX, maxX, graphX[0], graphX[1])
-                let y = map(element.y[j], minY, maxY+1, graphY[1], graphY[0])
-                ctx.lineTo(x, y)
-            })
-            ctx.stroke();
-
-            
-            if(drawPoints){
-                ctx.fillStyle = dataColor[i];
-                element.x.forEach((xValue, j) => {
-                    ctx.beginPath();
-                    let x = map(xValue, minX, maxX, graphX[0], graphX[1])
-                    let y = map(element.y[j], minY, maxY+1, graphY[1], graphY[0])
-                    ctx.arc(x, y, (lineThickness/2)+2, 0, 2*Math.PI)
-                    ctx.fill()
-
-                })
-            }
-        });
-
-    }
 
     function resizeCanvasToDisplaySize(canvas) {
         const {width, height} = canvas.getBoundingClientRect()
