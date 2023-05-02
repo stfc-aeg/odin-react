@@ -81,7 +81,11 @@ function WithEndpoint(WrappedComponent)
         const onSelectHandler = (eventKey, event) => {
             console.log(event);
             console.log(eventKey);
-            sendRequest(eventKey);
+            console.log(isNaN(eventKey));
+            let val = isNaN(eventKey) ? eventKey : Number(eventKey);
+
+
+            sendRequest(val);
         }
 
         const sendRequest = useCallback((val) => {
