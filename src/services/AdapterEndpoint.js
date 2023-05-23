@@ -9,7 +9,7 @@ export const useAdapterEndpoint = (
 
     const [data, setData] = useState({});
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState("idle");
 
     const dataRef = useRef()
     
@@ -38,7 +38,7 @@ export const useAdapterEndpoint = (
         console.log("GET: " + url);
         let result = null;
         try {
-            setLoading(true);
+            setLoading("getting");
             const response = await axios.get(url);
             result = response.data;
         }
@@ -46,7 +46,7 @@ export const useAdapterEndpoint = (
             handleError(err);
         }
         finally {
-            setLoading(false);
+            setLoading("idle");
         }
 
         return result;
@@ -57,7 +57,7 @@ export const useAdapterEndpoint = (
         console.log("PUT: " + url + " data: ", data);
         let result = null;
         try {
-            setLoading(true);
+            setLoading("putting");
             const response = await axios.put(url, data);
             result = response.data;
         }
@@ -65,7 +65,7 @@ export const useAdapterEndpoint = (
             handleError(err);
         }
         finally {
-            setLoading(false);
+            setLoading("idle");
         }
         console.log("RESPONSE: ", result)
         return result;

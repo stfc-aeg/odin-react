@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 import Container from 'react-bootstrap/Container';
 import { TitleCard, DropdownSelector, StatusBox } from 'odin-react';
@@ -24,6 +24,13 @@ function EndpointExamplePage(props) {
     const periodicEndpoint = useAdapterEndpoint("react", process.env.REACT_APP_ENDPOINT_URL, 1000);
 
     // console.log(staticEndpoint.data)
+
+    const [data, changeData] = useState(100);
+
+    const onChangeData = (event) => {
+        console.log(event);
+        changeData(+event.target.value);
+    }
 
     return (
         <Container>
@@ -55,7 +62,7 @@ function EndpointExamplePage(props) {
                                         buttonText={periodicEndpoint.data?.selected || "Unknown"}>
                                             {periodicEndpoint.data?.select_list ? periodicEndpoint.data.select_list.map(
                                                 (selection, index) => (
-                                                    <Dropdown.Item eventKey={selection} key={index}>{selection}</Dropdown.Item>
+                                                    <Dropdown.Item eventKey={index} key={index}>{selection}</Dropdown.Item>
                                                 )) : <></>
                                             }
                                         </EndpointDropdown>
@@ -113,7 +120,11 @@ function EndpointExamplePage(props) {
 
                                 <InputGroup>
                                     <InputGroup.Text>Enter Number:</InputGroup.Text>
-                                    <EndpointInput endpoint={staticEndpoint} event_type="change" type="number" fullpath="num_val"/>
+                                    <Form.Control type="number" onChange={onChangeData}/>
+                                    <EndpointButton endpoint={staticEndpoint} event_type="click" fullpath="num_val" value={data}>
+                                        Send Data
+                                    </EndpointButton>
+                                    {/* <EndpointInput endpoint={staticEndpoint} event_type="change" type="number" fullpath="num_val"/> */}
                                 </InputGroup>
                                 
                             </TitleCard>

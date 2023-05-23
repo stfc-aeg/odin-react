@@ -29,6 +29,12 @@ function WithEndpoint(WrappedComponent)
                 setDefaultValue(value);
             }
         }, []) // set to have no dependencies, so only runs when the component first mounts
+        
+        const disable = useMemo(() => {
+            //TODO: this is here so we can more smartly disable/enable inputs in the future
+            
+            return endpoint.loading === "putting"
+        }, [endpoint.loading])
 
         const {path, valueName} = useMemo(() => {
             let path = "";
@@ -111,9 +117,9 @@ function WithEndpoint(WrappedComponent)
                 default:
                     setEventProp({onChange: event => onChangeHandler(event)});
             }
-        }, [event_type]);
+        }, [event_type, value]);
 
-        return (<WrappedComponent {...eventProp} {...leftover_props} ref={data} defaultValue={defaultValue}/>);
+        return (<WrappedComponent {...eventProp} {...leftover_props} ref={data} defaultValue={defaultValue} disabled={disable}/>);
 
 
     };
