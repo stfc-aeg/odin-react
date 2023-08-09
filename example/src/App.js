@@ -22,12 +22,14 @@ import { Canvas } from 'odin-react';
 import {ScopeCanvas} from 'odin-react';
 
 import EndpointExamplePage from './EndpointExample';
+import WorkshopExamplePage from './WorkshopExample';
 
 const App = () => {
 
   return (
   <OdinApp title="Odin React Example"
-  navLinks={["With Endpoint Examples", "Page 2", "Page 3", "Attocube"]}>
+  navLinks={["Workshop", "With Endpoint Examples"]}>
+    <WorkshopExamplePage />
     <EndpointExamplePage />
 
   </OdinApp> 

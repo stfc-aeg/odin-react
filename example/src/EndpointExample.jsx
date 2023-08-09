@@ -97,8 +97,11 @@ function EndpointExamplePage(props) {
                                 <InputGroup.Text>Enter Value:</InputGroup.Text>
                                 <EndpointInput endpoint={periodicEndpoint} event_type="change" fullpath="data/set_data"/>
                                 </InputGroup>
-                                <StatusBox label="Half">{periodicEndpoint.data.data?.dict.half}</StatusBox>
-                                <StatusBox label="Is Even">{periodicEndpoint.data.data?.dict.is_even}</StatusBox>
+                                <StatusBox label="Half">{periodicEndpoint.data?.data?.dict.half}</StatusBox>
+                                <StatusBox label="Is Even">{periodicEndpoint.data?.data?.dict.is_even}</StatusBox> 
+                                <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="trigger" value={10} disabled={periodicEndpoint.data?.data?.dict.is_even}>
+                                    Disabled on Even
+                                </EndpointButton>
                             </TitleCard>
                         </Col>
                     </Row>

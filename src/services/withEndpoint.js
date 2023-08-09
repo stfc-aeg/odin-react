@@ -4,9 +4,10 @@ import React, { useEffect, useMemo, useState, useRef, useCallback } from "react"
 function WithEndpoint(WrappedComponent)
 {
     const withEndpointComponent = (props) => {
-        const {endpoint, fullpath, value, event_type, ...leftover_props} = props;
+        const {endpoint, fullpath, value, event_type, disabled, ...leftover_props} = props;
 
         const data = useRef(value);
+        const timer = useRef(null);
 
         const [error, setError] = useState(null);
         const [eventProp, setEventProp] = useState(null);
@@ -32,9 +33,12 @@ function WithEndpoint(WrappedComponent)
         
         const disable = useMemo(() => {
             //TODO: this is here so we can more smartly disable/enable inputs in the future
-            
-            return endpoint.loading === "putting"
-        }, [endpoint.loading])
+            if(disabled !== undefined){
+                return disabled
+            }else{
+                return endpoint.loading === "putting"
+            }
+        }, [endpoint.loading, disabled])
 
         const {path, valueName} = useMemo(() => {
             let path = "";
@@ -57,7 +61,7 @@ function WithEndpoint(WrappedComponent)
             }else{
                 val = isNaN(data.current.value) ? data.current.value : +data.current.value;
             }
-            sendRequest(val);
+            setTimer(val);
         }
 
         const onClickHandler = (event) => {
@@ -95,6 +99,7 @@ function WithEndpoint(WrappedComponent)
         }
 
         const sendRequest = useCallback((val) => {
+            clearInterval(timer.current);
             const sendVal = {[valueName]: val};
             endpoint.put(sendVal, path)
                 .then((response) => { // some sort of refresh of the endpoints data dict
@@ -103,6 +108,14 @@ function WithEndpoint(WrappedComponent)
                 .catch((err) => {
                     setError(err);
                 });
+        }, [endpoint]);
+
+        const setTimer = useCallback((val) => {
+            if(timer.current){
+                clearInterval(timer.current);
+            }
+            // send data after a delay of a second
+            timer.current = setInterval(() => {console.log("Timer Elapsed. Sending Data"); sendRequest(val)}, 1000);
         }, [endpoint]);
 
         useMemo(() => {
