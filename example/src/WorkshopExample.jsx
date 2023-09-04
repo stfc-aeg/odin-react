@@ -16,6 +16,12 @@ function WorkshopExamplePage(props){
                 </TitleCard>
             </Col>
             <Row>
+                <Col>
+                <TitleCard title="Test Title">
+                    Example Text. This can be plain text and/or additional JSX components.
+                </TitleCard>
+                </Col>
+                <Col></Col>
                 {/* Comments like this can be included within the JSX markup */}
             </Row>
             </Row>
