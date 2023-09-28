@@ -15,6 +15,7 @@ function OdinDoubleSlider({
     showTooltip=true,
     tooltipPosition="top",
     showTitle=true,
+    disabled=false,
     showMinMaxLabels=true})
 {
     const [low_val, changeLowVal] = useState(low);
@@ -64,10 +65,10 @@ function OdinDoubleSlider({
             {showTitle && <div style={{textAlign: "center"}}>{title}</div>}
             <OverlayTrigger placement={tooltipPosition} overlay={showTooltip ? (tooltip) : (<span></span>)}>
                 <div ref={divRef} class={styles.form_range_double_div} value={[low_val, high_val]}>
-                    <input type="range" id="left_slider" className={styles.form_range_double + ' ' + styles.left}
+                    <input disabled={disabled} type="range" id="left_slider" className={styles.form_range_double + ' ' + styles.left}
                         onMouseUp={onThumbChange} onChange={onSlideLeft}
                         min={min} max={max} step={steps} defaultValue={low} value={low_val} list='values'/>
-                    <input type="range" id="right_slider" class={styles.form_range_double + ' ' + styles.right}
+                    <input disabled={disabled} type="range" id="right_slider" class={styles.form_range_double + ' ' + styles.right}
                         onMouseUp={onThumbChange} onChange={onSlideRight}
                         min={min} max={max} step={steps} defaultValue={high} value={high_val} list='values'/>
                     {showMinMaxLabels && <datalist id='values' class={styles.form_range_double_datalist}>
