@@ -19,6 +19,7 @@ export { Canvas } from './components/Canvas';
 export {useCanvas} from './components/Canvas';
 // export { default as ScopeCanvas } from './components/ScopeCanvas';
 export { default as OdinGraph} from './components/OdinGraph';
+export { default as OdinDoubleSlider} from './components/OdinSlider';
 // export { default as OdinInput} from './components/OdinInput';
 
 

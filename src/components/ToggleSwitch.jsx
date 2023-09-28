@@ -1,10 +1,6 @@
-import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import Row from 'react-bootstrap/Row';
 
 import React, {useEffect, useState} from 'react';
-// import './style.css';
-import classNames from "classnames";
 
 import Switch from "react-switch";
 

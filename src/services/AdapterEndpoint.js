@@ -11,7 +11,7 @@ export const useAdapterEndpoint = (
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState("idle");
 
-    const dataRef = useRef()
+    const dataRef = useRef(data);
     
     const base_url = `${endpoint_url ? endpoint_url : ""}/api/${api_version}/${adapter}`;
     dataRef.current = data
@@ -36,7 +36,7 @@ export const useAdapterEndpoint = (
     const get = useCallback(async (path='') => {
         const url = `${base_url}/${path}`;
         console.log("GET: " + url);
-        let result = null;
+        let result = {};
         try {
             setLoading("getting");
             const response = await axios.get(url);

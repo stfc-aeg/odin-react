@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState, useRef, useCallback } from "react"
 function WithEndpoint(WrappedComponent)
 {
     const withEndpointComponent = (props) => {
-        const {endpoint, fullpath, value, event_type, disabled, ...leftover_props} = props;
+        const {endpoint, fullpath, value, event_type, disabled, delay=1000, ...leftover_props} = props;
 
         const data = useRef(value);
         const timer = useRef(null);
@@ -115,7 +115,7 @@ function WithEndpoint(WrappedComponent)
                 clearInterval(timer.current);
             }
             // send data after a delay of a second
-            timer.current = setInterval(() => {console.log("Timer Elapsed. Sending Data"); sendRequest(val)}, 1000);
+            timer.current = setInterval(() => {console.log("Timer Elapsed. Sending Data"); sendRequest(val)}, delay);
         }, [endpoint]);
 
         useMemo(() => {

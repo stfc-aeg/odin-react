@@ -19,6 +19,7 @@ class ReactAdapter(ApiAdapter):
         self.deep_dict_val = "secret deep value"
         deep_dict = {"long":{"nested": {"dict":{"path": {"val": self.deep_dict_val}}}}}
         self.data_val = 10
+        self.clip_data = [0, 100]
         self.param_tree = ParameterTree({
             "string_val": (lambda: self.client.string_val, self.client.set_string),
             "num_val": (lambda: self.client.num_val, self.client.set_num_val),
@@ -30,7 +31,8 @@ class ReactAdapter(ApiAdapter):
             "deep": deep_dict,
             "data": {
                 "set_data": (lambda: self.data_val, self.set_data_val),
-                "dict": (self.get_data_dict, None)
+                "dict": (self.get_data_dict, None),
+                "clip_data": (lambda: self.clip_data, self.set_clip_data)
             }
             # "image": (lambda: self.client.rendered_image, None)
         })
@@ -44,6 +46,8 @@ class ReactAdapter(ApiAdapter):
     def set_data_val(self, val):
         self.data_val = val
 
+    def set_clip_data(self, val):
+        self.clip_data = val
 
     @response_types('application/json', "image/*", default='application/json')
     def get(self, path, request):
