@@ -105,7 +105,6 @@ class ReactClient:
 
         self.loop.start()
 
-
     def looping_update(self):
         # logging.debug("Loop Called")
         self.random_num = random.randint(0, 100)

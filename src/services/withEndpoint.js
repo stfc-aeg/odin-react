@@ -4,10 +4,18 @@ import React, { useEffect, useMemo, useState, useRef, useCallback } from "react"
 function WithEndpoint(WrappedComponent)
 {
     const withEndpointComponent = (props) => {
-        const {endpoint, fullpath, value, event_type, disabled, delay=1000, ...leftover_props} = props;
+        const {endpoint, fullpath, value, event_type, disabled, delay=1000,
+               pre_method=null, pre_args=null, post_method=null, post_args=null,
+            ...leftover_props} = props;
 
         const data = useRef(value);
         const timer = useRef(null);
+
+        const pre_func = useRef(pre_method);
+        const post_func = useRef(post_method);
+
+        const pre_func_kwargs = useRef(pre_kwargs);
+        const post_func_kwargs = useRef(post_kwargs);
 
         const [error, setError] = useState(null);
         const [eventProp, setEventProp] = useState(null);
@@ -34,7 +42,7 @@ function WithEndpoint(WrappedComponent)
         const disable = useMemo(() => {
             //TODO: this is here so we can more smartly disable/enable inputs in the future
             if(disabled !== undefined){
-                return disabled
+                return ((disabled) || (endpoint.loading === "putting"))
             }else{
                 return endpoint.loading === "putting"
             }
@@ -100,11 +108,13 @@ function WithEndpoint(WrappedComponent)
 
         const sendRequest = useCallback((val) => {
             clearInterval(timer.current);
+            pre_func.current && pre_func.current(...pre_func_kwargs.current);
             const sendVal = {[valueName]: val};
             endpoint.put(sendVal, path)
-                .then((response) => { // some sort of refresh of the endpoints data dict
-                    endpoint.mergeData(response, path)
-                }) 
+                .then((response) => {
+                    endpoint.mergeData(response, path);
+                    post_func.current && post_func.current(...post_func_kwargs.current);
+                })
                 .catch((err) => {
                     setError(err);
                 });

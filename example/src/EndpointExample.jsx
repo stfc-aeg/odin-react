@@ -6,7 +6,6 @@ import { WithEndpoint, useAdapterEndpoint, ToggleSwitch } from 'odin-react';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Stack from 'react-bootstrap/Stack';
 import Form from 'react-bootstrap/Form';
 import Dropdown from 'react-bootstrap/Dropdown'
 import { InputGroup } from 'react-bootstrap';
@@ -36,6 +35,14 @@ function EndpointExamplePage(props) {
 
     const onSliderChange = (event) => {
         console.log(event);
+    }
+
+    const prePutMethod = (message) => {
+        console.log("Pre Message: %s", message);
+    }
+
+    const postPutMethod = () => {
+        console.log("Post Message Method Called");
     }
 
     return (
@@ -84,7 +91,8 @@ function EndpointExamplePage(props) {
                             <Row>
                                 <Col xs={5}>
                                     <TitleCard title="Button">
-                                        <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="trigger" value={42}>Trigger</EndpointButton>
+                                        <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="trigger" value={42} 
+                                        pre_method={prePutMethod} pre_kwargs={["Test", 42]}>Trigger</EndpointButton>
                                     </TitleCard>
                                 </Col>
                                 <Col>
@@ -162,7 +170,8 @@ function EndpointExamplePage(props) {
                             <Row>
                                 <Col xs={5}>
                                     <TitleCard title="Button">
-                                        <EndpointButton endpoint={staticEndpoint} event_type="click" fullpath="trigger" value={42}>Trigger</EndpointButton>
+                                        <EndpointButton endpoint={staticEndpoint} event_type="click" fullpath="trigger" value={42}
+                                                        post_method={postPutMethod}>Trigger</EndpointButton>
                                     </TitleCard>
                                 </Col>
                                 <Col>
@@ -196,7 +205,7 @@ function EndpointExamplePage(props) {
                         <Row>
                         <Col>
                         <OdinDoubleSlider min={10} max={20} steps={0.5} onChange={onSliderChange}
-                            showMinMaxLabels={false} tooltipPosition="bottom"/>
+                            showMinMaxLabels={false} tooltipPosition="bottom" disabled/>
                         </Col>
                         <Col>
                         <EndpointDoubleSlider endpoint={staticEndpoint} event_type="change" delay={0} fullpath="data/clip_data" title="Clip Data" showTitle={false}/>
