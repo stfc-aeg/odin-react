@@ -92,7 +92,7 @@ function EndpointExamplePage(props) {
                                 <Col xs={5}>
                                     <TitleCard title="Button">
                                         <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="trigger" value={42} 
-                                        pre_method={prePutMethod} pre_kwargs={["Test", 42]}>Trigger</EndpointButton>
+                                        pre_method={prePutMethod} pre_args={["Test", 42]}>Trigger</EndpointButton>
                                     </TitleCard>
                                 </Col>
                                 <Col>

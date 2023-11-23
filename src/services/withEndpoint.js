@@ -11,11 +11,11 @@ function WithEndpoint(WrappedComponent)
         const data = useRef(value);
         const timer = useRef(null);
 
-        const pre_func = useRef(pre_method);
-        const post_func = useRef(post_method);
+        // const pre_func = useRef(pre_method);
+        // const post_func = useRef(post_method);
 
-        const pre_func_kwargs = useRef(pre_kwargs);
-        const post_func_kwargs = useRef(post_kwargs);
+        const pre_func_kwargs = useRef(pre_args);
+        const post_func_kwargs = useRef(post_args);
 
         const [error, setError] = useState(null);
         const [eventProp, setEventProp] = useState(null);
@@ -108,12 +108,31 @@ function WithEndpoint(WrappedComponent)
 
         const sendRequest = useCallback((val) => {
             clearInterval(timer.current);
-            pre_func.current && pre_func.current(...pre_func_kwargs.current);
+            if(pre_method)
+            {
+                if(pre_func_kwargs.current)
+                {
+                    pre_method(...pre_func_kwargs.current);
+                }else{
+                    pre_method();
+                }
+            }
+            // pre_method && pre_method(
+            //     (pre_func_kwargs.current) ? ...pre_func_kwargs.current : null);
             const sendVal = {[valueName]: val};
             endpoint.put(sendVal, path)
                 .then((response) => {
                     endpoint.mergeData(response, path);
-                    post_func.current && post_func.current(...post_func_kwargs.current);
+                    if(post_method)
+                    {
+                        if(post_func_kwargs.current)
+                        {
+                            post_method(...post_func_kwargs.current);
+                        }else{
+                            post_method();
+                        }
+                    }
+                    post_method && post_method(...post_func_kwargs.current);
                 })
                 .catch((err) => {
                     setError(err);
