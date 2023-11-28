@@ -19,6 +19,7 @@ const EndpointDoubleSlider = WithEndpoint(OdinDoubleSlider);
 
 
 function EndpointExamplePage(props) {
+    const {postPutMethod} = props;
     
     const staticEndpoint = useAdapterEndpoint("react", process.env.REACT_APP_ENDPOINT_URL);
     const periodicEndpoint = useAdapterEndpoint("react", process.env.REACT_APP_ENDPOINT_URL, 1000);
@@ -39,10 +40,6 @@ function EndpointExamplePage(props) {
 
     const prePutMethod = (message) => {
         console.log("Pre Message: %s", message);
-    }
-
-    const postPutMethod = () => {
-        console.log("Post Message Method Called");
     }
 
     return (

@@ -132,7 +132,6 @@ function WithEndpoint(WrappedComponent)
                             post_method();
                         }
                     }
-                    post_method && post_method(...post_func_kwargs.current);
                 })
                 .catch((err) => {
                     setError(err);
