@@ -130,6 +130,10 @@ function EndpointExamplePage(props) {
                                     <InputGroup.Text>Enter Text:</InputGroup.Text>
                                     <EndpointInput endpoint={staticEndpoint} event_type="change" fullpath="string_val"/>
                                 </InputGroup>
+                                <InputGroup>
+                                    <InputGroup.Text>Enter Text:</InputGroup.Text>
+                                    <EndpointInput endpoint={staticEndpoint} event_type="change" fullpath="string_val"/>
+                                </InputGroup>
                                 <StatusBox label="API Text Value">{staticEndpoint.data?.string_val || "Disconnected"}</StatusBox>
 
                                 <InputGroup>
@@ -183,6 +187,10 @@ function EndpointExamplePage(props) {
                         </Col>
                         <Col>
                             <TitleCard title="Wider Param Tree Effects">
+                                <InputGroup>
+                                <InputGroup.Text>Enter Value:</InputGroup.Text>
+                                <EndpointInput endpoint={staticEndpoint} event_type="change" fullpath="data/set_data" />
+                                </InputGroup>
                                 <InputGroup>
                                 <InputGroup.Text>Enter Value:</InputGroup.Text>
                                 <EndpointInput endpoint={staticEndpoint} event_type="change" fullpath="data/set_data" />

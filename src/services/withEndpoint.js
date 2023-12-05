@@ -8,11 +8,8 @@ function WithEndpoint(WrappedComponent)
                pre_method=null, pre_args=null, post_method=null, post_args=null,
             ...leftover_props} = props;
 
-        const data = useRef(value);
+        const component = useRef(value);
         const timer = useRef(null);
-
-        // const pre_func = useRef(pre_method);
-        // const post_func = useRef(post_method);
 
         const pre_func_kwargs = useRef(pre_args);
         const post_func_kwargs = useRef(post_args);
@@ -20,25 +17,47 @@ function WithEndpoint(WrappedComponent)
         const [error, setError] = useState(null);
         const [eventProp, setEventProp] = useState(null);
 
-        const [defaultValue, setDefaultValue] = useState(value);
+        const [componentValue, setComponentValue] = useState(value ?? '');
+
+
+        const endpointValue = useMemo(() => {
+            let val = endpoint.data;
+            let splitPath = fullpath.split("/");
+            try {
+                splitPath.forEach((path_part) => {
+                    if(path_part)
+                    {
+                        val = val[path_part];
+                    }
+                })
+                return val;
+            }
+            catch(err) {
+                return "";
+            }
+        }) //the lack of dependancy array here means this will run every render. 
+           //Might cause some performance issues in GUIs with lots of inputs? Unsure.
 
         useEffect(() => {
             if(value == null){
                 endpoint.get(fullpath)
                 .then((response) => {
-                    // console.log(response)
-                    setDefaultValue(response[valueName]);
+                    setComponentValue(response[valueName]);
                 })
                 .catch((err) => {
                     setError(err)
                 })
             }
             else{
-                console.log("Setting Default Value");
-                setDefaultValue(value);
+                setComponentValue(value);
             }
         }, []) // set to have no dependencies, so only runs when the component first mounts
         
+        useEffect(() => {
+            console.log("Setting Component Value: %s", fullpath);
+            setComponentValue(endpointValue);
+        }, [endpointValue]);
+
         const disable = useMemo(() => {
             //TODO: this is here so we can more smartly disable/enable inputs in the future
             if(disabled !== undefined){
@@ -60,14 +79,16 @@ function WithEndpoint(WrappedComponent)
 
         const onChangeHandler = (event) => {
             console.log(event);
-            console.log(data.current);
+            console.log(component.current);
             let val = null;
             if(event?.target?.value != null){
                 
                 val = isNaN(event.target.value) ? event.target.value : +event.target.value;
+                setComponentValue(val);
 
             }else{
-                val = isNaN(data.current.value) ? data.current.value : +data.current.value;
+                val = isNaN(component.current.value) ? component.current.value : +component.current.value;
+                setComponentValue(val);
             }
             setTimer(val);
         }
@@ -75,15 +96,15 @@ function WithEndpoint(WrappedComponent)
         const onClickHandler = (event) => {
             console.log(event)
             let val = null;
-            if(data.current?.tagName?.toLowerCase() === "button")
+            if(component.current?.tagName?.toLowerCase() === "button")
             {
                 // special case for buttons
                 val = value;
             }
-            else if(data.current?.value != null && data.current?.value != undefined){
+            else if(component.current?.value != null && component.current?.value != undefined){
                 console.log("Data current")
-                console.log(data.current)
-                val = (typeof data.current.value === "number") ? Number(data.current.value) : data.current.value;
+                console.log(component.current)
+                val = (typeof component.current.value === "number") ? Number(component.current.value) : component.current.value;
             }
             else if(event?.target?.value != null){
                 console.log("Target Value")
@@ -160,7 +181,7 @@ function WithEndpoint(WrappedComponent)
             }
         }, [event_type, value]);
 
-        return (<WrappedComponent {...eventProp} {...leftover_props} ref={data} defaultValue={defaultValue} disabled={disable}/>);
+        return (<WrappedComponent {...eventProp} {...leftover_props} value={componentValue} ref={component} disabled={disable}/>);
 
 
     };
