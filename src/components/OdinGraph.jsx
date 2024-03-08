@@ -6,14 +6,15 @@ import Plot from 'react-plotly.js';
 function OdinGraph(props) {
 
 
-    const {title, prop_data, width=null, height=null, 
-           num_x=null, num_y=null, type='scatter', series_names=[]} = props;
+    const {title, prop_data, x_data=null, width=null, height=null, 
+           num_x=null, num_y=null, type='scatter', series_names=[],
+           colorscale="Portland", zoom_event_handler=null} = props;
     const [data, changeData] = useState([{}]);
     const [layout, changeLayout] = useState({});
 
 
     const get_array_dimenions = (data) => {
-        var x = data.length;
+        var x = (x_data) ? x_data.length : data.length;
         var y = (Array.isArray(data[0]) ? data[0].length : 1);
         // var z = (Array.isArray(data[0]) ? (Array.isArray(data[0][0]) ? data[0][0].length : 1) : 1);
 
@@ -33,8 +34,8 @@ function OdinGraph(props) {
                 // multiple datasets
                 for(var i = 0; i<data_dims.x; i++){
                     var dataset = {
-                        x: Array.from(prop_data[i], (v, k) => k),
-                        y: Array.from(prop_data[i], (v, k) => v),
+                        x: (x_data) ? x_data : Array.from(prop_data[i], (v, k) => k),
+                        y: prop_data[i],
                         type: "scatter",
                         name: series_names[i] || null
                     }
@@ -44,8 +45,8 @@ function OdinGraph(props) {
             else
             {
                 var dataset = {
-                    x: Array.from(prop_data, (v, k) => k),
-                    y: Array.from(prop_data, (v, k) => v),
+                    x: (x_data) ? x_data : Array.from(prop_data, (v, k) => k),
+                    y: prop_data,
                     type: "scatter"
                 }
                 data.push(dataset);
@@ -84,7 +85,8 @@ function OdinGraph(props) {
                     z: reshape_data,
                     type: type,
                     xaxis: "x",
-                    yaxis: "y"
+                    yaxis: "y",
+                    colorscale: colorscale
                 }
                 data.push(dataset);
             }
@@ -96,7 +98,7 @@ function OdinGraph(props) {
     }, [prop_data]);
 
     return (
-        <Plot data={data} layout={layout} debug={true}/>
+        <Plot data={data} layout={layout} debug={true} onRelayout={zoom_event_handler}/>
     )
 }
 

@@ -64,14 +64,14 @@ function OdinDoubleSlider({
         <div>
             {showTitle && <div style={{textAlign: "center"}}>{title}</div>}
             <OverlayTrigger placement={tooltipPosition} overlay={showTooltip ? (tooltip) : (<span></span>)}>
-                <div ref={divRef} class={styles.form_range_double_div} value={[low_val, high_val]}>
+                <div ref={divRef} className={styles.form_range_double_div} value={[low_val, high_val]}>
                     <input disabled={disabled} type="range" id="left_slider" className={styles.form_range_double + ' ' + styles.left}
                         onMouseUp={onThumbChange} onChange={onSlideLeft}
-                        min={min} max={max} step={steps} defaultValue={low} value={low_val} list='values'/>
-                    <input disabled={disabled} type="range" id="right_slider" class={styles.form_range_double + ' ' + styles.right}
+                        min={min} max={max} step={steps} value={low_val} list='values'/>
+                    <input disabled={disabled} type="range" id="right_slider" className={styles.form_range_double + ' ' + styles.right}
                         onMouseUp={onThumbChange} onChange={onSlideRight}
-                        min={min} max={max} step={steps} defaultValue={high} value={high_val} list='values'/>
-                    {showMinMaxLabels && <datalist id='values' class={styles.form_range_double_datalist}>
+                        min={min} max={max} step={steps} value={high_val} list='values'/>
+                    {showMinMaxLabels && <datalist id='values' className={styles.form_range_double_datalist}>
                         <option value={min} label={min}/>
                         <option value={max} label={max}/>
                     </datalist>
