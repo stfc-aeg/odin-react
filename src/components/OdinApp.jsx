@@ -16,7 +16,7 @@ import ErrorBoundary from './ErrorBoundary';
 */
 function OdinApp(props) {
 
-    const {title, navLinks} = props;
+    const {title, navLinks, icon_src='/odin.png'} = props;
     // const key = props.tabKey;
     // const setKey = props.setKey;
     
@@ -46,8 +46,7 @@ function OdinApp(props) {
             <NavBar bg='dark' variant='dark'>
                     <NavBar.Brand href='#'>
                         <img
-                        src='/odin.png'
-                        width="30"
+                        src={icon_src}
                         height="30"
                         className="d-inline-block align-top"
                         alt="Odin Control Logo"
