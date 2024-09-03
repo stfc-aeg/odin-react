@@ -16,13 +16,15 @@ import ErrorBoundary from './ErrorBoundary';
 */
 function OdinApp(props) {
 
-    const {title, navLinks} = props;
+    const {title, navLinks, icon_src='odin.png', icon_hover_src='odin.png', icon_marginLeft="5px", icon_marginRight="10px"} = props;
     // const key = props.tabKey;
     // const setKey = props.setKey;
     
 
     // const navList = navLinks;
     const [key, setKey] = useState(navLinks[0]);
+    const [iconHover, changeIconHover] = useState(false);
+
     const createNavList = navLinks.map((nav) =>
         <Nav.Item key={nav}>
             <Nav.Link key={nav} eventKey={nav}>{nav}</Nav.Link>
@@ -35,6 +37,9 @@ function OdinApp(props) {
         setKey(selectedKey);
     }
 
+    const handleHoverOn = () => changeIconHover(true);
+    const handleHoverOff = () => changeIconHover(false);
+
     const childList = React.Children.map(props.children, (child, index) =>
         <Tab.Pane eventKey={navLinks[index]} key={index}>
             {child}
@@ -46,11 +51,13 @@ function OdinApp(props) {
             <NavBar bg='dark' variant='dark'>
                     <NavBar.Brand href='#'>
                         <img
-                        src='/odin.png'
-                        width="30"
+                        src={iconHover ? icon_hover_src : icon_src}
                         height="30"
+                        style={{marginLeft: icon_marginLeft, marginRight: icon_marginRight}}
                         className="d-inline-block align-top"
                         alt="Odin Control Logo"
+                        onMouseEnter={handleHoverOn}
+                        onMouseLeave={handleHoverOff}
                         />
                         {title}
                     </NavBar.Brand>

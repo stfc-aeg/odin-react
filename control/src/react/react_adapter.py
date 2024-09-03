@@ -1,6 +1,6 @@
 import random
 from odin.adapters.adapter import (ApiAdapter, ApiAdapterRequest, ApiAdapterResponse,
-                                    request_types, response_types)
+                                    request_types, response_types, wants_metadata)
 from odin.adapters.parameter_tree import ParameterTree, ParameterTreeError
 from odin.util import decode_request_body
 from tornado.ioloop import PeriodicCallback
@@ -22,7 +22,11 @@ class ReactAdapter(ApiAdapter):
         self.clip_data = [0, 100]
         self.param_tree = ParameterTree({
             "string_val": (lambda: self.client.string_val, self.client.set_string),
-            "num_val": (lambda: self.client.num_val, self.client.set_num_val),
+            "num_val": (lambda: self.client.num_val, self.client.set_num_val,
+                        { # metadata
+                            "min": 15,
+                            "max": 76
+                        }),
             "rand_num": (lambda: self.client.random_num, None),
             "select_list": (lambda: self.client.selection_list, None),
             "selected":(lambda: self.client.selected, self.client.set_selection),
@@ -32,8 +36,8 @@ class ReactAdapter(ApiAdapter):
             "data": {
                 "set_data": (lambda: self.data_val, self.set_data_val),
                 "dict": (self.get_data_dict, None),
-                "clip_data": (lambda: self.clip_data, self.set_clip_data)
-            }
+                "clip_data": (lambda: self.clip_data, self.set_clip_data,)
+                }
             # "image": (lambda: self.client.rendered_image, None)
         })
 
@@ -51,13 +55,16 @@ class ReactAdapter(ApiAdapter):
 
     @response_types('application/json', "image/*", default='application/json')
     def get(self, path, request):
+        metadata = wants_metadata(request)
+        if metadata:
+            logging.debug("METADATA WANTED")
         try:
             if path == "image":
                 response = self.client.rendered_image
                 content_type = 'image/png'
                 status = 200
             else:
-                response = self.param_tree.get(path)
+                response = self.param_tree.get(path, metadata)
                 content_type = 'application/json'
                 status = 200
         except ParameterTreeError as param_error:
@@ -124,9 +131,6 @@ class ReactClient:
 
     def set_toggle(self, val):
         self.toggle = val
-
-    def set_string(self, val):
-        self.string_val = val
 
     def trigger_event(self, val):
         logging.info("Event Triggered by API with value: %s", val)

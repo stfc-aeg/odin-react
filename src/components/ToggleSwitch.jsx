@@ -27,7 +27,7 @@ const ToggleSwitch = (props) => {
 				{label}:
 			</label>
             <Switch
-			checked={ischecked} onChange={toggle} 
+			checked={ischecked} onChange={toggle} disabled={disabled}
 			onColor="#86d3ff" onHandleColor="#2693e6" handleDiameter={25}
 			boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)" activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
             height={20} width={48}
