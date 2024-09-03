@@ -33,13 +33,22 @@ export const useAdapterEndpoint = (
         setError(new Error(errorMsg));
     }, [base_url, setError]);
 
-    const get = useCallback(async (path='') => {
+    const get = useCallback(async (path='', get_metadata=false) => {
         const url = `${base_url}/${path}`;
         console.log("GET: " + url);
         let result = {};
+        let response = {};
         try {
             setLoading("getting");
-            const response = await axios.get(url);
+            if(get_metadata) {
+                response = await axios.get(url, {
+                    headers: {
+                        "Accept": "application/json;metadata=true"
+                    }
+                })
+            }else {
+                response = await axios.get(url);
+            }
             result = response.data;
         }
         catch (err) {

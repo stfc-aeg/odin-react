@@ -12,11 +12,9 @@
   "dependencies": {
     "odin-react": "file:..",
     "react": "^18.2.0",
+    "react-bootstrap-icons": "^1.9.1",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "react-bootstrap-icons": "^1.9.1"
-  },
-  "devDependencies": {
+    "react-scripts": "5.0.1"
   },
   "eslintConfig": {
     "extends": "react-app"
