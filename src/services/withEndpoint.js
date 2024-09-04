@@ -103,14 +103,15 @@ function WithEndpoint(WrappedComponent)
         const validate = (value) => {
             let isValid = true;
             console.log(metadata.current);
-
-            if("min" in metadata.current && metadata.current.min > value){
-                console.log("Value below min:", value);
-                isValid = false;
-            }
-            if("max" in metadata.current && metadata.current.max < value){
-                console.log("Value Higher than Max:", value);
-                isValid = false;
+            if(metadata.current){
+                if("min" in metadata.current && metadata.current.min > value){
+                    console.log("Value below min:", value);
+                    isValid = false;
+                }
+                if("max" in metadata.current && metadata.current.max < value){
+                    console.log("Value Higher than Max:", value);
+                    isValid = false;
+                }
             }
 
             return isValid;
