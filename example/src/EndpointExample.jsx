@@ -62,6 +62,10 @@ function EndpointExamplePage(props) {
                                     <EndpointInput endpoint={periodicEndpoint} event_type="change" type="number" fullpath="num_val"/>
                                 </InputGroup>
                                 
+                                <InputGroup>
+                                    <InputGroup.Text>Enter Number, Enter Key Press to submit</InputGroup.Text>
+                                    <EndpointInput endpoint={periodicEndpoint} event_type="enter" type="number" fullpath="num_val"/>
+                                </InputGroup>
                             </TitleCard>
                         </Col>
                         <Col>

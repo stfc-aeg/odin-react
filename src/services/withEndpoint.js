@@ -167,6 +167,22 @@ function WithEndpoint(WrappedComponent)
             sendRequest(val);
         }
 
+        const onEnterHandler = (event) => {
+            if (event.key === "Enter") {
+                console.log(event);
+                let val = null;
+                if(event?.target?.value != null){
+                    val = isNaN(event.target.value) ? event.target.value : +event.target.value;
+                }
+                else
+                {
+                    val = isNaN(component.current.value) ? component.current.value : +component.current.value;
+                }
+
+                sendRequest(val);
+            }
+        }
+
         const sendRequest = useCallback((val) => {
             clearInterval(timer.current);
             if(!validate(val)){
@@ -218,6 +234,9 @@ function WithEndpoint(WrappedComponent)
                 break;
                 case "click":
                     setEventProp({onClick: event => onClickHandler(event)});
+                break;
+                case "enter":
+                    setEventProp({onKeyPress: event => onEnterHandler(event)});
                 break;
                 case "change":
                 default:
