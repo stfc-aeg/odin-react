@@ -53,7 +53,7 @@ function EndpointExamplePage(props) {
                                 
                                 <InputGroup>
                                     <InputGroup.Text>Enter Text:</InputGroup.Text>
-                                    <EndpointInput endpoint={periodicEndpoint} event_type="change" fullpath="string_val"/>
+                                    <EndpointInput endpoint={periodicEndpoint} event_type="change" fullpath="string_val" value_type="text"/>
                                 </InputGroup>
                                 <StatusBox label="API Text Value">{periodicEndpoint.data?.string_val || "Disconnected"}</StatusBox>
 
