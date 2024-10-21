@@ -53,7 +53,7 @@ function OdinGraph(props) {
                 
             }
             
-            changeLayout({yaxis: {autorange: true}, width:width || 1, height:height || 1, title:title});
+            changeLayout({yaxis: {autorange: true}, title:title, autosize: true});
 
         }
         else if(type == "heatmap" || type == "contour")
@@ -67,7 +67,8 @@ function OdinGraph(props) {
                     z: prop_data,
                     type: type,
                     xaxis: "x",
-                    yaxis: "y"
+                    yaxis: "y",
+                    colorscale: colorscale
 
                 }
                 data.push(dataset);
@@ -90,7 +91,7 @@ function OdinGraph(props) {
                 }
                 data.push(dataset);
             }
-            changeLayout({zaxis: {autorange: true}, width:1, height:1, title:title});
+            changeLayout({zaxis: {autorange: true}, title:title, autosize: true});
         }
 
         changeData(data);
@@ -98,7 +99,7 @@ function OdinGraph(props) {
     }, [prop_data]);
 
     return (
-        <Plot data={data} layout={layout} debug={true} onRelayout={zoom_event_handler}/>
+        <Plot data={data} layout={layout} debug={true} onRelayout={zoom_event_handler} config={{responsive: true}} style={{height: '100%', width:'100%'}} useResizeHandler={true}/>
     )
 }
 

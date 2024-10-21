@@ -27,3 +27,4 @@ export { default as useApiPut } from './services/useApiPut';
 export { default as usePeriodicFetch } from './services/usePeriodicFetch';
 export { default as WithEndpoint } from './services/withEndpoint';
 export { useAdapterEndpoint } from './services/AdapterEndpoint';
+export { default as useCustomCompareEffect} from './services/useCustomCompareEffect';

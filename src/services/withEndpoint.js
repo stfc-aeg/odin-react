@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState, useRef, useCallback } from "react"
 function WithEndpoint(WrappedComponent)
 {
     const withEndpointComponent = (props) => {
-        const {endpoint, fullpath, value, event_type, disabled, delay=1000,
+        const {endpoint, fullpath, value, value_type, event_type, disabled, delay=1000,
                pre_method=null, pre_args=null, post_method=null, post_args=null,
             ...leftover_props} = props;
 
@@ -123,11 +123,11 @@ function WithEndpoint(WrappedComponent)
             let val = null;
             if(event?.target?.value != null){
                 
-                val = isNaN(event.target.value) ? event.target.value : +event.target.value;
+                val = isNaN(event.target.value) || value_type == "text" ? event.target.value : +event.target.value;
                 setComponentValue(val);
 
             }else{
-                val = isNaN(component.current.value) ? component.current.value : +component.current.value;
+                val = isNaN(component.current.value) || value_type == "text" ? component.current.value : +component.current.value;
                 setComponentValue(val);
             }
             setTimer(val);
@@ -165,6 +165,22 @@ function WithEndpoint(WrappedComponent)
 
 
             sendRequest(val);
+        }
+
+        const onEnterHandler = (event) => {
+            if (event.key === "Enter") {
+                console.log(event);
+                let val = null;
+                if(event?.target?.value != null){
+                    val = isNaN(event.target.value) ? event.target.value : +event.target.value;
+                }
+                else
+                {
+                    val = isNaN(component.current.value) ? component.current.value : +component.current.value;
+                }
+
+                sendRequest(val);
+            }
         }
 
         const sendRequest = useCallback((val) => {
@@ -218,6 +234,9 @@ function WithEndpoint(WrappedComponent)
                 break;
                 case "click":
                     setEventProp({onClick: event => onClickHandler(event)});
+                break;
+                case "enter":
+                    setEventProp({onKeyPress: event => onEnterHandler(event)});
                 break;
                 case "change":
                 default:
