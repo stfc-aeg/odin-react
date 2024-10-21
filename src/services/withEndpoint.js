@@ -10,6 +10,7 @@ function WithEndpoint(WrappedComponent)
 
         const component = useRef(value);
         const timer = useRef(null);
+        const metadata = useRef(null);
 
         const pre_func_kwargs = useRef(pre_args);
         const post_func_kwargs = useRef(post_args);
@@ -40,9 +41,28 @@ function WithEndpoint(WrappedComponent)
 
         useEffect(() => {
             if(value == null){
-                endpoint.get(fullpath)
+                endpoint.get(fullpath, true)
                 .then((response) => {
-                    setComponentValue(response[valueName]);
+                    // check if there is metadata attached. some adapters dont implement it
+                    let data = response[valueName];
+                    if(typeof data === 'object'){  // are we ever going to recieve an object and it NOT be metadata?
+                        let tmp_metadata = {};
+                        tmp_metadata['writeable'] = data['writeable'];
+                        setComponentValue(data['value']);
+                        if("min" in data){
+                            tmp_metadata['min'] = data['min'];
+                        }
+                        if("max" in data){
+                            tmp_metadata['max'] = data['max'];
+                        }
+                        console.log(tmp_metadata);
+                        metadata.current = tmp_metadata;
+
+
+                    }else{
+                        console.log("Adapter Has not implemented Metadata");
+                        setComponentValue(response[valueName]);
+                    }
                 })
                 .catch((err) => {
                     setError(err)
@@ -63,9 +83,12 @@ function WithEndpoint(WrappedComponent)
             if(disabled !== undefined){
                 return ((disabled) || (endpoint.loading === "putting"))
             }else{
+                if(metadata.current){
+                    return endpoint.loading === "putting" || ! metadata.current.writeable
+                }
                 return endpoint.loading === "putting"
             }
-        }, [endpoint.loading, disabled])
+        }, [endpoint.loading, disabled, metadata.current])
 
         const {path, valueName} = useMemo(() => {
             let path = "";
@@ -76,6 +99,22 @@ function WithEndpoint(WrappedComponent)
             }
             return {path, valueName};
         }, [fullpath])
+
+        const validate = (value) => {
+            let isValid = true;
+            console.log(metadata.current);
+
+            if("min" in metadata.current && metadata.current.min > value){
+                console.log("Value below min:", value);
+                isValid = false;
+            }
+            if("max" in metadata.current && metadata.current.max < value){
+                console.log("Value Higher than Max:", value);
+                isValid = false;
+            }
+
+            return isValid;
+        }
 
         const onChangeHandler = (event) => {
             console.log(event);
@@ -129,6 +168,10 @@ function WithEndpoint(WrappedComponent)
 
         const sendRequest = useCallback((val) => {
             clearInterval(timer.current);
+            if(!validate(val)){
+                console.log("Invalid Value. Not Sending Request");
+                return;
+            }
             if(pre_method)
             {
                 if(pre_func_kwargs.current)
@@ -181,7 +224,7 @@ function WithEndpoint(WrappedComponent)
             }
         }, [event_type, value]);
 
-        return (<WrappedComponent {...eventProp} {...leftover_props} value={componentValue} ref={component} disabled={disable}/>);
+        return (<WrappedComponent {...eventProp} {...leftover_props} {...metadata.current} value={componentValue} ref={component} disabled={disable}/>);
 
 
     };

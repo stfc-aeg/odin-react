@@ -20,7 +20,9 @@ const App = () => {
 
   return (
   <OdinApp title="Odin React Example"
-  navLinks={["Workshop", "With Endpoint Examples", "Graph Examples"]}>
+  navLinks={["Workshop", "With Endpoint Examples", "Graph Examples"]}
+  icon_src="odin.png"
+  icon_hover_src="prodin.png">
     <WorkshopExamplePage />
     <EndpointExamplePage postPutMethod={postPutMethod}/>
     <GraphExamplePage/>
