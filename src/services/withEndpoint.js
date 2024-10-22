@@ -116,6 +116,20 @@ function WithEndpoint(WrappedComponent)
 
             return isValid;
         }
+        const managedChangeHandler = (event) => {
+            console.log(event);
+            console.log(component.current);
+            let val = null;
+            if(event?.target?.value != null){
+                
+                val = isNaN(event.target.value) || value_type == "text" ? event.target.value : +event.target.value;
+                setComponentValue(val);
+
+            }else{
+                val = isNaN(component.current.value) || value_type == "text" ? component.current.value : +component.current.value;
+                setComponentValue(val);
+            }
+        }
 
         const onChangeHandler = (event) => {
             console.log(event);
@@ -236,7 +250,7 @@ function WithEndpoint(WrappedComponent)
                     setEventProp({onClick: event => onClickHandler(event)});
                 break;
                 case "enter":
-                    setEventProp({onKeyPress: event => onEnterHandler(event)});
+                    setEventProp({onKeyPress: event => onEnterHandler(event), onChange: event => managedChangeHandler(event)});
                 break;
                 case "change":
                 default:
