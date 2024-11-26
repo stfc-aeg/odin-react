@@ -8,9 +8,9 @@ function OdinGraph(props) {
 
     const {title, prop_data, x_data=null, width=null, height=null, 
            num_x=null, num_y=null, type='scatter', series_names=[],
-           colorscale="Portland", zoom_event_handler=null} = props;
+           colorscale="Portland", zoom_event_handler=null, layout={}} = props;
     const [data, changeData] = useState([{}]);
-    const [layout, changeLayout] = useState({});
+    const [layout_state, changeLayout] = useState(layout);
 
 
     const get_array_dimenions = (data) => {
@@ -53,7 +53,19 @@ function OdinGraph(props) {
                 
             }
             
-            changeLayout({yaxis: {autorange: true}, title:title, autosize: true});
+            changeLayout(Object.assign(
+                // Default values
+                {
+                    yaxis: {
+                        autorange: true
+                    },
+                    title:title,
+                    autosize: true,
+                },
+
+                // Apply any overrides
+                layout
+            ));
 
         }
         else if(type == "heatmap" || type == "contour")
@@ -68,7 +80,7 @@ function OdinGraph(props) {
                     type: type,
                     xaxis: "x",
                     yaxis: "y",
-                    colorscale: colorscale
+                    coloraxis: 'coloraxis',
 
                 }
                 data.push(dataset);
@@ -87,11 +99,37 @@ function OdinGraph(props) {
                     type: type,
                     xaxis: "x",
                     yaxis: "y",
-                    colorscale: colorscale
+                    coloraxis: 'coloraxis',
                 }
                 data.push(dataset);
             }
-            changeLayout({zaxis: {autorange: true}, title:title, autosize: true});
+
+            changeLayout(Object.assign(
+                // Default values: pixels are 1:1 x:y, auto ranged colorscale
+                {
+                    zaxis: {
+                        autorange: true
+                    },
+                    title:title,
+                    autosize: true,
+                    xaxis: {
+                        constrain: 'domain',    // Where plot is reduced, scale axis domain to fit
+                    },
+                    yaxis: {
+                        scaleanchor: 'x',       // Aspect ratio 1:1
+                        scaleratio: 1,          // Aspect ratio 1:1
+                        constrain: 'domain',    // Where plot is reduced, scale axis domain to fit
+                    },
+                    coloraxis: {
+                        // Note: if you override coloraxis, these settings will be lost unless
+                        // you duplicate them.
+                        colorscale: colorscale, // This value overrides the colorscale in data
+                    },
+                },
+
+                // Apply any overrides
+                layout
+            ));
         }
 
         changeData(data);
@@ -99,7 +137,7 @@ function OdinGraph(props) {
     }, [prop_data]);
 
     return (
-        <Plot data={data} layout={layout} debug={true} onRelayout={zoom_event_handler} config={{responsive: true}} style={{height: '100%', width:'100%'}} useResizeHandler={true}/>
+        <Plot data={data} layout={layout_state} debug={true} onRelayout={zoom_event_handler} config={{responsive: true}} style={{height: '100%', width:'100%'}} useResizeHandler={true}/>
     )
 }
 
