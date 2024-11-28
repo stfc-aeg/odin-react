@@ -36,6 +36,18 @@ function GraphExamplePage(props) {
                 </TitleCard>
             </Col>
             </Row>
+            <Row>
+            <Col lg="7">
+                <TitleCard title="Heatmap Default">
+                    <OdinGraph title="Heatmap" type="heatmap" colorscale='Viridis' prop_data={data_1d_multiple} />
+                </TitleCard>
+            </Col>
+            <Col lg="4">
+                <TitleCard title="Heatmap Modified Layout">
+                    <OdinGraph title="Narrow colour scale" type="heatmap" prop_data={data_1d_multiple} layout={{'coloraxis':{'cmin':3, 'cmax':5, 'colorscale': 'Viridis'}, 'width':300}} />
+                </TitleCard>
+            </Col>
+            </Row>
 
             
 
