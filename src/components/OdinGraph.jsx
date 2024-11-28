@@ -134,7 +134,7 @@ function OdinGraph(props) {
 
         changeData(data);
 
-    }, [prop_data]);
+    }, [prop_data, layout]);
 
     return (
         <Plot data={data} layout={layout_state} debug={true} onRelayout={zoom_event_handler} config={{responsive: true}} style={{height: '100%', width:'100%'}} useResizeHandler={true}/>
