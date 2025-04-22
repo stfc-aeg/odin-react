@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import axios, { AxiosResponse } from "axios";
-import path from "path";
-import { LoadingState, ErrorState, AdapterEndpoint_t, paramNode, paramLeaf } from "../../types/types";
-import { isParamNode } from "../../types/types";
+import { LoadingState, ErrorState, AdapterEndpoint_t, paramNode, paramLeaf } from "../../types";
+import { isParamNode } from "../../types";
 
 const DEF_API_VERSION = '0.1';
 
@@ -38,7 +37,7 @@ export const useAdapterEndpoint = (
     }, [base_url, setError]);
 
     const get = useCallback(async (param_path='', get_metadata=false) => {
-        const url = path.join(base_url, param_path);
+        const url = [base_url, param_path].join("/") // assumes param_path does not start with a slash
         console.log("GET: " + url);
 
         let result: paramNode = {};
@@ -68,8 +67,8 @@ export const useAdapterEndpoint = (
     }, [base_url, handleError]);
 
     const put = useCallback(async (data: Object, param_path='') => {
-        const url = path.join(base_url, param_path);
-        console.log("PUT: " + url + ", data: " + data);
+        const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
+        console.log("PUT: " + url + ", data: ", data);
         
         let result: paramNode = {};
         let response: AxiosResponse;

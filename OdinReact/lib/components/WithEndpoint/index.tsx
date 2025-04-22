@@ -1,28 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState,  } from "react";
+import { ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState,  } from "react";
 
-import { AdapterEndpoint_t, isParamNode, paramLeaf, paramNode } from "../../types/types";
+import { AdapterEndpoint_t, isParamNode, paramLeaf, paramNode } from "../../types";
 
-enum event_enum {
-    "change",
-    "select",
-    "click",
-    "enter"
-}
-
-enum value_enum {
-    "string",
-    "text",  // keeping text as an option for backwards compatability
-    "number"
-}
+type event_t = "select" | "click" | "enter"
+type value_t = "string" | "text" | "number"  //text is kept for backwards compatability
 
 interface ComponentProps {
+    children?: any;  // children of the component could be basically anything? string, number, more components. best leave it as "any"
     endpoint: AdapterEndpoint_t;
     fullpath: string;
     value?: paramLeaf | null;
-    value_type?: value_enum;
-    event_type: event_enum;
+    value_type?: value_t;
+    event_type?: event_t;
     disabled?: boolean;
-    delay?: number;  // TODO: We may not want to use a delay when using the Change event type? Discuss with team
     pre_method?: Function;
     post_method?: Function;
     pre_args?:Array<any>;
@@ -31,7 +21,7 @@ interface ComponentProps {
 }
 
 interface metadata_t {
-    writeable: boolean;
+    readOnly: boolean;
     min?: number;
     max?: number;
 }
@@ -46,10 +36,10 @@ type selectEvent_t = {onSelect?: eventProp_t,
 
 type WrappedProps = {value: ComponentProps["value"], disabled: ComponentProps['disabled'], ref: React.RefObject<HTMLElement | null>}
 
-export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) => 
+export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNode) => 
 {
-    const WithEndpointComponent = (props: ComponentProps) => {
-        const {endpoint, fullpath, value, value_type, event_type, disabled, delay=1000,
+    const WithEndpointComponent = (props: ComponentProps): ReactElement => {
+        const {endpoint, fullpath, value, value_type, event_type, disabled,
                pre_method, pre_args, post_method, post_args, blockConsole,
                ...leftover_props} = props;
         
@@ -57,21 +47,12 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
         // const timer = useRef<NodeJS.Timeout>(undefined);
         // const metadata = useRef(null);
 
-        const [error, setError] = useState(null);  // mainly useful to see the error in the f12 inspector
+        // const [error, setError] = useState(null);  // mainly useful to see the error in the f12 inspector
         const [eventProp, setEventProp] = useState<selectEvent_t | null>(null);
 
         const [componentValue, setComponentValue] = useState<paramLeaf>(value ?? '');
         const [metadata, setMetadata] = useState<metadata_t | null>(null);
         
-        const outputToConsole = (message?: any, ...optionalParams: any[]) =>
-        {
-            if(blockConsole){
-                return
-            }else{
-                console.log(message, optionalParams);
-            }
-        }
-
         const getEndpointVal = () : paramNode | paramLeaf => {
             let val: paramNode | paramLeaf | paramLeaf[]= endpoint.data;
             let splitPath = fullpath.split("/");
@@ -86,7 +67,6 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
                 return "";
             }
         };
-
         const endpointValue = getEndpointVal();
 
         useEffect(() => {
@@ -102,7 +82,7 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
                     let data = response[valueName];
                     if(isParamNode(data)){ //is it possible to receive an object as the data response and it NOT be metadata?
                         let tmp_metadata: metadata_t = {
-                            writeable: data['writeable'] as boolean
+                            readOnly: ! (data['writeable'] as boolean)
                         };
                         tmp_metadata.min = data.min ? data.min as number : undefined;
                         tmp_metadata.max = data.max ? data.max as number : undefined;
@@ -110,15 +90,15 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
                         setMetadata(tmp_metadata);
                         setComponentValue(data.value as paramLeaf);
                     }else{
-                        outputToConsole("Adapter has not implemented Metadata");
+                        console.log("Adapter has not implemented Metadata");
                         setComponentValue(response[valueName] as paramLeaf);
                     }
                 })
             }
-        }, []) // no dependencies, intentionally so that is runs only at the start when the component mounts
+        }, []) // no dependencies, intentionally so that it runs only at the start when the component mounts
 
         useEffect(() => {
-            outputToConsole("Setting Component Value: %s", fullpath);
+            console.log("Setting Component Value: %s", fullpath);
             setComponentValue(endpointValue as paramLeaf);
         }, [endpointValue]);
 
@@ -127,21 +107,21 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
                 return (disabled || endpoint.loading === "putting")
             }
             if(metadata){
-                return endpoint.loading === "putting" || ! metadata.writeable
+                return endpoint.loading === "putting" || metadata.readOnly
             }
             return endpoint.loading === "putting";
 
-        }, [endpoint.loading, disabled, metadata?.writeable])
+        }, [endpoint.loading, disabled, metadata?.readOnly])
 
         const validate = (value: number) => {
             let isValid = true;
             if(metadata){
                 if(metadata.min && metadata.min > value){
-                    outputToConsole("Value %f below min %f", value, metadata.min);
+                    console.log("Value %f below min %f", value, metadata.min);
                     isValid = false;
                 }
                 if(metadata.max && metadata.max < value){
-                    outputToConsole("Value %f above max %f", value, metadata.max);
+                    console.log("Value %f above max %f", value, metadata.max);
                     isValid = false;
                 }
             }
@@ -195,31 +175,32 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
                     }
                 })
                 .catch((err) => {
-                    setError(err);
+                    // setError(err);
+                    console.log(err);
                 })
-        }, [endpoint]);
+        }, [endpoint.put]);
 
         const onSelectHandler = (event: React.SyntheticEvent, eventKey?: number | string) => {
-            outputToConsole(event);
+            console.log(event);
             
             sendRequest(eventKey!);  // the ! here tells typescript that we know eventKey is NOT undefined here
         }
 
-        const onClickHandler = (event: React.SyntheticEvent) => {
-            outputToConsole(event);
+        const onClickHandler = useCallback((event: React.SyntheticEvent) => {
+            console.log(event);
             let curComponent = component.current;
             let val: ComponentProps['value'] = null;
             if(curComponent?.tagName?.toLowerCase() === "button")
             {
-                outputToConsole("Button Special Case");
+                console.log("Button Special Case");
                 //special case for button components.
                 val = value;
             }
             else if(curComponent?.value !== null && curComponent?.value !== undefined){
-                outputToConsole("Current Component Value");
+                console.log("Current Component Value");
             }
             else if((event.target as HTMLInputElement | null)?.value){
-                outputToConsole("Target Value");
+                console.log("Target Value");
 
                 val = (event.target as HTMLInputElement).value;
             }
@@ -227,9 +208,9 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
                 val = value;
             }
             sendRequest(val);
-        }
+        }, [component, value]);
 
-        const onChangeHandler = (event: React.SyntheticEvent) => {
+        const onChangeHandler = useCallback((event: React.SyntheticEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
             let val: ComponentProps['value'] = null;
             let target = (event.target as HTMLInputElement | null);
@@ -238,7 +219,7 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
             if(target?.value){
                 //check if the value is a string, or COULD be a number (target.value is always a string
                 //but we might want to convert it)
-                if(value_type == value_enum.string || value_type == value_enum.text || isNaN(Number(target.value)))
+                if(value_type == "string" || value_type == "text" || isNaN(Number(target.value)))
                 {
                     val = target.value;
                 }
@@ -250,7 +231,7 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
             }else if(curComponent?.value){
                 //event target above is likely to be the current component, but on the off chance its not (or doesn't exist)
                 //we can also use the current component ref
-                if(value_type == value_enum.string || value_type == value_enum.text || isNaN(Number(curComponent!.value)))
+                if(value_type == "string" || value_type == "text" || isNaN(Number(curComponent!.value)))
                 {
                     val = curComponent.value;
                 }
@@ -260,36 +241,38 @@ export const WithEndpoint = (WrappedComponent : React.FC<WrappedProps>) =>
                 }
             }else{ 
                 //if, somehow, neither the current component has a value nor the event target, default the value
-                if(value_type == value_enum.string || value_type == value_enum.text){
-                    val = "none";
+                if(value_type == "string" || value_type == "text"){
+                    val = "";
                 }else{
                     val = 0;
                 }
             }
             setComponentValue(val);
-        }
+        }, [component, value_type]);
 
-        const onEnterHandler = (event: React.SyntheticEvent) => {
-            if ((event as React.KeyboardEvent).key === "Enter" && (event as React.KeyboardEvent).shiftKey) {
-                outputToConsole(event);
+        const onEnterHandler = useCallback((event: React.SyntheticEvent) => {
+            if ((event as React.KeyboardEvent).key === "Enter" && !(event as React.KeyboardEvent).shiftKey) {
+                console.log(event);
+                console.log("componentValue:", componentValue);
+                
                 sendRequest(componentValue);
             }
-        }
+        }, [componentValue, onChangeHandler]);
 
-        useMemo(() => {
+        useEffect(() => {
             switch(event_type){
-                case event_enum.select:
+                case "select":
                     setEventProp({onSelect: (event, eventKey) => onSelectHandler(event, eventKey)});
                     break;
-                case event_enum.click:
+                case "click":
                     setEventProp({onClick: (event) => onClickHandler(event)});
                     break;
-                case event_enum.enter:
+                case "enter":
                 default:
                     setEventProp({onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)});
 
             }
-        }, [event_type, value]);
+        }, [event_type, value, componentValue, component.current]);
 
         return (<WrappedComponent {...eventProp} {...leftover_props} {...metadata} value={componentValue} disabled={disable} ref={component}/>)
 
