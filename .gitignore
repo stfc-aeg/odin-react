@@ -9,6 +9,9 @@ build
 dist
 .rpt2_cache
 
+*.egg-info
+__pycache__
+
 # misc
 .DS_Store
 .env
