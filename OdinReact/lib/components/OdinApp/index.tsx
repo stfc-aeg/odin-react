@@ -46,19 +46,17 @@ interface routeAppProps {
 
 const RouteApp = ({routeLinks, children}: routeAppProps) => {
     
-    let childRoute: ReactElement[] | null | undefined;
+    let childRoute: ReactNode[] = [];
     if(routeLinks && children){
 
         childRoute = Children.map<ReactElement, ReactNode>(children, (child, index) => 
-                <Route path={routeLinks[index]} element={child} />
-        )
-        // the exclamation points tells typescript that we are certain childRoute will exist
-        // at this point, even though it believes it COULD be undefined
-        childRoute!.push(<Route path="/"element={Children.toArray(children)[0] as ReactElement}/>)
+                <Route path={routeLinks[index]} element={child} key={routeLinks[index]}/>
+        ) ?? [];
+
+        childRoute.push(<Route path="/"element={Children.toArray(children)[0]} key={"/"}/>)
 
         console.log(childRoute);
 
-        // route = useRoutes(childRoute!);
 
     }
     if(childRoute){
@@ -109,12 +107,6 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
             )
         }
     }, [navLinks]);
-
-    
-    // const onSelect = (selectedKey: string) => {
-    //     console.log(selectedKey);
-    //     setKey(selectedKey);
-    // }
 
 
     return (

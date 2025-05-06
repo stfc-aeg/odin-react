@@ -1,5 +1,5 @@
 // typedef for param tree leaf nodes
-export type paramLeaf = string | number | null | boolean;
+export type paramLeaf = string | number | boolean;
 
 //paramNode is the nested dict type designed to represent the various nodes of the Parameter Tree
 export type paramNode = {[key: string]: paramLeaf | paramLeaf[] | paramNode};

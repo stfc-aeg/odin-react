@@ -1,15 +1,15 @@
-import { ReactElement, ReactNode, useCallback, useEffect, useMemo, useRef, useState,  } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { AdapterEndpoint_t, isParamNode, paramLeaf, paramNode } from "../../types";
+import { AdapterEndpoint_t, isParamNode, paramLeaf } from "../../types";
+import './styles.module.css'
 
 type event_t = "select" | "click" | "enter"
 type value_t = "string" | "text" | "number"  //text is kept for backwards compatability
 
 interface ComponentProps {
-    children?: any;  // children of the component could be basically anything? string, number, more components. best leave it as "any"
     endpoint: AdapterEndpoint_t;
     fullpath: string;
-    value?: paramLeaf | null;
+    value?: paramLeaf;
     value_type?: value_t;
     event_type?: event_t;
     disabled?: boolean;
@@ -17,14 +17,16 @@ interface ComponentProps {
     post_method?: Function;
     pre_args?:Array<any>;
     post_args?:Array<any>;
-    blockConsole?: boolean;
 }
+
+
 
 interface metadata_t {
     readOnly: boolean;
     min?: number;
     max?: number;
 }
+
 
 type eventProp_t = (event: React.SyntheticEvent, eventKey?: number | string ) => void
 type selectEvent_t = {onSelect?: eventProp_t,
@@ -34,41 +36,42 @@ type selectEvent_t = {onSelect?: eventProp_t,
 
 };
 
-type WrappedProps = {value: ComponentProps["value"], disabled: ComponentProps['disabled'], ref: React.RefObject<HTMLElement | null>}
+type InjectedProps = metadata_t & selectEvent_t & {
+    style?: React.CSSProperties,
+    value?: paramLeaf,
+    disabled: boolean,
+    ref: React.RefObject<HTMLInputElement | null>
 
-export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNode) => 
+}
+
+export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
 {
-    const WithEndpointComponent = (props: ComponentProps): ReactElement => {
+    // type WrappedComponentInstance = InstanceType<typeof WrappedComponent>;
+    type WrapperComponentProps = React.PropsWithChildren<
+             Omit<P, keyof InjectedProps> & ComponentProps>;
+    // type WrapperComponentInstance = InstanceType<typeof WrappedComponent>;
+
+    // type leftoverPropsType = P;
+
+    const WithEndpointComponent = (props: WrapperComponentProps) => {
         const {endpoint, fullpath, value, value_type, event_type, disabled,
-               pre_method, pre_args, post_method, post_args, blockConsole,
-               ...leftover_props} = props;
+               pre_method, pre_args, post_method, post_args, ...leftoverProps} = props;
         
-        const component = useRef<HTMLInputElement>(null);
+        
+
+        const component = useRef<typeof WrappedComponent>(null);
         // const timer = useRef<NodeJS.Timeout>(undefined);
         // const metadata = useRef(null);
 
         // const [error, setError] = useState(null);  // mainly useful to see the error in the f12 inspector
         const [eventProp, setEventProp] = useState<selectEvent_t | null>(null);
 
-        const [componentValue, setComponentValue] = useState<paramLeaf>(value ?? '');
+        const [componentValue, setComponentValue] = useState<paramLeaf | undefined>(value ?? undefined);
+        const [endpointValue, setEndpointValue] = useState<paramLeaf>(value ?? "");
         const [metadata, setMetadata] = useState<metadata_t | null>(null);
-        
-        const getEndpointVal = () : paramNode | paramLeaf => {
-            let val: paramNode | paramLeaf | paramLeaf[]= endpoint.data;
-            let splitPath = fullpath.split("/");
-            try {
-                splitPath.forEach((path_part) => {
-                    if(path_part && isParamNode(val)){
-                        val = val[path_part];
-                    }
-                });
-                return val;
-            }catch(err){
-                return "";
-            }
-        };
-        const endpointValue = getEndpointVal();
 
+        const style: React.CSSProperties = endpointValue == componentValue ? {} : {backgroundColor: "#E4A11B"};
+        
         useEffect(() => {
             //this effect is designed to run only when the component is first mounted, to get the data
             //and metadata of the part of the param tree we are interacting with, apply the metadata
@@ -76,6 +79,7 @@ export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNo
             //value from the param tree
             if(value){
                 setComponentValue(value);
+                setEndpointValue(value);
             }else{
                 endpoint.get(fullpath, true)
                 .then(response => {
@@ -89,9 +93,11 @@ export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNo
 
                         setMetadata(tmp_metadata);
                         setComponentValue(data.value as paramLeaf);
+                        setEndpointValue(data.value as paramLeaf);
                     }else{
                         console.log("Adapter has not implemented Metadata");
                         setComponentValue(response[valueName] as paramLeaf);
+                        setEndpointValue(response[valueName] as paramLeaf);
                     }
                 })
             }
@@ -146,7 +152,6 @@ export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNo
         }, [fullpath]);
 
         const sendRequest = useCallback((val: ComponentProps['value']) => {
-            // clearInterval(timer.current);  //TODO: only required if using the delay change method, which might be removed
             if(typeof val === "number"){
                 validate(val);  // check against the metadata provided to see if val is out of range
             }
@@ -165,6 +170,7 @@ export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNo
             endpoint.put(sendVal, path)
                 .then((response) => {
                     endpoint.mergeData(response, path);
+                    setEndpointValue(val!);
                     if(post_method)
                     {
                         if(post_args){
@@ -188,15 +194,16 @@ export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNo
 
         const onClickHandler = useCallback((event: React.SyntheticEvent) => {
             console.log(event);
-            let curComponent = component.current;
-            let val: ComponentProps['value'] = null;
-            if(curComponent?.tagName?.toLowerCase() === "button")
+            let curComponent = component.current!;
+            let val: ComponentProps['value'] = "value" in curComponent ? curComponent.value as ComponentProps['value'] : undefined;
+            let tag = "tagName" in curComponent ?  curComponent.tagName : "";
+            if(tag === "button")
             {
                 console.log("Button Special Case");
                 //special case for button components.
                 val = value;
             }
-            else if(curComponent?.value !== null && curComponent?.value !== undefined){
+            else if(val !== null && val !== undefined){
                 console.log("Current Component Value");
             }
             else if((event.target as HTMLInputElement | null)?.value){
@@ -212,9 +219,10 @@ export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNo
 
         const onChangeHandler = useCallback((event: React.SyntheticEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
-            let val: ComponentProps['value'] = null;
+            
             let target = (event.target as HTMLInputElement | null);
-            let curComponent = component.current;
+            let curComponent = component.current!;
+            let val: ComponentProps['value'] = "value" in curComponent ? curComponent.value as ComponentProps['value'] : undefined;
 
             if(target?.value){
                 //check if the value is a string, or COULD be a number (target.value is always a string
@@ -228,16 +236,12 @@ export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNo
                     val = Number(target.value);
                 }
                 
-            }else if(curComponent?.value){
+            }else if(val){
                 //event target above is likely to be the current component, but on the off chance its not (or doesn't exist)
                 //we can also use the current component ref
-                if(value_type == "string" || value_type == "text" || isNaN(Number(curComponent!.value)))
+                if(!(value_type == "string" || value_type == "text" || isNaN(Number(val))))
                 {
-                    val = curComponent.value;
-                }
-                else
-                {
-                    val = Number(curComponent.value);
+                    val = Number(val);
                 }
             }else{ 
                 //if, somehow, neither the current component has a value nor the event target, default the value
@@ -274,9 +278,28 @@ export const WithEndpoint = (WrappedComponent : (props: WrappedProps) => ReactNo
             }
         }, [event_type, value, componentValue, component.current]);
 
-        return (<WrappedComponent {...eventProp} {...leftover_props} {...metadata} value={componentValue} disabled={disable} ref={component}/>)
+        return (<WrappedComponent
+                    {...leftoverProps as P} // hate this why doesnt it work for "as P"
+                    style={style}
+                    {...eventProp}
+                    readOnly={metadata?.readOnly}
+                    min={metadata?.min}
+                    max={metadata?.max}
+                    value={componentValue}
+                    disabled={disable}
+                    ref={component}
+                />)
 
     }
-
-    return WithEndpointComponent;
-}
+    // {...leftoverProps as P}
+    // style={style}
+    // {...eventProp}
+    // {...metadata}
+    // value={componentValue}
+    // disabled={disable}
+    // ref={component}
+    // return WithEndpointComponent;
+    return (
+        WithEndpointComponent
+    )
+};

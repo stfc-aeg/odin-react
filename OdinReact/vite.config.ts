@@ -13,9 +13,13 @@ export default defineConfig({
     libInjectCss(),
     dts({ include: ['lib'] })
   ],
+  assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg'],
+
   build: {
     copyPublicDir: false,
     minify: false,
+    manifest: true,
+    emitAssets: true,
     lib: {
       entry: resolve(__dirname, 'lib/main.ts'),
       formats: ['es']
