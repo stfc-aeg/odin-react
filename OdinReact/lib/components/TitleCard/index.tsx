@@ -1,11 +1,10 @@
-import { FC, ReactNode } from 'react';
-import Card from 'react-bootstrap/Card';
+import type { FC, PropsWithChildren, ReactNode } from 'react';
+import { Card }from 'react-bootstrap';
 
 import styles from './styles.module.css'
 
-interface TitleCardProps {
+interface TitleCardProps extends PropsWithChildren<{}>{
     title: ReactNode;
-    children: ReactNode;
 }
 
 export const TitleCard: FC<TitleCardProps> = ({title, children}: TitleCardProps) => {

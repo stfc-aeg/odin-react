@@ -5,13 +5,15 @@ import { OdinApp } from '../'
 
 import { MainPage } from './MainPage';
 import { EndpointPage } from './EndpointPage';
+import { GraphPage } from './GraphPage';
 
 function App() {
 
   return (
-    <OdinApp title='Test' navLinks={["Workshop", "Endpoint Testing"]}>
+    <OdinApp title='Test' navLinks={["Workshop", "Endpoint Testing", "Graph Testing"]}>
       <MainPage/>
       <EndpointPage />
+      <GraphPage />
     </OdinApp>
   )
 }

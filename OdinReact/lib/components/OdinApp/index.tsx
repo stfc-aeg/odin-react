@@ -3,14 +3,11 @@ import React, {Children, ReactElement, ReactNode, useMemo, useState} from 'react
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
-import Card from 'react-bootstrap/Card';
+import {Navbar, Nav, Card, Alert, Button, Stack} from 'react-bootstrap';
 // import Tab from 'react-bootstrap/Tab';
 
 import odinImg from './odin.png'
 import ProdinImg from './prodin.png'
-import { Alert, Button, Stack } from 'react-bootstrap';
 
 
 interface OdinAppProps {
@@ -55,7 +52,7 @@ const RouteApp = ({routeLinks, children}: routeAppProps) => {
 
         childRoute.push(<Route path="/"element={Children.toArray(children)[0]} key={"/"}/>)
 
-        console.log(childRoute);
+        // console.log(childRoute);
 
 
     }

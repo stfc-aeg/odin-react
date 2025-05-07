@@ -279,7 +279,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         }, [event_type, value, componentValue, component.current]);
 
         return (<WrappedComponent
-                    {...leftoverProps as P} // hate this why doesnt it work for "as P"
+                    {...leftoverProps as P}
                     style={style}
                     {...eventProp}
                     readOnly={metadata?.readOnly}

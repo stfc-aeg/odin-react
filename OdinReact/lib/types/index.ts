@@ -28,7 +28,8 @@ export interface AdapterEndpoint_t {
      */
     loading: LoadingState;
     /**
-     * Async http GET method. Request the provided value(s) from the parameter tree
+     * Async http GET method. Request the provided value(s) from the parameter tree.
+     * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
      * @param {string} [param_path=""] - the path of the data desired. defaults to an Empty String to get the entire param tree
      * @param {boolean} [get_metadata] - set to true to request Metadata. Defaults to false
      * @returns An Async promise, that when resolved will return the data within the HTTP response
@@ -36,6 +37,7 @@ export interface AdapterEndpoint_t {
     get: (param_path?: string, get_metadata?: boolean) => Promise<paramNode>;
     /**
      * Async http PUT method. Modify the data in the param tree at the provided path
+     * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
      * @param {Object<String, paramNode>} data - The data, with a key, that you wish to PUT to the Param Tree
      * @param {string} param_path - the path you want to PUT to. Defaults to an empty string for a top level PUT
      * @returns An Async promise, that when resolved will return the data within the HTTP response
