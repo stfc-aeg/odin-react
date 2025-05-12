@@ -1,24 +1,39 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import axios, { AxiosResponse } from "axios";
-import { LoadingState, ErrorState, AdapterEndpoint_t, paramNode, paramLeaf } from "../../types";
+import { useState, useEffect } from "react";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+import type { LoadingState, ErrorState, AdapterEndpoint_t, JSON, NodeJSON } from "../../types";
 import { isParamNode } from "../../types";
 
 const DEF_API_VERSION = '0.1';
 
-export const useAdapterEndpoint = (
+/**
+ * 
+ * @param adapter 
+ * @param endpoint_url 
+ * @param interval 
+ * @param api_version 
+ * @returns 
+ */
+export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     adapter: string, endpoint_url: string, interval: number | null = null, api_version=DEF_API_VERSION,
-): AdapterEndpoint_t => {
-    const [data, setData] = useState<paramNode>({});
+): AdapterEndpoint_t<T> {
+
+    const [data, setData] = useState<T>({} as T);
+    const [metadata, setMetadata] = useState<NodeJSON>({});
     const [error, setError] = useState<ErrorState>(null);
     const [loading, setLoading] = useState<LoadingState>("idle");
 
-    const dataRef = useRef(data);
-    dataRef.current = data;
 
     const base_url = `${endpoint_url ? endpoint_url : ""}/api/${api_version}/${adapter}`;
+    const axiosInstance: AxiosInstance = axios.create({
+        baseURL: base_url,
+        timeout: 1000,
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
 
     //** handles errors thrown by the http requests, setting it in the Error State*/
-    const handleError = useCallback((err: unknown) => {
+    const handleError = (err: unknown) => {
         let errorMsg: string = "";
         if(axios.isAxiosError(err)){
             if(err.response) {
@@ -34,26 +49,22 @@ export const useAdapterEndpoint = (
             errorMsg = `Unknown error sending request to ${base_url}`;
         }
         setError(new Error(errorMsg));
-    }, [base_url, setError]);
+        console.error(errorMsg);
+    };
 
-    const get = useCallback(async (param_path='', get_metadata=false) => {
-        const url = [base_url, param_path].join("/") // assumes param_path does not start with a slash
-        console.log("GET: " + url);
+    const get = async (param_path='', get_metadata=false) => {
+        // const url = [base_url, param_path].join("/") // assumes param_path does not start with a slash
+        console.debug("GET: ", base_url + "/" + param_path);
 
-        let result: paramNode = {};
-        let response: AxiosResponse;
+        let result: NodeJSON = {};
+        let response: AxiosResponse<typeof result>;
 
         try {
             setLoading("getting");
-            if(get_metadata) {
-                response = await axios.get(url, {
-                    headers: {
-                        "Accept": "application/json;metadata=true"
-                    }
-                })
-            }else {
-                response = await axios.get(url);
-            }
+            response = await axiosInstance.get(param_path, get_metadata ? 
+                           {headers: {"Accept": "application/json;metadata=true"}} :
+                            undefined
+                        )
             result = response.data;
         }
         catch (err) {
@@ -62,20 +73,21 @@ export const useAdapterEndpoint = (
         finally {
             setLoading("idle")
         }
-        console.log("Response: ", result);
-        return result;
-    }, [base_url, handleError]);
-
-    const put = useCallback(async (data: Object, param_path='') => {
-        const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
-        console.log("PUT: " + url + ", data: ", data);
+        console.debug("Response: ", result);
         
-        let result: paramNode = {};
-        let response: AxiosResponse;
+        return result;
+    };
+
+    const put = async (data: Object, param_path='') => {
+        // const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
+        console.debug("PUT: " + base_url + "/" + param_path + ", data: ", data);
+        
+        let result: NodeJSON = {};
+        let response: AxiosResponse<typeof result>;
 
         try {
             setLoading("putting");
-            response = await axios.put(url, data);
+            response = await axiosInstance.put(param_path, data);
             result = response.data;
         }
         catch (err) {
@@ -84,18 +96,27 @@ export const useAdapterEndpoint = (
         finally {
             setLoading("idle");
         }
-        console.log("Response: ", result);
+        console.debug("Response: ", result);
+        
         return result;
 
-    }, [base_url, handleError]);
+    };
 
     useEffect(() => {
+        //run when the endpoint is first created, to populate its data and metadata objects
+        refreshData();
+
+        //get metadata
+        get("", true)
+        .then(result => {
+            setMetadata(result);
+        })
+    }, []); // no dependencies, intentionally so that it runs only at the start when the component mounts
+
+    useEffect(() => { // interval effect. refreshes data if the interval is set
         let timer_id: NodeJS.Timeout | null = null;
         if(interval) {
             timer_id = setInterval(refreshData, interval);
-        }
-        else{
-            refreshData();
         }
 
         return () => {
@@ -103,36 +124,31 @@ export const useAdapterEndpoint = (
                 clearInterval(timer_id);
             }
         }
-    }, [base_url, interval, get]);
+    }, [interval]);
 
     const refreshData = () => {
         get("")
         .then(result => {
-            setData(result);
+            setData(result as T);
         });
     }
     
-    const mergeData = (newData: paramNode, param_path: String) => {
-        let splitPath = param_path.split("/");
-        var tmpData: paramNode | paramLeaf | paramLeaf[] = dataRef.current;
+    const mergeData = (newData: NodeJSON, param_path: String) => {
+        let splitPath = param_path.split("/").slice(0, -1);;
+        let tmpData = data;  // use tmpData as a copy of the Data that we can modify
+        let pointer: JSON = tmpData;  // pointer that can traverse down the nested data
 
         if(splitPath[0]) {
-            splitPath.forEach((part_path, index) => {
-                if(index < splitPath.length - 1){
-                    if(isParamNode(tmpData)){
-                        tmpData = tmpData[part_path as keyof typeof tmpData];
-                    }
+            splitPath.forEach((part_path) => {
+                if(isParamNode(pointer)){
+                    pointer = pointer[part_path];
                 }
-            })
+            });
         }
-        // let key: keyof Object;
-        for(let key in newData)
-        {
-            const value = newData[key];
-
-            tmpData[key] = value;
-        }
+        // becasue pointer was a copy of tmpData, changes made to it will also be made to tmpData
+        Object.assign(pointer, newData);
+        setData(tmpData);
     }
     
-    return { data: dataRef.current, error, loading, get, put, refreshData, mergeData}
+    return { data: data, metadata, error, loading, get, put, refreshData, mergeData}
 }

@@ -1,21 +1,38 @@
-// typedef for param tree leaf nodes
-export type paramLeaf = string | number | boolean;
+/**
+ * Typedef for a JSON style object.
+ */
+export type JSON = string | number | boolean | null | undefined | JSON[] | NodeJSON;
 
-//paramNode is the nested dict type designed to represent the various nodes of the Parameter Tree
-export type paramNode = {[key: string]: paramLeaf | paramLeaf[] | paramNode};
+export type NodeJSON = {[key:string]: JSON};
 
-//type guard function, required to check typing of custom ParamNode objects.
-export const isParamNode = (x: any): x is paramNode => typeof x === 'object'
+/**ParamTree is a type that behaves like the JSON response from an Endpoint. Extend this to create
+ * an interface declaring the known structure of your Paramter Tree response, and pass that
+ * to the useAdapterEndpoint hook to define your data's structure
+ */
+export type ParamTree = NodeJSON;
+
+/**
+ * type guard function, required to check typing of custom ParamNode objects.
+ * @param x a JSON object that is either a key/value pair(s) or a basic JSON value
+ * @returns boolean, true if x has key(s), false otherwise
+ */
+export const isParamNode = (x: JSON): x is NodeJSON => {
+    return x !== null && typeof x === 'object' && !Array.isArray(x)};
 
 export type ErrorState = null | Error;
 export type LoadingState = "getting" | "putting" | "idle";
 
-export interface AdapterEndpoint_t {
+export interface AdapterEndpoint_t<T = NodeJSON> {
     /**
      *  Recursive Nested dictionary structure representing the adapter Param Tree. Should be read only
      * from this interface
      */
-    data: paramNode;
+    data: Readonly<T>;
+
+    /**
+     * Dictionary structure containing the adapter Metadata, if its implimented by the adapter
+     */
+    metadata: Readonly<NodeJSON>;
     /**
      *  Any Errors that occur during http methods or otherwise will be accessible here
      */
@@ -34,15 +51,15 @@ export interface AdapterEndpoint_t {
      * @param {boolean} [get_metadata] - set to true to request Metadata. Defaults to false
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    get: (param_path?: string, get_metadata?: boolean) => Promise<paramNode>;
+    get: (param_path?: string, get_metadata?: boolean) => Promise<NodeJSON>;
     /**
      * Async http PUT method. Modify the data in the param tree at the provided path
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
-     * @param {Object<String, paramNode>} data - The data, with a key, that you wish to PUT to the Param Tree
+     * @param {NodeJSON} data - The data, with a key, that you wish to PUT to the Param Tree
      * @param {string} param_path - the path you want to PUT to. Defaults to an empty string for a top level PUT
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    put: (data: Object, param_path?: string) => Promise<paramNode>;
+    put: (data: NodeJSON, param_path?: string) => Promise<NodeJSON>;
     /**
      * A method to automatically perform a top level GET request and refresh the AdapterEndpoint's current view of the data
      * @returns 
@@ -51,10 +68,10 @@ export interface AdapterEndpoint_t {
     /**
      * A method to merge one chunk of (potentially nested) data into the AdapterEndpoint's current view of the data,
      * to update the data without having to GET from the entire adapter
-     * @param {paramNode} newData - The new data to be merged in
+     * @param {NodeJSON} newData - The new data to be merged in
      * @param {string} param_path - the location that data within the ParamTree to merge it
      * @returns 
      */
-    mergeData: (newData: paramNode, param_path: String) => void;
+    mergeData: (newData: NodeJSON, param_path: String) => void;
 
 }

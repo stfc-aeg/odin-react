@@ -1,15 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { AdapterEndpoint_t, isParamNode, paramLeaf } from "../../types";
+import { AdapterEndpoint_t, isParamNode, JSON, NodeJSON } from "../../types";
 import './styles.module.css'
 
 type event_t = "select" | "click" | "enter"
-type value_t = "string" | "text" | "number"  //text is kept for backwards compatability
+type value_t = "string" | "number"  // only types we care about if we're defining this
 
 interface ComponentProps {
     endpoint: AdapterEndpoint_t;
     fullpath: string;
-    value?: paramLeaf;
+    value?: Exclude<JSON, NodeJSON>;
     value_type?: value_t;
     event_type?: event_t;
     disabled?: boolean;
@@ -17,9 +17,8 @@ interface ComponentProps {
     post_method?: Function;
     pre_args?:Array<any>;
     post_args?:Array<any>;
+    dif_color?: CSSProperties["backgroundColor"];
 }
-
-
 
 interface metadata_t {
     readOnly: boolean;
@@ -27,9 +26,9 @@ interface metadata_t {
     max?: number;
 }
 
-
-type eventProp_t = (event: React.SyntheticEvent, eventKey?: number | string ) => void
-type selectEvent_t = {onSelect?: eventProp_t,
+type eventProp_t = (event: React.SyntheticEvent) => void
+//on select has to have its parameters swapped, because Bootstrap Dropdowns have the key first for some reason
+type selectEvent_t = {onSelect?: (eventKey: number | string, event: React.SyntheticEvent) => void,
                       onClick?: eventProp_t,
                       onKeyPress?: eventProp_t,
                       onChange?: eventProp_t
@@ -38,7 +37,7 @@ type selectEvent_t = {onSelect?: eventProp_t,
 
 type InjectedProps = metadata_t & selectEvent_t & {
     style?: React.CSSProperties,
-    value?: paramLeaf,
+    value?: JSON,
     disabled: boolean,
     ref: React.RefObject<HTMLInputElement | null>
 
@@ -46,16 +45,12 @@ type InjectedProps = metadata_t & selectEvent_t & {
 
 export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
 {
-    // type WrappedComponentInstance = InstanceType<typeof WrappedComponent>;
     type WrapperComponentProps = React.PropsWithChildren<
              Omit<P, keyof InjectedProps> & ComponentProps>;
-    // type WrapperComponentInstance = InstanceType<typeof WrappedComponent>;
-
-    // type leftoverPropsType = P;
 
     const WithEndpointComponent = (props: WrapperComponentProps) => {
         const {endpoint, fullpath, value, value_type, event_type, disabled,
-               pre_method, pre_args, post_method, post_args, ...leftoverProps} = props;
+               pre_method, pre_args, post_method, post_args, dif_color="var(--bs-highlight-bg)", ...leftoverProps} = props;
         
         
 
@@ -63,49 +58,72 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         // const timer = useRef<NodeJS.Timeout>(undefined);
         // const metadata = useRef(null);
 
-        // const [error, setError] = useState(null);  // mainly useful to see the error in the f12 inspector
-        const [eventProp, setEventProp] = useState<selectEvent_t | null>(null);
+        //initialised with an OnChange handler to avoid the 
+        // "You provided a `value` prop to a form field without an `onChange` handler" error, since
+        // we will be assigning event handlers after component initialisation
+        const [eventProp, setEventProp] = useState<selectEvent_t>({onChange: (event) => onChangeHandler(event)});
 
-        const [componentValue, setComponentValue] = useState<paramLeaf | undefined>(value ?? undefined);
-        const [endpointValue, setEndpointValue] = useState<paramLeaf>(value ?? "");
+        const [componentValue, setComponentValue] = useState<typeof value>(value ?? 0);
+        const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? "");
         const [metadata, setMetadata] = useState<metadata_t | null>(null);
 
-        const style: React.CSSProperties = endpointValue == componentValue ? {} : {backgroundColor: "#E4A11B"};
+        const [type, setType] = useState<value_t>(value_type || "string");
+
+        const style: CSSProperties = endpointValue == componentValue ? {} : {backgroundColor: dif_color};
         
+        
+
         useEffect(() => {
             //this effect is designed to run only when the component is first mounted, to get the data
             //and metadata of the part of the param tree we are interacting with, apply the metadata
             //validation to the component (writable, min, max) and sync the component value with the
             //value from the param tree
-            if(value){
-                setComponentValue(value);
-                setEndpointValue(value);
-            }else{
-                endpoint.get(fullpath, true)
-                .then(response => {
-                    let data = response[valueName];
-                    if(isParamNode(data)){ //is it possible to receive an object as the data response and it NOT be metadata?
-                        let tmp_metadata: metadata_t = {
-                            readOnly: ! (data['writeable'] as boolean)
-                        };
-                        tmp_metadata.min = data.min ? data.min as number : undefined;
-                        tmp_metadata.max = data.max ? data.max as number : undefined;
-
-                        setMetadata(tmp_metadata);
-                        setComponentValue(data.value as paramLeaf);
-                        setEndpointValue(data.value as paramLeaf);
-                    }else{
-                        console.log("Adapter has not implemented Metadata");
-                        setComponentValue(response[valueName] as paramLeaf);
-                        setEndpointValue(response[valueName] as paramLeaf);
-                    }
-                })
+            const isMetadata = () => {
+                for(var _ in endpoint.metadata) return true;
+                return false;
             }
-        }, []) // no dependencies, intentionally so that it runs only at the start when the component mounts
+
+            if((value == null) && isMetadata()){
+
+                let data: JSON = endpoint.metadata;
+                let splitPath = fullpath.split("/");
+                splitPath.forEach((path_part) => {
+                    if(isParamNode(data)){
+                        data = data[path_part];
+                    }
+                });
+                if(isParamNode(data) && "writeable" in data){ //metadata found
+                        let tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
+                    tmp_metadata.min = data.min ? data.min as number : undefined;
+                    tmp_metadata.max = data.max ? data.max as number : undefined;
+
+                    setMetadata(tmp_metadata);
+                    // setComponentValue(data.value as JSON);
+                    setEndpointValue(data.value as ComponentProps["value"]);
+
+                    if(!value_type){
+                        if(["int", "float", "complex"].includes(data.type as string)){
+                            setType("number");
+                        }else{
+                            setType("string");
+                        }
+                    }
+                }else{
+                    data = data as JSON;
+                    console.warn("Adapter has not implemented Metadata");
+                    setEndpointValue(data as ComponentProps["value"]);
+                    if(!value_type){
+                        if(typeof data === "number") setType("number"); else setType("string");
+                    }
+                    
+                }
+            }else if(!value_type){
+                    if(typeof value === "number") setType("number"); else setType("string");
+            }
+        }, [endpoint.metadata]);
 
         useEffect(() => {
-            console.log("Setting Component Value: %s", fullpath);
-            setComponentValue(endpointValue as paramLeaf);
+            setComponentValue(endpointValue);
         }, [endpointValue]);
 
         const disable = useMemo(() => {
@@ -123,11 +141,11 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             let isValid = true;
             if(metadata){
                 if(metadata.min && metadata.min > value){
-                    console.log("Value %f below min %f", value, metadata.min);
+                    console.debug(fullpath, "Value %f below min %f", value, metadata.min);
                     isValid = false;
                 }
                 if(metadata.max && metadata.max < value){
-                    console.log("Value %f above max %f", value, metadata.max);
+                    console.debug(fullpath, "Value %f above max %f", value, metadata.max);
                     isValid = false;
                 }
             }
@@ -153,7 +171,12 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const sendRequest = useCallback((val: ComponentProps['value']) => {
             if(typeof val === "number"){
-                validate(val);  // check against the metadata provided to see if val is out of range
+                // check against the metadata provided to see if val is out of range
+                if(!validate(val)){
+                    console.error("Invalid Value based on metadata. Not sending request");
+                    console.error("Value: ", val, "Metadata: ", metadata);
+                    return
+                };
             }
 
             if(pre_method)
@@ -182,32 +205,28 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 })
                 .catch((err) => {
                     // setError(err);
-                    console.log(err);
+                    console.error(err);
                 })
         }, [endpoint.put]);
 
-        const onSelectHandler = (event: React.SyntheticEvent, eventKey?: number | string) => {
-            console.log(event);
+        const onSelectHandler = (event: React.SyntheticEvent, eventKey: number | string) => {
+            console.debug(fullpath, "On Select Handler");
+            console.debug(fullpath, "event: ", event);
+            console.debug(fullpath, "EventKey: ", eventKey);
             
             sendRequest(eventKey!);  // the ! here tells typescript that we know eventKey is NOT undefined here
         }
 
         const onClickHandler = useCallback((event: React.SyntheticEvent) => {
-            console.log(event);
+            console.debug(fullpath, "On Click Handler");
+            console.debug(fullpath, event);
             let curComponent = component.current!;
             let val: ComponentProps['value'] = "value" in curComponent ? curComponent.value as ComponentProps['value'] : undefined;
-            let tag = "tagName" in curComponent ?  curComponent.tagName : "";
-            if(tag === "button")
-            {
-                console.log("Button Special Case");
-                //special case for button components.
-                val = value;
+            if(val != null){
+                console.debug(fullpath, "Current Component Value");
             }
-            else if(val !== null && val !== undefined){
-                console.log("Current Component Value");
-            }
-            else if((event.target as HTMLInputElement | null)?.value){
-                console.log("Target Value");
+            else if((event.target as HTMLInputElement | null)?.value != null){
+                console.debug(fullpath, "Target Value");
 
                 val = (event.target as HTMLInputElement).value;
             }
@@ -224,31 +243,32 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             let curComponent = component.current!;
             let val: ComponentProps['value'] = "value" in curComponent ? curComponent.value as ComponentProps['value'] : undefined;
 
-            if(target?.value){
+            if(target?.value != null){
                 //check if the value is a string, or COULD be a number (target.value is always a string
                 //but we might want to convert it)
-                if(value_type == "string" || value_type == "text" || isNaN(Number(target.value)))
+                if(type == "number")
                 {
-                    val = target.value;
+                    val = Number(target.value);
+                    
                 }
                 else
                 { 
-                    val = Number(target.value);
+                    val = target.value;
                 }
                 
-            }else if(val){
+            }else if(val != null){
                 //event target above is likely to be the current component, but on the off chance its not (or doesn't exist)
                 //we can also use the current component ref
-                if(!(value_type == "string" || value_type == "text" || isNaN(Number(val))))
+                if(type == "number")
                 {
                     val = Number(val);
                 }
             }else{ 
                 //if, somehow, neither the current component has a value nor the event target, default the value
-                if(value_type == "string" || value_type == "text"){
-                    val = "";
-                }else{
+                if(type == "number"){
                     val = 0;
+                }else{
+                    val = "";
                 }
             }
             setComponentValue(val);
@@ -256,8 +276,9 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const onEnterHandler = useCallback((event: React.SyntheticEvent) => {
             if ((event as React.KeyboardEvent).key === "Enter" && !(event as React.KeyboardEvent).shiftKey) {
-                console.log(event);
-                console.log("componentValue:", componentValue);
+                console.debug(fullpath, "onEnterHandler");
+                console.debug(fullpath, event);
+                console.debug(fullpath, "componentValue:", componentValue);
                 
                 sendRequest(componentValue);
             }
@@ -266,7 +287,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         useEffect(() => {
             switch(event_type){
                 case "select":
-                    setEventProp({onSelect: (event, eventKey) => onSelectHandler(event, eventKey)});
+                    setEventProp({onSelect: (eventKey, event) => onSelectHandler(event, eventKey)});
                     break;
                 case "click":
                     setEventProp({onClick: (event) => onClickHandler(event)});
@@ -291,14 +312,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 />)
 
     }
-    // {...leftoverProps as P}
-    // style={style}
-    // {...eventProp}
-    // {...metadata}
-    // value={componentValue}
-    // disabled={disable}
-    // ref={component}
-    // return WithEndpointComponent;
+
     return (
         WithEndpointComponent
     )
