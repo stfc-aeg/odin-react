@@ -1,7 +1,6 @@
 import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdapterEndpoint_t, isParamNode, JSON, NodeJSON } from "../../types";
-import './styles.module.css'
 
 type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number"  // only types we care about if we're defining this

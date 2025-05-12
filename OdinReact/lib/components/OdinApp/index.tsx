@@ -4,10 +4,13 @@ import { BrowserRouter, NavLink, Route, Routes } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
 import {Navbar, Nav, Card, Alert, Button, Stack} from 'react-bootstrap';
+import { MoonFill, LightbulbFill } from 'react-bootstrap-icons';
 // import Tab from 'react-bootstrap/Tab';
 
 import odinImg from './odin.png'
 import ProdinImg from './prodin.png'
+
+import styles from './styles.module.css'
 
 
 interface OdinAppProps {
@@ -79,11 +82,18 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
 
     // const [key, setKey] = useState(navLinks ? navLinks[0] : "home");
     const [iconHover, changeIconHover] = useState(false);
+    const [darkMode, setDarkMode] = useState(false);
 
     
     const handleHoverOn = () => changeIconHover(true);
     const handleHoverOff = () => changeIconHover(false);
-    
+
+    const toggleTheme = () => {
+        const newDarkMode = !darkMode;
+        setDarkMode(newDarkMode);
+        const htmlElement = document.querySelector("html");
+        htmlElement?.setAttribute("data-bs-theme", newDarkMode ? "dark": "light");
+    }
 
     const createNavList = useMemo(() => {
         if(navLinks === undefined || navLinks.length == 0){
@@ -110,7 +120,7 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
         // <BrowserRouter>
     <ErrorBoundary FallbackComponent={Fallback}>
         <BrowserRouter>
-            <Navbar bg="dark" data-bs-theme="dark">
+            <Navbar bg="secondary">
                 <Navbar.Brand href='/'>
                     <img
                     src={iconHover ? ProdinImg : odinImg}
@@ -123,8 +133,14 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                     />
                     {title}
                 </Navbar.Brand>
-                <Nav>
+                <Nav className='me-auto'>
                     {createNavList}
+                </Nav>
+                <Nav className={'me-2 ' + styles.darkmodeToggle}>
+                    <Button className={styles.btn} variant={darkMode? "outline-light" : "outline-dark" } onClick={toggleTheme}>
+                        {darkMode ? <LightbulbFill className={styles.svg} title='Set Light Mode' size={24}/> 
+                                : <MoonFill className={styles.svg} title='Set Dark Mode' size={24}/>}
+                    </Button>
                 </Nav>
             </Navbar>
             <RouteApp routeLinks={navLinks} children={props.children}/>
