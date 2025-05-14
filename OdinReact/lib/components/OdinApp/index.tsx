@@ -1,4 +1,4 @@
-import React, {Children, ReactElement, ReactNode, useMemo, useState} from 'react';
+import React, {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState} from 'react';
 
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
@@ -13,18 +13,15 @@ import ProdinImg from './prodin.png'
 import styles from './styles.module.css'
 
 
-interface OdinAppProps {
+interface OdinAppProps extends PropsWithChildren{
     title: string;
     navLinks?: string[];
-    // icon_src?: string;
-    // icon_hover_src?: string;
     icon_marginLeft?: string;
     icon_marginRight?: string;
-    children: ReactNode;
 }
 
 
-const Fallback: React.FC<FallbackProps> = (props: FallbackProps) => {
+const Fallback: React.FC<FallbackProps> = (props) => {
     const {error, resetErrorBoundary} = props;
     return (
         <Card>
@@ -39,27 +36,28 @@ const Fallback: React.FC<FallbackProps> = (props: FallbackProps) => {
     )
 }
 
-interface routeAppProps {
-    routeLinks: string[] | undefined;
-    children: ReactNode;
+interface routeAppProps extends PropsWithChildren{
+    routeLinks?: string[];
 }
 
-const RouteApp = ({routeLinks, children}: routeAppProps) => {
+const RouteApp: React.FC<routeAppProps> = (props) => {
     
+    const {routeLinks} = props;
     let childRoute: ReactNode[] = [];
-    if(routeLinks && children){
 
-        childRoute = Children.map<ReactElement, ReactNode>(children, (child, index) => 
+    if(routeLinks && props.children){
+
+        childRoute = Children.map<ReactElement, ReactNode>(props.children, (child, index) => 
                 <Route path={routeLinks[index]} element={child} key={routeLinks[index]}/>
         ) ?? [];
 
-        childRoute.push(<Route path="/"element={Children.toArray(children)[0]} key={"/"}/>)
+        childRoute.push(<Route path="/"element={Children.toArray(props.children)[0]} key={"/"}/>)
 
         // console.log(childRoute);
 
 
     }
-    if(childRoute){
+    if(childRoute.length){
         return (
             <Routes>
                 {childRoute.map(route => route)}
@@ -68,7 +66,7 @@ const RouteApp = ({routeLinks, children}: routeAppProps) => {
     }else{
         return (
             <Routes>
-                <Route path='/' element={children} />
+                <Route path='/' element={props.children} />
             </Routes>
         )
     }
@@ -76,9 +74,7 @@ const RouteApp = ({routeLinks, children}: routeAppProps) => {
 
 export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
 {
-    const {title, navLinks, 
-        // icon_src="odin.png", icon_hover_src="prodin.png", 
-        icon_marginLeft="5px", icon_marginRight="10px"} = props;
+    const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px"} = props;
 
     // const [key, setKey] = useState(navLinks ? navLinks[0] : "home");
     const [iconHover, changeIconHover] = useState(false);

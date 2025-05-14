@@ -75,3 +75,9 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
     mergeData: (newData: NodeJSON, param_path: String) => void;
 
 }
+
+export interface Log {
+    level: "debug" | "info" | "warning" | "error" | "critical";
+    timestamp: string;
+    message: string;
+}

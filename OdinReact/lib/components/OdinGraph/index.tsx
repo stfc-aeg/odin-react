@@ -6,7 +6,7 @@ import type { PlotParams } from 'react-plotly.js';
 
 interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     title?: string;
-    data: Partial<PlotData>[] | Array<number> | Array<Array<number>>;
+    data: PlotParams["data"] | Array<number> | Array<Array<number>>;
     type?: PlotType | "line";
     series_names?: string[];
     colorscale?: ColorScale;
@@ -15,7 +15,7 @@ interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
 
 
 
-export const OdinGraph: React.FC<OdinGraphProps> = (props: OdinGraphProps) => {
+export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
     const {title, data, layout={}, style={}, type="scatter", series_names, colorscale="Portland", ...leftoverProps} = props;
 

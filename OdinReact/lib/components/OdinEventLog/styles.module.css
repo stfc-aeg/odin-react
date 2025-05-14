@@ -1,0 +1,52 @@
+
+.log {
+    padding-left: 7px;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+}
+
+.log-left {
+    border-right: 2px solid;
+}
+
+.log-debug {
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+}
+
+.log-info {
+    color: var(--bs-success-text-emphasis);
+    background-color: var(--bs-success-bg-subtle);
+    border-color: var(--bs-success-border-subtle);
+}
+
+.log-warning {
+    color: var(--bs-warning-text-emphasis);
+    background-color: var(--bs-warning-bg-subtle);
+    border-color: var(--bs-warning-border-subtle);
+}
+
+.log-error {
+    color: var(--bs-danger-text-emphasis);
+    background-color: var(--bs-danger-bg-subtle);
+    border-color: var(--bs-danger-border-subtle);
+}
+
+.log-critical {
+    color: var(--bs-danger-text-emphasis);
+    background-color: var(--bs-danger-bg-subtle);
+    border-color: var(--bs-danger-border-subtle);
+    font-weight: bold;
+}
+
+.pre-scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid;
+    border-color: var(--bs-dark-border-subtle);
+    border-radius: var(--bs-border-radius);
+    font-family: 'Courier New', Courier, monospace;
+    white-space: break-spaces;
+    
+}
