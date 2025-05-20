@@ -3,37 +3,38 @@
     padding-left: 7px;
     border-top: 1px solid;
     border-bottom: 1px solid;
+    scroll-snap-align: end;
 }
 
 .log-left {
     border-right: 2px solid;
 }
 
-.log-debug {
-    color: var(--bs-body-color);
-    background-color: var(--bs-body-bg);
+.debug {
+    color: var(--bs-secondary-color);
+    background-color: var(--bs-secondary-bg);
     border-color: var(--bs-border-color);
 }
 
-.log-info {
+.info {
     color: var(--bs-success-text-emphasis);
     background-color: var(--bs-success-bg-subtle);
     border-color: var(--bs-success-border-subtle);
 }
 
-.log-warning {
+.warning {
     color: var(--bs-warning-text-emphasis);
     background-color: var(--bs-warning-bg-subtle);
     border-color: var(--bs-warning-border-subtle);
 }
 
-.log-error {
+.error {
     color: var(--bs-danger-text-emphasis);
     background-color: var(--bs-danger-bg-subtle);
     border-color: var(--bs-danger-border-subtle);
 }
 
-.log-critical {
+.critical {
     color: var(--bs-danger-text-emphasis);
     background-color: var(--bs-danger-bg-subtle);
     border-color: var(--bs-danger-border-subtle);
@@ -48,5 +49,28 @@
     border-radius: var(--bs-border-radius);
     font-family: 'Courier New', Courier, monospace;
     white-space: break-spaces;
+    font-size: smaller;
+    scroll-snap-type: y mandatory;
     
 }
+
+.headerControl {
+    container-type: inline-size;
+    container-name: headerControlRow;
+
+    :global(.col){
+        text-align: center;
+        align-content: center;
+    }
+
+}
+
+.iconButton {
+    padding: 5.25px 6px;
+}
+
+.svg {
+    height: 24px;
+    width: 24px;
+}
+

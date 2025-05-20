@@ -116,7 +116,7 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
         // <BrowserRouter>
     <ErrorBoundary FallbackComponent={Fallback}>
         <BrowserRouter>
-            <Navbar bg="secondary">
+            <Navbar expand="lg"className='bg-body-secondary'>
                 <Navbar.Brand href='/'>
                     <img
                     src={iconHover ? ProdinImg : odinImg}
@@ -129,10 +129,13 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                     />
                     {title}
                 </Navbar.Brand>
-                <Nav className='me-auto'>
+                <Navbar.Toggle/>
+                <Navbar.Collapse id='responsive-navbar-nav'>
+                <Nav className='me-auto' navbarScroll style={{maxHeight: "100px"}}>
                     {createNavList}
                 </Nav>
-                <Nav className={'me-2 ' + styles.darkmodeToggle}>
+                </Navbar.Collapse>
+                <Nav className={'me-2 d-none d-lg-block ' + styles.darkmodeToggle}>
                     <Button className={styles.btn} variant={darkMode? "outline-light" : "outline-dark" } onClick={toggleTheme}>
                         {darkMode ? <LightbulbFill className={styles.svg} title='Set Light Mode' size={24}/> 
                                 : <MoonFill className={styles.svg} title='Set Dark Mode' size={24}/>}

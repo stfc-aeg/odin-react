@@ -1,12 +1,12 @@
 import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownButton, Dropdown } from "react-bootstrap"
 import { TitleCard, useAdapterEndpoint, WithEndpoint } from "../"
-import { ParamTree} from "../";
+import type { ParamTree, Log} from "../";
 
 const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
 
-interface EndpointData_t extends ParamTree{
+export interface EndpointData_t extends ParamTree{
     string_val: string,
     num_val: number,
     rand_num: number,
@@ -32,7 +32,8 @@ interface EndpointData_t extends ParamTree{
                 }
             }
         }
-    }
+    },
+    logging: Log[]
 }
 
 export const EndpointPage: React.FC = () => {

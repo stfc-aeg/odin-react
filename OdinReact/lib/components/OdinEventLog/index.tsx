@@ -1,92 +1,252 @@
 import { TitleCard } from "../TitleCard";
-import type {Log} from "../../types";
-import {Row, Col, Stack} from 'react-bootstrap';
-import { ToggleButtonGroup, ToggleButton, Form, InputGroup } from "react-bootstrap";
+import type {Log, AdapterEndpoint_t} from "../../types";
+import {Row, Col } from 'react-bootstrap';
+import { ToggleButtonGroup, ToggleButton, Form, InputGroup, Button, OverlayTrigger, Popover } from "react-bootstrap";
 
+import { DashCircle, InfoCircle, ExclamationTriangle, ExclamationOctagon, XOctagon } from "react-bootstrap-icons";
+import { List, Clock, CalendarEvent, ArrowBarDown } from "react-bootstrap-icons";
 
 import style from './styles.module.css';
-import { useState } from "react";
+import React, { useEffect, useState, useCallback, CSSProperties, useRef, useMemo } from "react";
 
+interface LogHeaderProps {
+    displayLogLevels: boolean;
+    displayDay: boolean;
+    LogLevelFilter: string[];
+    autoScroll: boolean;
+    changeDisplayDay: React.Dispatch<React.SetStateAction<boolean>>;
+    onFilterChange: (val: string[]) => void;
+    changeAutoScroll: React.Dispatch<React.SetStateAction<boolean>>;
+    changeTimestampFilter: React.Dispatch<React.SetStateAction<TimestampFilter_t>>;
 
-interface EventLogProps {
+}
+
+interface TimestampFilter_t {
+    start: Date;
+    end: Date;
+}
+
+interface BasicProps {
     events: Log[];
-    timestamp_start?: (timestamp: string) => null;
-    timestamp_end?: (timestamp: string) => null;
-
+    refreshRate?: number;
+    displayHeight?: CSSProperties['height'];
 };
+
+interface PropsWithMethod extends BasicProps {
+    getLatestLogs: (timestamp: string) => Log[];
+    endpoint?: never;
+    path?: never;
+}
+
+interface PropsWithEndpoint extends BasicProps {
+    getLatestLogs?: never;
+    endpoint: AdapterEndpoint_t;
+    path: string;
+}
+
+type EventLogProps = PropsWithMethod | PropsWithEndpoint;
+
+const FilterButtons = (props: LogHeaderProps) => {
+
+    const {displayLogLevels, displayDay, LogLevelFilter, autoScroll,
+           changeDisplayDay, changeAutoScroll, onFilterChange, changeTimestampFilter} = props;
+
+    const startDateInput = useRef<HTMLInputElement>(null);
+    const startTimeInput = useRef<HTMLInputElement>(null);
+
+    const endDateInput = useRef<HTMLInputElement>(null);
+    const endTimeInput = useRef<HTMLInputElement>(null);
+
+    // Canadian localisation matches the string formatting we need (YYYY-MM-DD), hence the 'en-CA'
+    const todayString = useMemo(() => new Date().toLocaleDateString('en-CA'), []);
+
+    const combineDateandTime = (date: Date, time: Date) => {
+        date.setHours(time.getUTCHours());
+        date.setMinutes(time.getUTCMinutes());
+        date.setSeconds(time.getUTCSeconds());
+        date.setMilliseconds(time.getUTCMilliseconds());
+
+        return date;
+
+    }
+
+    const onTimestampChange = (event: React.ChangeEvent) => {
+        console.debug(event);
+        let target = event.target as HTMLInputElement;
+        let val = new Date();
+        let zeroDate = new Date(0, 0);
+        
+        switch(target) {
+            case startDateInput.current:
+                val = combineDateandTime(target.valueAsDate ?? val,
+                    startTimeInput.current?.valueAsDate ?? zeroDate);
+                changeTimestampFilter(oldDates => ({start: val, end: oldDates.end}));
+                break;
+            case startTimeInput.current:
+                val = combineDateandTime(startDateInput.current?.valueAsDate ?? val,
+                    target.valueAsDate ?? zeroDate);
+                changeTimestampFilter(oldDates => ({start: val, end: oldDates.end}));
+                break;
+            case endDateInput.current:
+                val = combineDateandTime(target.valueAsDate ?? val,
+                    endTimeInput.current?.valueAsDate ?? zeroDate);
+                changeTimestampFilter(oldDates => ({start: oldDates.start, end: val}));
+                break;
+            case endTimeInput.current:
+                val = combineDateandTime(endDateInput.current?.valueAsDate ?? val,
+                    target.valueAsDate ?? zeroDate);
+                changeTimestampFilter(oldDates => ({start: oldDates.start, end: val}));
+                break;
+        }
+    }
+    
+    const renderOptions = (
+        <Popover>
+            <Popover.Header>Options</Popover.Header>
+            <Popover.Body>
+            {displayLogLevels ?
+            <>
+            <Row className={style.headerControl}>
+                <Col>
+                    <ToggleButtonGroup type="checkbox" value={LogLevelFilter} onChange={onFilterChange}>
+                        <ToggleButton className={style.iconButton} key="debug"  id="debug" value="debug" variant="outline-secondary"><DashCircle className={style.svg} title="Debug"/></ToggleButton>
+                        <ToggleButton className={style.iconButton} key="info"  id="info" value="info" variant="outline-success"><InfoCircle className={style.svg} title="Info"/></ToggleButton>
+                        <ToggleButton className={style.iconButton} key="warning"  id="warning" value="warning" variant="outline-warning"><ExclamationTriangle className={style.svg} title="Warning"/></ToggleButton>
+                        <ToggleButton className={style.iconButton} key="error"  id="error" value="error" variant="outline-danger"><ExclamationOctagon className={style.svg} title="Wrror"/></ToggleButton>
+                        <ToggleButton className={style.iconButton} key="critical"  id="critical" value="critical" variant="outline-danger"><XOctagon className={style.svg} title="Critical"/></ToggleButton>
+                    </ToggleButtonGroup>
+                </Col>
+            </Row>
+            <hr/>
+            </>
+            : <></>}
+            <Row className={style.headerControl}>
+                <Col>
+                    <Button className={style.iconButton} onClick={() => changeDisplayDay(val => !val)} 
+                            variant={displayDay ? "secondary" : "outline-secondary"}>
+                        {displayDay ? <CalendarEvent className={style.svg} title="Hide Date"/> :
+                                      <Clock className={style.svg} title="Show Date"/>}
+                    </Button>
+                </Col>
+                <Col>
+                    <Button className={style.iconButton} onClick={() => changeAutoScroll(val => !val)}
+                            variant={autoScroll ? "secondary" : "outline-secondary"}>
+                        <ArrowBarDown className={style.svg} title={autoScroll ? "Disable Auto Scroll" : "Enable Auto Scroll"}/>
+                    </Button>
+                </Col>
+            </Row>
+            <hr/>
+            <Form.Label>Filter Logs</Form.Label>
+            <InputGroup size="sm">
+                <InputGroup.Text>From</InputGroup.Text>
+                <Form.Control ref={startDateInput} type="date" onChange={onTimestampChange} defaultValue={todayString}/>
+                <Form.Control ref={startTimeInput} type="time" onChange={onTimestampChange} step="1"/>
+            </InputGroup>
+            <InputGroup size="sm">
+                <InputGroup.Text>To</InputGroup.Text>
+                <Form.Control ref={endDateInput} type="date" onChange={onTimestampChange} defaultValue={todayString}/>
+                <Form.Control ref={endTimeInput} type="time" onChange={onTimestampChange} step="1"/>
+            </InputGroup>
+            </Popover.Body>
+        </Popover>
+    )
+    return (
+        <Row className={style.headerControl}>
+        <Col>Event Log</Col>
+        <Col xs="2">
+            <OverlayTrigger placement="bottom-end" overlay={renderOptions} trigger="click">
+            <Button className={style.iconButton} variant="outline-secondary"><List className={style.svg} title="Options"/></Button>
+            </OverlayTrigger>
+        </Col>
+        
+        
+        </Row>
+    )
+}
 
 export const OdinEventLog: React.FC<EventLogProps> = (props) => {
 
-    const {events, timestamp_start, timestamp_end} = props;
+    const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="340px" } = props;
+    const propEvents = props.events;
 
     const log_levels = ["debug", "info", "warning", "error", "critical"];
-    const log_variants: {[key: string]: string} = {debug: "secondary", info: "success", warning: "warning", error: "danger", critical: "danger"};
-    
+
     const [level_filter, setLevelFilter] = useState(log_levels);
-    const [displayDay, changeDisplayDay] = useState(true);
-    const [filterStart, changeFilterStart] = useState("");
-    const [filterEnd, changeFilterEnd] = useState("");
+    //timestamp boundaries set as min and max possible dates to start with
+    const [timestampFilter, changeTimestampFilter] = useState<TimestampFilter_t>({start: new Date(0), end: new Date(8.64e15)});
+    const [events, changeEvents] = useState(propEvents);
+    const [lastTimestamp, changeLastTimestamp] = useState("");
+
+    const [displayDay, changeDisplayDay] = useState(false);
+    const [autoScroll, changeAutoScroll] = useState(true);
+
+    const displayLogLevels = events[0] ? "level" in events[0] : false;
+
+    const dateFormatter = new Intl.DateTimeFormat("en-UK", {
+        dateStyle: "short"
+    });
+    const timeFormatter = new Intl.DateTimeFormat("en-UK", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    const RefreshLogs = useCallback(async () => {
+        let newLogs: Log[] = [];
+        if(getLatestLogs != null){
+            newLogs = getLatestLogs(lastTimestamp);
+        }else{
+            // get the latest logs from the endpoint manually
+           newLogs = (await endpoint.get(`${path}?timestamp=${lastTimestamp}`)).logging as Log[];
+        }
+        if(newLogs.length){
+            let lastLog = newLogs[newLogs.length -1];
+            changeLastTimestamp(lastLog.timestamp);
+            changeEvents(oldEvents => oldEvents.concat(newLogs));
+        }
+
+    }, [lastTimestamp, events, getLatestLogs]);
+
+    useEffect(() => {
+        if(autoScroll){
+            let options: ScrollToOptions = {top: scrollRef.current!.scrollHeight, behavior: "smooth"};
+                scrollRef.current!.scrollTo(options);
+        }
+    }, [events]);
+
+    useEffect(() => {
+        let timer_id = setInterval(RefreshLogs, refreshRate);
+
+        return () => {
+            clearInterval(timer_id);
+        }
+    }, [refreshRate, RefreshLogs]);
 
     const renderEvent = (event: Log) => {
-        const event_level_class = "log-" + event.level;
+        const event_level_class = event.level ? event.level.toLowerCase() : "debug";
         const date = new Date(event.timestamp);
-        const formatter = new Intl.DateTimeFormat("en-UK", {
-            dateStyle: "short"
-        });
-        const dateString = formatter.format(date);
-        const timeString = `${date.getHours().toLocaleString("en-UK", {minimumIntegerDigits: 2})}:${date.getMinutes().toLocaleString("en-UK", {minimumIntegerDigits: 2})}:${date.getSeconds().toLocaleString("en-UK", {minimumIntegerDigits: 2})}.${date.getMilliseconds()}`
-
+        const dateString = dateFormatter.format(date);
+        const timeString = `${timeFormatter.format(date)}.${date.getMilliseconds().toString().padStart(3, "0")}`;
         const displayDatetimeString = displayDay ? `${dateString}, ${timeString}` : timeString;
+        const logLeftString = event.level ? `${displayDatetimeString} : ${event.level.padStart(8)}` : displayDatetimeString;
 
         return (
             <Row key={event.timestamp} className={`${style.log} ${style[event_level_class]}`}>
-                <Col xs="auto" className={`${style["log-left"]} ${style[event_level_class]}`}>{displayDatetimeString} : {event.level.padStart(8)} :</Col><Col>{event.message}</Col>
+                <Col xs="auto" className={`${style["log-left"]}`}>{logLeftString}</Col><Col>{event.message}</Col>
             </Row>
         )
     }
 
     const onFilterChange = (val: string[]) => setLevelFilter(val);
-
-    const onTimestampChange = (event: React.ChangeEvent, func: EventLogProps["timestamp_start"]) => {
-        let target = event.target as HTMLInputElement;
-        let val = target.value;
-        console.debug(event);
-        if(func){func(val)}else{
-            console.debug("No function defined. Manual filtering");
-            let id = target.id;
-            if(id === "timestampStart"){
-                changeFilterStart(val);
-            }else{
-                changeFilterEnd(val);
-            }
-
-        };
-    }
-
-    const filterButtons = () => {
-
-        return (
-            <Row>
-            <Col xs={6} style={{textAlign: "center", alignContent: "center"}}>Event Log</Col>
-            <Col className="me-auto">
-            <ToggleButtonGroup type="checkbox" size="sm" value={level_filter} onChange={onFilterChange}>
-                {log_levels.map((level) => (
-                    <ToggleButton key={level}  id={level} value={level} variant={`outline-${log_variants[level]}`}>{level}</ToggleButton>
-                ))}
-            </ToggleButtonGroup>
-            </Col>
-            <Col style={{alignContent: "center" }}>
-            <Form.Switch reverse label="Display Date" id="showDate" checked={displayDay} onChange={() => changeDisplayDay(val => !val)}/>
-            </Col>
-            </Row>
-        )
-    }
+    
     const EventList = () => {
         const filteredLogs = events.filter((event) => {
-            let level_filtered = level_filter.includes(event.level);
+            let level_filtered = event.level ? level_filter.includes(event.level.toLowerCase()) : true;
             let timestamp = new Date(event.timestamp);
-            let timestamp_filtered_start = filterStart ? timestamp >= new Date(filterStart) : true;
-            let timestamp_filtered_end = filterEnd ? timestamp <= new Date(filterEnd) : true;
+            let timestamp_filtered_start = timestamp >= timestampFilter.start;
+            let timestamp_filtered_end = timestamp < timestampFilter.end;
             return (level_filtered && timestamp_filtered_start && timestamp_filtered_end);
         });
         return (
@@ -94,22 +254,13 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
         )
     }
     return (
-        <TitleCard title={filterButtons()}>
-        <Stack gap={2}>
-        {/* <Col> */}
-            <div className={style["pre-scrollable"]}>
-                {EventList()}
+        <TitleCard title={<FilterButtons
+            displayLogLevels={displayLogLevels} displayDay={displayDay} LogLevelFilter={level_filter} autoScroll={autoScroll}
+            changeDisplayDay={changeDisplayDay} onFilterChange={onFilterChange} changeAutoScroll={changeAutoScroll} changeTimestampFilter={changeTimestampFilter}/>
+        }>
+            <div className={style["pre-scrollable"]} style={{height: displayHeight}} ref={scrollRef}>
+                <EventList/>
             </div>
-        {/* </Col>
-        <Col> */}
-        <InputGroup>
-            <InputGroup.Text>Filter logs between timestamp:</InputGroup.Text>
-            <Form.Control step="1" id="timestampStart" type="datetime-local" onChange={(event) => onTimestampChange(event, timestamp_start)}/>
-            <InputGroup.Text>and</InputGroup.Text>
-            <Form.Control id="timestampEnd" type="datetime-local" onChange={(event) => onTimestampChange(event, timestamp_end)}/>
-        </InputGroup>
-        {/* </Col> */}
-        </Stack>
         </TitleCard>
     )
 }

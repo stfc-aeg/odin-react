@@ -1,10 +1,14 @@
 import {Container, Row, Col } from 'react-bootstrap';
 
-import { OdinEventLog, TitleCard } from '../';
+import { OdinEventLog, useAdapterEndpoint } from '../';
 import type { Log } from '../';
+
+import { EndpointData_t } from './EndpointPage';
 
 
 export const LogMessagePage = () => {
+
+    const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL);
 
     const multiLineMessage = `A Log Message that spans
 multiple lines
@@ -24,9 +28,27 @@ either way, here's the fourth line`;
         {level: "warning", timestamp: new Date(Date.now() + 120000).toISOString(), message: scriptingMessage}
     ]
 
+    const messages_no_level: Log[] = [
+        {timestamp: new Date(Date.now()).toISOString(), message: "Test Debug"},
+        {timestamp: new Date(Date.now() + 30000).toISOString(), message: "Test Info"},
+        {timestamp: new Date(Date.now() + 40000).toISOString(), message: "Test Warning"},
+        {timestamp: new Date(Date.now() + 45000).toISOString(), message: "Test Error"},
+        {timestamp: new Date(Date.now() + 46000).toISOString(), message: "Second Test Error"},
+        {timestamp: new Date(Date.now() + 48000).toISOString(), message: "Test Critical"},
+        {timestamp: new Date(Date.now() + 50000).toISOString(), message: multiLineMessage},
+        {timestamp: new Date(Date.now() + 120000).toISOString(), message: scriptingMessage}
+    ]
+
     return (
         <Container>
-            <OdinEventLog events={log_messages}/>
+            <Row>
+            <Col>
+                <OdinEventLog events={endpoint.data.logging ?? []} endpoint={endpoint} path="logging"/>
+            </Col>
+            <Col>
+                {/* <OdinEventLog events={messages_no_level} getLatestLogs={() => {return messages_no_level}}/> */}
+            </Col>
+            </Row>
         </Container>
     )
 }

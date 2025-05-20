@@ -11,7 +11,7 @@ export const TitleCard: FC<TitleCardProps> = (props) => {
     const {title} = props;
 
     return (
-        <Card style={styles}>
+        <Card className={styles.card}>
             {title != null && <Card.Header>{title}</Card.Header>}
             <Card.Body>{props.children}</Card.Body>
         </Card>

@@ -76,8 +76,8 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
 
 }
 
-export interface Log {
-    level: "debug" | "info" | "warning" | "error" | "critical";
+export interface Log extends NodeJSON {
+    level?: "debug" | "info" | "warning" | "error" | "critical";
     timestamp: string;
     message: string;
 }
