@@ -4,7 +4,7 @@ import {Row, Col } from 'react-bootstrap';
 import { ToggleButtonGroup, ToggleButton, Form, InputGroup, Button, OverlayTrigger, Popover } from "react-bootstrap";
 
 import { DashCircle, InfoCircle, ExclamationTriangle, ExclamationOctagon, XOctagon } from "react-bootstrap-icons";
-import { List, Clock, CalendarEvent, ArrowBarDown } from "react-bootstrap-icons";
+import { Filter, Clock, CalendarEvent, ArrowBarDown } from "react-bootstrap-icons";
 
 import style from './styles.module.css';
 import React, { useEffect, useState, useCallback, CSSProperties, useRef, useMemo } from "react";
@@ -30,6 +30,7 @@ interface BasicProps {
     events: Log[];
     refreshRate?: number;
     displayHeight?: CSSProperties['height'];
+    maxLogs?: number;
 };
 
 interface PropsWithMethod extends BasicProps {
@@ -108,6 +109,7 @@ const FilterButtons = (props: LogHeaderProps) => {
             <>
             <Row className={style.headerControl}>
                 <Col>
+                    <Form.Label>Filter Log Levels</Form.Label>
                     <ToggleButtonGroup type="checkbox" value={LogLevelFilter} onChange={onFilterChange}>
                         <ToggleButton className={style.iconButton} key="debug"  id="debug" value="debug" variant="outline-secondary"><DashCircle className={style.svg} title="Debug"/></ToggleButton>
                         <ToggleButton className={style.iconButton} key="info"  id="info" value="info" variant="outline-success"><InfoCircle className={style.svg} title="Info"/></ToggleButton>
@@ -120,23 +122,7 @@ const FilterButtons = (props: LogHeaderProps) => {
             <hr/>
             </>
             : <></>}
-            <Row className={style.headerControl}>
-                <Col>
-                    <Button className={style.iconButton} onClick={() => changeDisplayDay(val => !val)} 
-                            variant={displayDay ? "secondary" : "outline-secondary"}>
-                        {displayDay ? <CalendarEvent className={style.svg} title="Hide Date"/> :
-                                      <Clock className={style.svg} title="Show Date"/>}
-                    </Button>
-                </Col>
-                <Col>
-                    <Button className={style.iconButton} onClick={() => changeAutoScroll(val => !val)}
-                            variant={autoScroll ? "secondary" : "outline-secondary"}>
-                        <ArrowBarDown className={style.svg} title={autoScroll ? "Disable Auto Scroll" : "Enable Auto Scroll"}/>
-                    </Button>
-                </Col>
-            </Row>
-            <hr/>
-            <Form.Label>Filter Logs</Form.Label>
+            <Form.Label>Filter Log Timestamps</Form.Label>
             <InputGroup size="sm">
                 <InputGroup.Text>From</InputGroup.Text>
                 <Form.Control ref={startDateInput} type="date" onChange={onTimestampChange} defaultValue={todayString}/>
@@ -150,13 +136,23 @@ const FilterButtons = (props: LogHeaderProps) => {
             </Popover.Body>
         </Popover>
     )
+
     return (
         <Row className={style.headerControl}>
         <Col>Event Log</Col>
-        <Col xs="2">
-            <OverlayTrigger placement="bottom-end" overlay={renderOptions} trigger="click">
-            <Button className={style.iconButton} variant="outline-secondary"><List className={style.svg} title="Options"/></Button>
+        <Col xs="auto">
+            <OverlayTrigger placement="bottom-end" overlay={renderOptions} trigger="click" rootClose>
+            <Button className={style.iconButton} variant="outline-secondary"><Filter className={style.svg} title="Filter Options"/></Button>
             </OverlayTrigger>
+            <Button className={style.iconButton} onClick={() => changeAutoScroll(val => !val)}
+                    variant={autoScroll ? "secondary" : "outline-secondary"}>
+                <ArrowBarDown className={style.svg} title={autoScroll ? "Disable Auto Scroll" : "Enable Auto Scroll"}/>
+            </Button>
+            <Button className={style.iconButton} onClick={() => changeDisplayDay(val => !val)} 
+                    variant={displayDay ? "secondary" : "outline-secondary"}>
+                {displayDay ? <Clock className={style.svg} title="Hide Date"/> :
+                              <CalendarEvent className={style.svg} title="Show Date"/>}
+            </Button>
         </Col>
         
         
@@ -166,7 +162,7 @@ const FilterButtons = (props: LogHeaderProps) => {
 
 export const OdinEventLog: React.FC<EventLogProps> = (props) => {
 
-    const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="340px" } = props;
+    const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500 } = props;
     const propEvents = props.events;
 
     const log_levels = ["debug", "info", "warning", "error", "critical"];
@@ -199,20 +195,24 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
             newLogs = getLatestLogs(lastTimestamp);
         }else{
             // get the latest logs from the endpoint manually
-           newLogs = (await endpoint.get(`${path}?timestamp=${lastTimestamp}`)).logging as Log[];
+           let response = await endpoint.get(`${path}?timestamp=${lastTimestamp}`);
+           newLogs = Object.values(response)[0] as Log[];
         }
         if(newLogs.length){
             let lastLog = newLogs[newLogs.length -1];
             changeLastTimestamp(lastLog.timestamp);
-            changeEvents(oldEvents => oldEvents.concat(newLogs));
+            changeEvents(oldEvents => oldEvents.concat(newLogs).slice(-maxLogs));
         }
 
     }, [lastTimestamp, events, getLatestLogs]);
 
     useEffect(() => {
         if(autoScroll){
-            let options: ScrollToOptions = {top: scrollRef.current!.scrollHeight, behavior: "smooth"};
-                scrollRef.current!.scrollTo(options);
+            let bottomDiv = scrollRef.current!;
+            bottomDiv.offsetTop;
+            let options: ScrollToOptions = {behavior: "smooth", top: bottomDiv.offsetTop};
+            bottomDiv.parentElement!.scrollTo(options);
+                // scrollRef.current!.scrollIntoView(options);
         }
     }, [events]);
 
@@ -229,19 +229,22 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
         const date = new Date(event.timestamp);
         const dateString = dateFormatter.format(date);
         const timeString = `${timeFormatter.format(date)}.${date.getMilliseconds().toString().padStart(3, "0")}`;
-        const displayDatetimeString = displayDay ? `${dateString}, ${timeString}` : timeString;
-        const logLeftString = event.level ? `${displayDatetimeString} : ${event.level.padStart(8)}` : displayDatetimeString;
+        const dateTimeString = displayDay ? `${dateString} ${timeString}` : timeString;
+        // const logLeftString = event.level ? `${displayDatetimeString} : ${event.level.padStart(8)}` : displayDatetimeString;
 
         return (
             <Row key={event.timestamp} className={`${style.log} ${style[event_level_class]}`}>
-                <Col xs="auto" className={`${style["log-left"]}`}>{logLeftString}</Col><Col>{event.message}</Col>
+                <Col sm="12" md="auto">{dateTimeString}</Col>
+                {event.level ? 
+                <Col xs="auto">{event.level.padStart(8)}</Col> : <></>}
+                <Col>{event.message}</Col>
             </Row>
         )
     }
 
     const onFilterChange = (val: string[]) => setLevelFilter(val);
     
-    const EventList = () => {
+    const filterEvent = () => {
         const filteredLogs = events.filter((event) => {
             let level_filtered = event.level ? level_filter.includes(event.level.toLowerCase()) : true;
             let timestamp = new Date(event.timestamp);
@@ -249,17 +252,18 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
             let timestamp_filtered_end = timestamp < timestampFilter.end;
             return (level_filtered && timestamp_filtered_start && timestamp_filtered_end);
         });
-        return (
-            filteredLogs.map((event) => renderEvent(event))
-        )
+        return filteredLogs;
     }
+
+
     return (
         <TitleCard title={<FilterButtons
             displayLogLevels={displayLogLevels} displayDay={displayDay} LogLevelFilter={level_filter} autoScroll={autoScroll}
             changeDisplayDay={changeDisplayDay} onFilterChange={onFilterChange} changeAutoScroll={changeAutoScroll} changeTimestampFilter={changeTimestampFilter}/>
         }>
-            <div className={style["pre-scrollable"]} style={{height: displayHeight}} ref={scrollRef}>
-                <EventList/>
+            <div className={style["pre-scrollable"]} style={{height: displayHeight}}>
+                {filterEvent().map((log) => renderEvent(log))}
+                <div className="scrollToBottom" ref={scrollRef}/>
             </div>
         </TitleCard>
     )

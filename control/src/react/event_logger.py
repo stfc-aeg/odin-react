@@ -64,3 +64,16 @@ class EventLogger():
             }
             for event in self._deque if event.timestamp > timestamp
         ]
+    
+    def eventsWithoutLevel(self, timestamp=None):
+        if timestamp:
+            timestamp = parse(timestamp)
+        else:
+            timestamp = datetime(1, 1, 1)
+        return [
+            {
+                "timestamp": datetime.strftime(event.timestamp, self.TIMESTAMP_FORMAT),
+                "message": event.message
+            }
+            for event in self._deque if event.timestamp > timestamp
+        ]

@@ -6,8 +6,9 @@
     scroll-snap-align: end;
 }
 
-.log-left {
+.log>:not(:last-child){
     border-right: 2px solid;
+    border-color: inherit;
 }
 
 .debug {

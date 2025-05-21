@@ -46,7 +46,8 @@ class ReactController():
                 "dict": (self.get_data_dict, None),
                 "clip_data": (lambda: self.clip_data, self.set_clip_data,)
             },
-            "logging": (self.logger.events, None)
+            "logging": (self.logger.events, None),
+            "logging_no_level": (self.logger.eventsWithoutLevel, None)
         })
 
     def looping_update(self):
@@ -94,17 +95,18 @@ class ReactController():
         self.logger.info("Event Triggered by API with value: %s", val)
 
     def get(self, path, kwargs=None):
-        self.logger.debug("GETTING PATH: %s", path)
-        logging.debug(kwargs)
-        val = self.param_tree.get(path)
+        # self.logger.debug("GETTING PATH: %s", path)
 
         # special Log Filtering with the query Args!
         if path == "logging" and kwargs:
-            logging
             timestamp = kwargs.get("timestamp", [])[0]
             val = {"logging": self.logger.events(timestamp)}
+        elif path == "logging_no_level" and kwargs:
+            timestamp = kwargs.get("timestamp", [])[0]
+            val = {"logging_no_level": self.logger.eventsWithoutLevel(timestamp)}
+        else:
+            val = self.param_tree.get(path)
 
-        logging.debug(val)
         return val
 
     def set(self, path, data):

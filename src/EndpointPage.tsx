@@ -33,7 +33,8 @@ export interface EndpointData_t extends ParamTree{
             }
         }
     },
-    logging: Log[]
+    logging: Log[],
+    logging_no_level: Log[]
 }
 
 export const EndpointPage: React.FC = () => {
