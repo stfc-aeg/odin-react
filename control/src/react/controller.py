@@ -10,7 +10,8 @@ class ReactController():
     def __init__(self) -> None:
 
         self.deep_dict_val = "secret deep value"
-        deep_dict = {"long": {"nested": {"dict": {"path": {"val": self.deep_dict_val}}}}}
+        self.deep_dict_num = 42
+        deep_dict = {"long": {"nested": {"dict": {"path": {"val": self.deep_dict_val, "num_val": self.deep_dict_num}}}}}
         self.data_val = 10
         self.clip_data = [0, 100]
 
@@ -94,7 +95,7 @@ class ReactController():
     def trigger_event(self, val):
         self.logger.info("Event Triggered by API with value: %s", val)
 
-    def get(self, path, kwargs=None):
+    def get(self, path, metadata=False, kwargs=None):
         # self.logger.debug("GETTING PATH: %s", path)
 
         # special Log Filtering with the query Args!
@@ -105,7 +106,7 @@ class ReactController():
             timestamp = kwargs.get("timestamp", [])[0]
             val = {"logging_no_level": self.logger.eventsWithoutLevel(timestamp)}
         else:
-            val = self.param_tree.get(path)
+            val = self.param_tree.get(path, metadata)
 
         return val
 

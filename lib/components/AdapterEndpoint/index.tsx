@@ -20,6 +20,8 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     const [data, setData] = useState<T>({} as T);
     const [metadata, setMetadata] = useState<NodeJSON>({});
     const [error, setError] = useState<ErrorState>(null);
+    const [updateFlag, setUpdateFlag] = useState<number>(0);
+
     const [loading, setLoading] = useState<LoadingState>("idle");
 
 
@@ -130,6 +132,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         get("")
         .then(result => {
             setData(result as T);
+            setUpdateFlag(Date.now());
         });
     }
     
@@ -148,7 +151,8 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         // becasue pointer was a copy of tmpData, changes made to it will also be made to tmpData
         Object.assign(pointer, newData);
         setData(tmpData);
+        setUpdateFlag(Date.now())
     }
     
-    return { data: data, metadata, error, loading, get, put, refreshData, mergeData}
+    return { data: data, metadata, error, loading, updateFlag, get, put, refreshData, mergeData}
 }

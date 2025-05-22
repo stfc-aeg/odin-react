@@ -44,6 +44,11 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
      *  - "idle" means not currently doing anything
      */
     loading: LoadingState;
+
+    /**
+     * Flag token that will change whenever the data has changed, to alert WithEndpoint components
+     */
+    updateFlag: number;
     /**
      * Async http GET method. Request the provided value(s) from the parameter tree.
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.

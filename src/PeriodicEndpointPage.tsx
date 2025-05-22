@@ -1,67 +1,15 @@
-import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownButton, Dropdown, FloatingLabel } from "react-bootstrap"
+import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownButton, Dropdown } from "react-bootstrap"
 import { TitleCard, useAdapterEndpoint, WithEndpoint } from "../"
-import type { ParamTree, Log} from "../";
-import { useState } from "react";
 
 const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
 
-export interface EndpointData_t extends ParamTree{
-    string_val: string,
-    num_val: number,
-    rand_num: number,
-    select_list: string[],
-    selected: string,
-    toggle: boolean,
-    trigger: null,
-    data: {
-        set_data: number,
-        dict: {
-            half: number,
-            is_even: boolean
-        },
-        clip_data: number[]
-    },
-    deep: {
-        long: {
-            nested: {
-                dict: {
-                    path: {
-                        val: string,
-                        num_val: number
-                    }
-                }
-            }
-        }
-    },
-    logging: Log[],
-    logging_no_level: Log[]
-}
+import { EndpointData_t } from "./EndpointPage";
 
-export const EndpointPage: React.FC = () => {
+export const PeriodicEndpointPage: React.FC = () => {
 
-    const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL);
-
-    const [input, changeInput] = useState(0);
-    const [formData, changeFormData] = useState<ParamTree>({});
-
-    const onSubmitHandler: React.FormEventHandler<HTMLFormElement> = (event) => {
-        event.preventDefault(); // stops the submit event refreshing the page
-        console.log(event);
-        let target = event.target as HTMLFormElement;
-        const formData = new FormData(target),
-              formDataObj = Object.fromEntries(formData.entries()) as ParamTree;
-        console.log(formDataObj);
-        changeFormData(formDataObj);
-    }
-
-    const onClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-        console.log(event);
-        console.log(event.target);
-        console.log(formData);
-
-    }
+    const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL, 1000);
 
     return (
         <Container>
@@ -82,7 +30,10 @@ export const EndpointPage: React.FC = () => {
                         <InputGroup.Text>Enter Value:</InputGroup.Text>
                         <EndpointInput endpoint={endpoint} fullpath="data/set_data" type="number"/>
                         </InputGroup>
-                        <Alert>Half: {endpoint.data.data?.dict?.half}</Alert>
+                        <InputGroup><InputGroup.Text>Half</InputGroup.Text>
+                        <EndpointInput endpoint={endpoint} fullpath="data/dict/half"/>
+                        </InputGroup>
+                        {/* <Alert>Half: {endpoint.data.data?.dict?.half}</Alert> */}
                         <Alert>Is Even: {endpoint.data.data?.dict?.is_even?.toString()}</Alert>
                         <EndpointButton endpoint={endpoint} event_type="click" fullpath="trigger" value={10} disabled={endpoint.data.data?.dict.is_even}>
                                     Disabled on Even
@@ -113,17 +64,6 @@ export const EndpointPage: React.FC = () => {
                     <EndpointInput endpoint={endpoint} fullpath="deep/long/nested/dict/path/num_val" type="number"/>
                     <InputGroup.Text>This one should match</InputGroup.Text>
                     <EndpointInput endpoint={endpoint} fullpath="deep/long/nested/dict/path/num_val" type="number"/>
-                    </InputGroup>
-                </TitleCard>
-                </Col>
-                <Col>
-                <TitleCard title="Button Value Controlled by Input">
-                    <InputGroup>
-                    <InputGroup.Text>Enter Value</InputGroup.Text>
-                    <Form.Control type="number" value={input} onChange={(event) => changeInput(Number(event.target.value))}/>
-                    <EndpointButton endpoint={endpoint} fullpath="num_val" event_type="click" value={input}>
-                        Submit Value
-                    </EndpointButton>
                     </InputGroup>
                 </TitleCard>
                 </Col>

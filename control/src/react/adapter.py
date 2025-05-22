@@ -1,6 +1,7 @@
 import logging
 
-from odin.adapters.adapter import ApiAdapter, ApiAdapterResponse, request_types, response_types
+from odin.adapters.adapter import (ApiAdapter, ApiAdapterResponse,
+                                   request_types, response_types, wants_metadata)
 from odin.adapters.parameter_tree import ParameterTreeError
 from odin.util import decode_request_body
 
@@ -28,9 +29,10 @@ class ReactAdapter(ApiAdapter):
         :return: an ApiAdapterResponse object containing the appropriate response
         """
         logging.debug(request.query_arguments)
+        metadata = wants_metadata(request)
         try:
             query = {k: [val.decode("utf-8") for val in v] for (k, v) in request.query_arguments.items()}
-            response = self.controller.get(path, query)
+            response = self.controller.get(path, metadata, query)
             status_code = 200
         except (ParameterTreeError) as e:
             response = {'error': str(e)}

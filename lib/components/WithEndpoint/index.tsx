@@ -25,12 +25,10 @@ interface metadata_t {
     max?: number;
 }
 
-type eventProp_t = (event: React.SyntheticEvent) => void
-//on select has to have its parameters swapped, because Bootstrap Dropdowns have the key first for some reason
 type selectEvent_t = {onSelect?: (eventKey: number | string, event: React.SyntheticEvent) => void,
-                      onClick?: eventProp_t,
-                      onKeyPress?: eventProp_t,
-                      onChange?: eventProp_t
+                      onClick?: (event: React.MouseEvent) => void,
+                      onKeyPress?: (event: React.KeyboardEvent) => void,
+                      onChange?: (event: React.ChangeEvent) => void
 
 };
 
@@ -47,7 +45,14 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
     type WrapperComponentProps = React.PropsWithChildren<
              Omit<P, keyof InjectedProps> & ComponentProps>;
 
-    const WithEndpointComponent = (props: WrapperComponentProps) => {
+    const trimByChar = (string: string, character: string) => {
+        const arr = Array.from(string);
+        const first = arr.findIndex(char => char !==character);
+        const last = arr.reverse().findIndex(char => char !== character);
+        return (first === -1 && last === -1) ? '' : string.substring(first, string.length - last);
+    }
+
+    const WithEndpointComponent: React.FC<WrapperComponentProps> = (props) => {
         const {endpoint, fullpath, value, value_type, event_type, disabled,
                pre_method, pre_args, post_method, post_args, dif_color="var(--bs-highlight-bg)", ...leftoverProps} = props;
         
@@ -63,14 +68,73 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         const [eventProp, setEventProp] = useState<selectEvent_t>({onChange: (event) => onChangeHandler(event)});
 
         const [componentValue, setComponentValue] = useState<typeof value>(value ?? 0);
-        const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? "");
+        const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? 0);
         const [metadata, setMetadata] = useState<metadata_t | null>(null);
 
         const [type, setType] = useState<value_t>(value_type || "string");
 
         const style: CSSProperties = endpointValue == componentValue ? {} : {backgroundColor: dif_color};
-        
-        
+
+        const disable = useMemo(() => {
+            if(disabled !== undefined){
+                return (disabled || endpoint.loading === "putting")
+            }
+            if(metadata){
+                return endpoint.loading === "putting" || metadata.readOnly
+            }
+            return endpoint.loading === "putting";
+
+        }, [endpoint.loading, disabled, metadata?.readOnly])
+
+        const {path, valueName} = useMemo(() => {
+            let path = "";
+            let valueName = trimByChar(fullpath, "/");
+            if(valueName.includes("/"))
+            {
+                [path, valueName] = valueName.split(/\/(?!.*\/)(.*)/, 2); // finds the last "/" in the string, and splits on that
+            }
+            return {path, valueName};
+        }, [fullpath]);
+
+        const validate = (value: number) => {
+            let isValid = true;
+            if(metadata){
+                if(metadata.min && metadata.min > value){
+                    console.debug(fullpath, "Value %f below min %f", value, metadata.min);
+                    isValid = false;
+                }
+                if(metadata.max && metadata.max < value){
+                    console.debug(fullpath, "Value %f above max %f", value, metadata.max);
+                    isValid = false;
+                }
+            }
+            return isValid;
+        }
+
+        const getValueFromEndpoint =  (): ComponentProps['value'] => {
+            // let splitPath = path.split("/");
+            let splitPath = fullpath.split("/");
+            let data: JSON = endpoint.data;
+            splitPath.forEach((path_part) => {
+                if(isParamNode(data)){
+                    data = data[path_part];
+                }
+            });
+            if(data){
+                return data as JSON as ComponentProps['value'];
+            }else{
+                return "";
+            }
+
+        }
+
+        const getTypedValue = (val: ComponentProps['value']): ComponentProps['value'] => {
+            if(type == "number"){
+                return Number(val);
+            }else{
+                return val;
+            }
+        }
 
         useEffect(() => {
             //this effect is designed to run only when the component is first mounted, to get the data
@@ -97,7 +161,6 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     tmp_metadata.max = data.max ? data.max as number : undefined;
 
                     setMetadata(tmp_metadata);
-                    // setComponentValue(data.value as JSON);
                     setEndpointValue(data.value as ComponentProps["value"]);
 
                     if(!value_type){
@@ -109,7 +172,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     }
                 }else{
                     data = data as JSON;
-                    console.warn("Adapter has not implemented Metadata");
+                    console.log("Adapter has not implemented Metadata for", fullpath);
                     setEndpointValue(data as ComponentProps["value"]);
                     if(!value_type){
                         if(typeof data === "number") setType("number"); else setType("string");
@@ -122,51 +185,20 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         }, [endpoint.metadata]);
 
         useEffect(() => {
-            setComponentValue(endpointValue);
-        }, [endpointValue]);
-
-        const disable = useMemo(() => {
-            if(disabled !== undefined){
-                return (disabled || endpoint.loading === "putting")
-            }
-            if(metadata){
-                return endpoint.loading === "putting" || metadata.readOnly
-            }
-            return endpoint.loading === "putting";
-
-        }, [endpoint.loading, disabled, metadata?.readOnly])
-
-        const validate = (value: number) => {
-            let isValid = true;
-            if(metadata){
-                if(metadata.min && metadata.min > value){
-                    console.debug(fullpath, "Value %f below min %f", value, metadata.min);
-                    isValid = false;
+            // update flag got changed, check if we need to change anything
+            if(value == null){  // if value is defined, we dont wanna overwrite anything
+                let newVal = getValueFromEndpoint();
+                if(newVal != endpointValue){
+                    setEndpointValue(newVal);
                 }
-                if(metadata.max && metadata.max < value){
-                    console.debug(fullpath, "Value %f above max %f", value, metadata.max);
-                    isValid = false;
+                // check if component value has been modified, or if the input is active. If so,
+                // dont mess with the value. Otherwise, set the component val?
+                // seems weird to be checking if the two values are the same specifically to change them
+                if(document.activeElement !== component.current && value == null && endpointValue == componentValue){
+                    setComponentValue(newVal);
                 }
             }
-            return isValid;
-        }
-
-        const trimByChar = (string: string, character: string) => {
-            const arr = Array.from(string);
-            const first = arr.findIndex(char => char !==character);
-            const last = arr.reverse().findIndex(char => char !== character);
-            return (first === -1 && last === -1) ? '' : string.substring(first, string.length - last);
-        }
-
-        const {path, valueName} = useMemo(() => {
-            let path = "";
-            let valueName = trimByChar(fullpath, "/");
-            if(valueName.includes("/"))
-            {
-                [path, valueName] = valueName.split(/\/(?!.*\/)(.*)/, 2); // finds the last "/" in the string, and splits on that
-            }
-            return {path, valueName};
-        }, [fullpath]);
+        }, [endpoint.updateFlag, endpointValue]);
 
         const sendRequest = useCallback((val: ComponentProps['value']) => {
             if(typeof val === "number"){
@@ -192,7 +224,6 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             endpoint.put(sendVal, path)
                 .then((response) => {
                     endpoint.mergeData(response, path);
-                    setEndpointValue(val!);
                     if(post_method)
                     {
                         if(post_args){
@@ -213,71 +244,43 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             console.debug(fullpath, "event: ", event);
             console.debug(fullpath, "EventKey: ", eventKey);
             
-            sendRequest(eventKey!);  // the ! here tells typescript that we know eventKey is NOT undefined here
+            sendRequest(eventKey);
         }
 
-        const onClickHandler = useCallback((event: React.SyntheticEvent) => {
+        const onClickHandler = useCallback((event: React.MouseEvent) => {
             console.debug(fullpath, "On Click Handler");
             console.debug(fullpath, event);
             let curComponent = component.current!;
-            let val: ComponentProps['value'] = "value" in curComponent ? curComponent.value as ComponentProps['value'] : undefined;
-            if(val != null){
-                console.debug(fullpath, "Current Component Value");
-            }
-            else if((event.target as HTMLInputElement | null)?.value != null){
-                console.debug(fullpath, "Target Value");
-
-                val = (event.target as HTMLInputElement).value;
-            }
-            else{
+            let val: ComponentProps['value'];
+            if(value != null){
                 val = value;
+            }else{
+                val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
             }
+            val = getTypedValue(val);
             sendRequest(val);
         }, [component, value]);
 
-        const onChangeHandler = useCallback((event: React.SyntheticEvent) => {
+        const onChangeHandler = useCallback((event: React.ChangeEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
-            
-            let target = (event.target as HTMLInputElement | null);
-            let curComponent = component.current!;
-            let val: ComponentProps['value'] = "value" in curComponent ? curComponent.value as ComponentProps['value'] : undefined;
-
-            if(target?.value != null){
+            let target = event.target as HTMLInputElement;
+            let val: ComponentProps['value'];
+        
+            if(target.value != null){
                 //check if the value is a string, or COULD be a number (target.value is always a string
                 //but we might want to convert it)
-                if(type == "number")
-                {
-                    val = Number(target.value);
-                    
-                }
-                else
-                { 
-                    val = target.value;
-                }
-                
-            }else if(val != null){
-                //event target above is likely to be the current component, but on the off chance its not (or doesn't exist)
-                //we can also use the current component ref
-                if(type == "number")
-                {
-                    val = Number(val);
-                }
+                val = getTypedValue(target.value);
             }else{ 
                 //if, somehow, neither the current component has a value nor the event target, default the value
-                if(type == "number"){
-                    val = 0;
-                }else{
-                    val = "";
-                }
+                val = getTypedValue("");
             }
             setComponentValue(val);
-        }, [component, value_type]);
+        }, [component, type]);
 
-        const onEnterHandler = useCallback((event: React.SyntheticEvent) => {
-            if ((event as React.KeyboardEvent).key === "Enter" && !(event as React.KeyboardEvent).shiftKey) {
+        const onEnterHandler = useCallback((event: React.KeyboardEvent) => {
+            if (event.key === "Enter" && !event.shiftKey) {
                 console.debug(fullpath, "onEnterHandler");
                 console.debug(fullpath, event);
-                console.debug(fullpath, "componentValue:", componentValue);
                 
                 sendRequest(componentValue);
             }
