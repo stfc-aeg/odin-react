@@ -1,15 +1,15 @@
 import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { AdapterEndpoint_t, isParamNode, JSON, NodeJSON } from "../../types";
+import { AdapterEndpoint_t, isParamNode, JSON } from "../../types";
 
 type event_t = "select" | "click" | "enter"
-type value_t = "string" | "number"  // only types we care about if we're defining this
+type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 
 interface ComponentProps {
     endpoint: AdapterEndpoint_t;
     fullpath: string;
-    value?: Exclude<JSON, NodeJSON>;
-    value_type?: value_t;
+    value?: JSON;
+    // value_type?: value_t;
     event_type?: event_t;
     disabled?: boolean;
     pre_method?: Function;
@@ -53,7 +53,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
     }
 
     const WithEndpointComponent: React.FC<WrapperComponentProps> = (props) => {
-        const {endpoint, fullpath, value, value_type, event_type, disabled,
+        const {endpoint, fullpath, value, event_type, disabled,
                pre_method, pre_args, post_method, post_args, dif_color="var(--bs-highlight-bg)", ...leftoverProps} = props;
         
         
@@ -71,7 +71,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? 0);
         const [metadata, setMetadata] = useState<metadata_t | null>(null);
 
-        const [type, setType] = useState<value_t>(value_type || "string");
+        const [type, setType] = useState<value_t>("string");
 
         const style: CSSProperties = endpointValue == componentValue ? {} : {backgroundColor: dif_color};
 
@@ -96,9 +96,9 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             return {path, valueName};
         }, [fullpath]);
 
-        const validate = (value: number) => {
+        const validate = (value: ComponentProps['value']) => {
             let isValid = true;
-            if(metadata){
+            if(metadata && typeof value == "number"){
                 if(metadata.min && metadata.min > value){
                     console.debug(fullpath, "Value %f below min %f", value, metadata.min);
                     isValid = false;
@@ -129,11 +129,33 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         }
 
         const getTypedValue = (val: ComponentProps['value']): ComponentProps['value'] => {
-            if(type == "number"){
-                return Number(val);
-            }else{
-                return val;
+            
+            switch(type){
+                case "number":
+                    val =  Number(val);
+                    break;
+                case "boolean":
+                    val = Boolean(val);
+                    break;
+                case "list":
+                    if(Array.isArray(val)){
+                        val = Array.from(val);
+                    }else{
+                        if(typeof val == "string"){
+                            val = val.split(",");
+                        }
+                    }
+                    break;
+                case "string":
+                    val = String(val);
+                    break;
+                case "dict":
+                case "null":
+                    break;
+
             }
+
+            return val;
         }
 
         useEffect(() => {
@@ -141,13 +163,12 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             //and metadata of the part of the param tree we are interacting with, apply the metadata
             //validation to the component (writable, min, max) and sync the component value with the
             //value from the param tree
-            const isMetadata = () => {
+            const endpointLoaded = () => {
                 for(var _ in endpoint.metadata) return true;
                 return false;
             }
 
-            if((value == null) && isMetadata()){
-
+            if(endpointLoaded()){
                 let data: JSON = endpoint.metadata;
                 let splitPath = fullpath.split("/");
                 splitPath.forEach((path_part) => {
@@ -156,31 +177,73 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     }
                 });
                 if(isParamNode(data) && "writeable" in data){ //metadata found
-                        let tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
+                    let tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
                     tmp_metadata.min = data.min ? data.min as number : undefined;
                     tmp_metadata.max = data.max ? data.max as number : undefined;
 
                     setMetadata(tmp_metadata);
-                    setEndpointValue(data.value as ComponentProps["value"]);
+                    setEndpointValue(value ?? data.value as ComponentProps["value"]);
 
-                    if(!value_type){
-                        if(["int", "float", "complex"].includes(data.type as string)){
+                    switch(data.type as string){
+                        case "int":
+                        case "float":
+                        case "complex":
                             setType("number");
-                        }else{
+                            break;
+                        case "list":
+                        case "tuple":
+                        case "range":
+                            setType("list");
+                            break;
+                        case "bool":
+                            setType("boolean");
+                            break;
+                        case "str":
                             setType("string");
-                        }
+                            break;
+                        case "NoneType":
+                            setType("null");
+                            break;
+                        default:
+                            setType(data.type as value_t);
                     }
+
                 }else{
                     data = data as JSON;
                     console.log("Adapter has not implemented Metadata for", fullpath);
-                    setEndpointValue(data as ComponentProps["value"]);
-                    if(!value_type){
-                        if(typeof data === "number") setType("number"); else setType("string");
+                    setEndpointValue(value ?? data as ComponentProps["value"]);
+                    let data_type = typeof data;
+                    switch(data_type){
+                        case "bigint":
+                        case "number":
+                            setType("number");
+                            break;
+                        case "object":
+                            // gotta check type of object
+                            switch(true){
+                                case data instanceof Array:
+                                    setType("list");
+                                    break;
+                                case data == null:
+                                    setType("null");
+                                    break;
+                                default:
+                                    setType("dict");
+                            }
+                            break;
+                        case "function":
+                        case "symbol":
+                        case "undefined":
+                            console.error("Something went wrong getting the typeof Data: ", data, typeof data);
+                            break;
+                        case "boolean":
+                        case "string":
+                            setType(data_type);
+
+                            
                     }
                     
                 }
-            }else if(!value_type){
-                    if(typeof value === "number") setType("number"); else setType("string");
             }
         }, [endpoint.metadata]);
 
@@ -201,13 +264,12 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         }, [endpoint.updateFlag, endpointValue]);
 
         const sendRequest = useCallback((val: ComponentProps['value']) => {
-            if(typeof val === "number"){
-                // check against the metadata provided to see if val is out of range
-                if(!validate(val)){
-                    console.error("Invalid Value based on metadata. Not sending request");
-                    console.error("Value: ", val, "Metadata: ", metadata);
-                    return
-                };
+
+            val = getTypedValue(val);
+            if(!validate(val)){
+                console.error("Invalid Value based on metadata. Not sending request");
+                console.error("Value: ", val, "Metadata: ", metadata);
+                return
             }
 
             if(pre_method)
@@ -257,22 +319,19 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             }else{
                 val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
             }
-            val = getTypedValue(val);
             sendRequest(val);
         }, [component, value]);
 
         const onChangeHandler = useCallback((event: React.ChangeEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
             let target = event.target as HTMLInputElement;
-            let val: ComponentProps['value'];
+            let val: ComponentProps['value'] = "";
         
             if(target.value != null){
-                //check if the value is a string, or COULD be a number (target.value is always a string
-                //but we might want to convert it)
-                val = getTypedValue(target.value);
-            }else{ 
-                //if, somehow, neither the current component has a value nor the event target, default the value
-                val = getTypedValue("");
+                val = target.value;
+            }else
+            if("value" in component.current!){
+                val = component.current.value as ComponentProps['value'];
             }
             setComponentValue(val);
         }, [component, type]);

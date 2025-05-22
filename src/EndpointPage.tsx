@@ -128,6 +128,38 @@ export const EndpointPage: React.FC = () => {
                 </TitleCard>
                 </Col>
             </Row>
+            <Row>
+                <Col>
+                <TitleCard title="Multiple Value Submit">
+                    <Form>
+                        <Row>
+                            <Col>
+                        <FloatingLabel label="First Name">
+                            <Form.Control placeholder="John" 
+                            onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {first_name: e.target.value}))}/>
+                        </FloatingLabel>
+                        </Col>
+                        <Col>
+                        <FloatingLabel label="Last Name">
+                            <Form.Control placeholder="Smith"
+                            onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {last_name: e.target.value}))}/>
+                        </FloatingLabel>
+                        </Col>
+                        <Col>
+                        <FloatingLabel label="Age" controlId="age">
+                            <Form.Control type="number" placeholder="42"
+                            onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {age: Number(e.target.value)}))}/>
+                        </FloatingLabel>
+                        </Col>
+                        </Row>
+                        
+                    </Form>
+                    <EndpointButton endpoint={endpoint} fullpath="submit" value={formData} event_type="click">
+                    Submit Form Data 
+                    </EndpointButton>
+                </TitleCard>
+                </Col>
+            </Row>
         </Container>
     )
 }

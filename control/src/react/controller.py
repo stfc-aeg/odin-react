@@ -29,6 +29,10 @@ class ReactController():
         self.loop = PeriodicCallback(self.looping_update, 1000)
         self.loop.start()
 
+        self.first_name = ""
+        self.last_name = ""
+        self.age = 0
+
         self.param_tree = ParameterTree({
             "string_val": (lambda: self.string_val, self.set_string),
             "num_val": (lambda: self.num_val, self.set_num_val,
@@ -46,6 +50,11 @@ class ReactController():
                 "set_data": (lambda: self.data_val, self.set_data_val),
                 "dict": (self.get_data_dict, None),
                 "clip_data": (lambda: self.clip_data, self.set_clip_data,)
+            },
+            "submit": {
+                "first_name": (lambda: self.first_name, lambda val: setattr(self, "first_name", val)),
+                "last_name": (lambda: self.last_name, lambda val: setattr(self, "last_name", val)),
+                "age": (lambda: self.age, lambda value: setattr(self, "age", value))
             },
             "logging": (self.logger.events, None),
             "logging_no_level": (self.logger.eventsWithoutLevel, None)

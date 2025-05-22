@@ -12,7 +12,7 @@ import { PeriodicEndpointPage } from './PeriodicEndpointPage';
 function App() {
 
   return (
-    <OdinApp title='Test' navLinks={["Workshop", "Endpoint Testing", "Periodic Endpoint Testing", "Graph Testing", "Log Display", "Test Transitions"]}>
+    <OdinApp title='Test' navLinks={["Workshop", "Endpoint Testing", "Periodic Endpoint Testing", "Graph Testing", "Log Display"]}>
       <MainPage/>
       <EndpointPage />
       <PeriodicEndpointPage/>
