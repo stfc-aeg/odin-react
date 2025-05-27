@@ -4,6 +4,8 @@ from odin.adapters.parameter_tree import ParameterTree
 from tornado.ioloop import PeriodicCallback
 from react.event_logger import EventLogger
 
+import time
+
 
 class ReactController():
 
@@ -33,6 +35,8 @@ class ReactController():
         self.last_name = ""
         self.age = 0
 
+        self.slow_put = 5
+
         self.param_tree = ParameterTree({
             "string_val": (lambda: self.string_val, self.set_string),
             "num_val": (lambda: self.num_val, self.set_num_val,
@@ -57,7 +61,8 @@ class ReactController():
                 "age": (lambda: self.age, lambda value: setattr(self, "age", value))
             },
             "logging": (self.logger.events, None),
-            "logging_no_level": (self.logger.eventsWithoutLevel, None)
+            "logging_no_level": (self.logger.eventsWithoutLevel, None),
+            "slow_put": (lambda: self.slow_put, self.set_slow_response_val)
         })
 
     def looping_update(self):
@@ -104,6 +109,10 @@ class ReactController():
     def trigger_event(self, val):
         self.logger.info("Event Triggered by API with value: %s", val)
 
+    def set_slow_response_val(self, val):
+        time.sleep(2.5)  # simulating complex get request or slow network
+        self.slow_put = val
+
     def get(self, path, metadata=False, kwargs=None):
         # self.logger.debug("GETTING PATH: %s", path)
 
@@ -122,3 +131,4 @@ class ReactController():
     def set(self, path, data):
         self.param_tree.set(path, data)
         return self.param_tree.get(path)
+    

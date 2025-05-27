@@ -6,16 +6,8 @@ import { useError } from "../OdinErrorContext";
 
 const DEF_API_VERSION = '0.1';
 
-/**
- * 
- * @param adapter 
- * @param endpoint_url 
- * @param interval 
- * @param api_version 
- * @returns 
- */
 export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
-    adapter: string, endpoint_url: string, interval: number | null = null, api_version=DEF_API_VERSION,
+    adapter: string, endpoint_url: string, interval?: number, timeout?: number, api_version=DEF_API_VERSION
 ): AdapterEndpoint_t<T> {
 
     const [data, setData] = useState<T>({} as T);
@@ -30,7 +22,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     const base_url = `${endpoint_url ? endpoint_url : ""}/api/${api_version}/${adapter}`;
     const axiosInstance: AxiosInstance = axios.create({
         baseURL: base_url,
-        timeout: 1000,
+        timeout: timeout,
         headers: {
             "Content-Type": "application/json"
         }
@@ -46,7 +38,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
                 errorMsg = `${method} request failed with status ${err.response.status} : ${reason}`;
             }
             else if (err.request) {
-                errorMsg = `Network error sending request to ${base_url}`;
+                errorMsg = `Network error sending request to ${base_url}: ${err.message}`;
             }
         }
         else {

@@ -50,7 +50,7 @@ export interface EndpointData_t extends ParamTree{
 
 export const EndpointPage: React.FC = () => {
 
-    const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL);
+    const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL, undefined, 1000);
 
     const [input, changeInput] = useState(0);
     const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
@@ -155,9 +155,10 @@ export const EndpointPage: React.FC = () => {
                 </Col>
                 <Col>
                 <TitleCard title="Error Handling">
-                        <EndpointButton endpoint={endpoint} fullpath="invalid" value="true" event_type="click">
-                            This button PUTs to an address that does not exist
-                        </EndpointButton>
+                    <EndpointButton endpoint={endpoint} fullpath="invalid" value="true" event_type="click">
+                        This button PUTs to an address that does not exist
+                    </EndpointButton>
+                    <EndpointInput endpoint={endpoint} fullpath="slow_put" type="number" />
                 </TitleCard>
                 </Col>
             </Row>
