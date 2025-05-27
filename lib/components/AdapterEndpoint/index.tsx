@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import type { LoadingState, ErrorState, AdapterEndpoint_t, JSON, NodeJSON } from "../../types";
 import { isParamNode } from "../../types";
+import { useError } from "../OdinErrorContext";
 
 const DEF_API_VERSION = '0.1';
 
@@ -20,10 +21,11 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     const [data, setData] = useState<T>({} as T);
     const [metadata, setMetadata] = useState<NodeJSON>({});
     const [error, setError] = useState<ErrorState>(null);
-    const [updateFlag, setUpdateFlag] = useState<number>(0);
+    const [updateFlag, setUpdateFlag] = useState<Symbol>(Symbol("init"));
 
     const [loading, setLoading] = useState<LoadingState>("idle");
 
+    const ctx = useError();
 
     const base_url = `${endpoint_url ? endpoint_url : ""}/api/${api_version}/${adapter}`;
     const axiosInstance: AxiosInstance = axios.create({
@@ -39,9 +41,9 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         let errorMsg: string = "";
         if(axios.isAxiosError(err)){
             if(err.response) {
-                const method = err.response?.config?.method ? err.response.config.method.toUpperCase() : "UNDEFINED";
-                errorMsg = `${method} request failed with status ${err.response.status} : `;
-                errorMsg = errorMsg + err.response.data?.error || "";
+                const method = err.response.config.method ? err.response.config.method.toUpperCase() : "UNDEFINED";
+                const reason = err.response.data?.error || "";
+                errorMsg = `${method} request failed with status ${err.response.status} : ${reason}`;
             }
             else if (err.request) {
                 errorMsg = `Network error sending request to ${base_url}`;
@@ -50,8 +52,11 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         else {
             errorMsg = `Unknown error sending request to ${base_url}`;
         }
-        setError(new Error(errorMsg));
-        console.error(errorMsg);
+        const error = new Error(errorMsg);
+        setError(error);
+        ctx.setError(error);
+
+        throw error;  // rethrow error so it doesn't dissapear
     };
 
     const get = async (param_path='', get_metadata=false) => {
@@ -80,7 +85,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         return result;
     };
 
-    const put = async (data: Object, param_path='') => {
+    const put = async (data: NodeJSON, param_path='') => {
         // const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
         console.debug("PUT: " + base_url + "/" + param_path + ", data: ", data);
         
@@ -92,7 +97,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             response = await axiosInstance.put(param_path, data);
             result = response.data;
         }
-        catch (err) {
+        catch (err: unknown) {
             handleError(err);
         }
         finally {
@@ -132,12 +137,12 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         get("")
         .then(result => {
             setData(result as T);
-            setUpdateFlag(Date.now());
+            setUpdateFlag(Symbol("refreshed"));
         });
     }
     
-    const mergeData = (newData: NodeJSON, param_path: String) => {
-        let splitPath = param_path.split("/").slice(0, -1);;
+    const mergeData = (newData: NodeJSON, param_path: string) => {
+        let splitPath = param_path.split("/").slice(0, -1);
         let tmpData = data;  // use tmpData as a copy of the Data that we can modify
         let pointer: JSON = tmpData;  // pointer that can traverse down the nested data
 
@@ -151,7 +156,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         // becasue pointer was a copy of tmpData, changes made to it will also be made to tmpData
         Object.assign(pointer, newData);
         setData(tmpData);
-        setUpdateFlag(Date.now())
+        setUpdateFlag(Symbol("merged"));
     }
     
     return { data: data, metadata, error, loading, updateFlag, get, put, refreshData, mergeData}

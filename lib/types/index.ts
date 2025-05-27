@@ -48,7 +48,7 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
     /**
      * Flag token that will change whenever the data has changed, to alert WithEndpoint components
      */
-    updateFlag: number;
+    updateFlag: Symbol;
     /**
      * Async http GET method. Request the provided value(s) from the parameter tree.
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
@@ -77,7 +77,7 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
      * @param {string} param_path - the location that data within the ParamTree to merge it
      * @returns 
      */
-    mergeData: (newData: NodeJSON, param_path: String) => void;
+    mergeData: (newData: NodeJSON, param_path: string) => void;
 
 }
 

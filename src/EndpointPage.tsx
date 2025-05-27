@@ -7,6 +7,12 @@ const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
 
+interface FormData_T extends ParamTree{
+    first_name: string;
+    last_name: string;
+    age: number;
+}
+
 export interface EndpointData_t extends ParamTree{
     string_val: string,
     num_val: number,
@@ -36,32 +42,20 @@ export interface EndpointData_t extends ParamTree{
         }
     },
     logging: Log[],
-    logging_no_level: Log[]
+    logging_no_level: Log[],
+    submit: FormData_T;
 }
+
+
 
 export const EndpointPage: React.FC = () => {
 
     const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL);
 
     const [input, changeInput] = useState(0);
-    const [formData, changeFormData] = useState<ParamTree>({});
+    const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
 
-    const onSubmitHandler: React.FormEventHandler<HTMLFormElement> = (event) => {
-        event.preventDefault(); // stops the submit event refreshing the page
-        console.log(event);
-        let target = event.target as HTMLFormElement;
-        const formData = new FormData(target),
-              formDataObj = Object.fromEntries(formData.entries()) as ParamTree;
-        console.log(formDataObj);
-        changeFormData(formDataObj);
-    }
 
-    const onClickHandler: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-        console.log(event);
-        console.log(event.target);
-        console.log(formData);
-
-    }
 
     return (
         <Container>
@@ -135,19 +129,19 @@ export const EndpointPage: React.FC = () => {
                         <Row>
                             <Col>
                         <FloatingLabel label="First Name">
-                            <Form.Control placeholder="John" 
+                            <Form.Control placeholder="John" defaultValue={endpoint.data.submit?.first_name ?? ""}
                             onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {first_name: e.target.value}))}/>
                         </FloatingLabel>
                         </Col>
                         <Col>
                         <FloatingLabel label="Last Name">
-                            <Form.Control placeholder="Smith"
+                            <Form.Control placeholder="Smith" defaultValue={endpoint.data.submit?.last_name ?? ""}
                             onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {last_name: e.target.value}))}/>
                         </FloatingLabel>
                         </Col>
                         <Col>
                         <FloatingLabel label="Age" controlId="age">
-                            <Form.Control type="number" placeholder="42"
+                            <Form.Control type="number" placeholder="42" defaultValue={endpoint.data.submit?.age ?? 0}
                             onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {age: Number(e.target.value)}))}/>
                         </FloatingLabel>
                         </Col>
@@ -157,6 +151,13 @@ export const EndpointPage: React.FC = () => {
                     <EndpointButton endpoint={endpoint} fullpath="submit" value={formData} event_type="click">
                     Submit Form Data 
                     </EndpointButton>
+                </TitleCard>
+                </Col>
+                <Col>
+                <TitleCard title="Error Handling">
+                        <EndpointButton endpoint={endpoint} fullpath="invalid" value="true" event_type="click">
+                            This button PUTs to an address that does not exist
+                        </EndpointButton>
                 </TitleCard>
                 </Col>
             </Row>

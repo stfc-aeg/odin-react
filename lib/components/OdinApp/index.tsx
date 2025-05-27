@@ -11,6 +11,7 @@ import odinImg from './odin.png'
 import ProdinImg from './prodin.png'
 
 import styles from './styles.module.css'
+import { OdinErrorContext, OdinErrorOutlet } from '../OdinErrorContext';
 
 
 interface OdinAppProps extends PropsWithChildren{
@@ -115,6 +116,7 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
     return (
         // <BrowserRouter>
     <ErrorBoundary FallbackComponent={Fallback}>
+        <OdinErrorContext>
         <BrowserRouter>
             <Navbar expand="lg"className='bg-body-secondary'>
                 <Navbar.Brand href='/'>
@@ -142,8 +144,10 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                     </Button>
                 </Nav>
             </Navbar>
+            <OdinErrorOutlet />
             <RouteApp routeLinks={navLinks} children={props.children}/>
         </BrowserRouter>
+        </OdinErrorContext>
     </ErrorBoundary>
     )
 

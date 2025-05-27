@@ -5,4 +5,5 @@ export { OdinApp } from './components/OdinApp';
 export { OdinGraph } from './components/OdinGraph';
 export {OdinTable, OdinTableRow } from './components/OdinTable';
 export {OdinEventLog} from './components/OdinEventLog';
+export {OdinErrorContext, OdinErrorOutlet, useError } from './components/OdinErrorContext';
 export type { ParamTree, Log } from './types';

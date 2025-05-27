@@ -1,6 +1,7 @@
-import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdapterEndpoint_t, isParamNode, JSON } from "../../types";
+import { useError } from "../OdinErrorContext";
 
 type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
@@ -59,8 +60,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         
 
         const component = useRef<typeof WrappedComponent>(null);
-        // const timer = useRef<NodeJS.Timeout>(undefined);
-        // const metadata = useRef(null);
+        const ErrCTX = useError();
 
         //initialised with an OnChange handler to avoid the 
         // "You provided a `value` prop to a form field without an `onChange` handler" error, since
@@ -97,18 +97,14 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         }, [fullpath]);
 
         const validate = (value: ComponentProps['value']) => {
-            let isValid = true;
             if(metadata && typeof value == "number"){
                 if(metadata.min && metadata.min > value){
-                    console.debug(fullpath, "Value %f below min %f", value, metadata.min);
-                    isValid = false;
+                    throw Error(`Value ${value} below minimum ${metadata.min}`);
                 }
                 if(metadata.max && metadata.max < value){
-                    console.debug(fullpath, "Value %f above max %f", value, metadata.max);
-                    isValid = false;
+                    throw Error(`Value ${value} above maxmium ${metadata.max}`);
                 }
             }
-            return isValid;
         }
 
         const getValueFromEndpoint =  (): ComponentProps['value'] => {
@@ -128,8 +124,8 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         }
 
+
         const getTypedValue = (val: ComponentProps['value']): ComponentProps['value'] => {
-            
             switch(type){
                 case "number":
                     val =  Number(val);
@@ -156,7 +152,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             }
 
             return val;
-        }
+        };
 
         useEffect(() => {
             //this effect is designed to run only when the component is first mounted, to get the data
@@ -167,7 +163,6 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 for(var _ in endpoint.metadata) return true;
                 return false;
             }
-
             if(endpointLoaded()){
                 let data: JSON = endpoint.metadata;
                 let splitPath = fullpath.split("/");
@@ -212,7 +207,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     data = data as JSON;
                     console.log("Adapter has not implemented Metadata for", fullpath);
                     setEndpointValue(value ?? data as ComponentProps["value"]);
-                    let data_type = typeof data;
+                    let data_type = (value == null ? typeof data : typeof value);
                     switch(data_type){
                         case "bigint":
                         case "number":
@@ -263,43 +258,48 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             }
         }, [endpoint.updateFlag, endpointValue]);
 
-        const sendRequest = useCallback((val: ComponentProps['value']) => {
+        const sendRequest = (val: ComponentProps['value']) => {
+            try {
+                val = getTypedValue(val);
+                validate(val);
+                
 
-            val = getTypedValue(val);
-            if(!validate(val)){
-                console.error("Invalid Value based on metadata. Not sending request");
-                console.error("Value: ", val, "Metadata: ", metadata);
-                return
-            }
-
-            if(pre_method)
-            {
-                if(pre_args)
+                if(pre_method)
                 {
-                    pre_method(...pre_args);
+                    if(pre_args)
+                    {
+                        pre_method(...pre_args);
+                    }else{
+                        pre_method();
+                    }
+                }
+                const sendVal = {[valueName]: val};
+
+                endpoint.put(sendVal, path)
+                    .then((response) => {
+                        endpoint.mergeData(response, path);
+                        if(post_method)
+                        {
+                            if(post_args){
+                                post_method(...post_args);
+                            }else{
+                                post_method();
+                            }
+                        }
+                    })
+                    .catch((err) => {
+                        // setError(err);
+                        console.error(err);
+                    })
+            }
+            catch (err) {
+                if(err instanceof Error){
+                    ErrCTX.setError(err);
                 }else{
-                    pre_method();
+                    ErrCTX.setError(Error("UNKNOWN ERROR OCCURED"));
                 }
             }
-            const sendVal = {[valueName]: val};
-
-            endpoint.put(sendVal, path)
-                .then((response) => {
-                    endpoint.mergeData(response, path);
-                    if(post_method)
-                    {
-                        if(post_args){
-                            post_method(...post_args);
-                        }else{
-                            post_method();
-                        }
-                    }
-                })
-                .catch((err) => {
-                    // setError(err);
-                    console.error(err);
-                })
-        }, [endpoint.put]);
+        };
 
         const onSelectHandler = (event: React.SyntheticEvent, eventKey: number | string) => {
             console.debug(fullpath, "On Select Handler");
@@ -309,7 +309,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             sendRequest(eventKey);
         }
 
-        const onClickHandler = useCallback((event: React.MouseEvent) => {
+        const onClickHandler = (event: React.MouseEvent) => {
             console.debug(fullpath, "On Click Handler");
             console.debug(fullpath, event);
             let curComponent = component.current!;
@@ -320,9 +320,9 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
             }
             sendRequest(val);
-        }, [component, value]);
+        };
 
-        const onChangeHandler = useCallback((event: React.ChangeEvent) => {
+        const onChangeHandler = (event: React.ChangeEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
             let target = event.target as HTMLInputElement;
             let val: ComponentProps['value'] = "";
@@ -334,16 +334,16 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 val = component.current.value as ComponentProps['value'];
             }
             setComponentValue(val);
-        }, [component, type]);
+        };
 
-        const onEnterHandler = useCallback((event: React.KeyboardEvent) => {
+        const onEnterHandler = (event: React.KeyboardEvent) => {
             if (event.key === "Enter" && !event.shiftKey) {
                 console.debug(fullpath, "onEnterHandler");
                 console.debug(fullpath, event);
                 
                 sendRequest(componentValue);
             }
-        }, [componentValue, onChangeHandler]);
+        };
 
         useEffect(() => {
             switch(event_type){
@@ -358,7 +358,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     setEventProp({onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)});
 
             }
-        }, [event_type, value, componentValue, component.current]);
+        }, [event_type, value, componentValue, component.current, type]);
 
         return (<WrappedComponent
                     {...leftoverProps as P}
