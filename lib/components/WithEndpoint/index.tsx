@@ -11,6 +11,8 @@ interface ComponentProps {
     fullpath: string;
     value?: JSON;
     // value_type?: value_t;
+    min?: number;
+    max?: number;
     event_type?: event_t;
     disabled?: boolean;
     pre_method?: Function;
@@ -55,7 +57,8 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
     const WithEndpointComponent: React.FC<WrapperComponentProps> = (props) => {
         const {endpoint, fullpath, value, event_type, disabled,
-               pre_method, pre_args, post_method, post_args, dif_color="var(--bs-highlight-bg)", ...leftoverProps} = props;
+               pre_method, pre_args, post_method, post_args, dif_color="var(--bs-highlight-bg)",
+               min, max, ...leftoverProps} = props;
         
         
 
@@ -67,8 +70,8 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         // we will be assigning event handlers after component initialisation
         const [eventProp, setEventProp] = useState<selectEvent_t>({onChange: (event) => onChangeHandler(event)});
 
-        const [componentValue, setComponentValue] = useState<typeof value>(value ?? 0);
-        const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? 0);
+        const [componentValue, setComponentValue] = useState<typeof value>(value ?? undefined);
+        const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? undefined);
         const [metadata, setMetadata] = useState<metadata_t | null>(null);
 
         const [type, setType] = useState<value_t>("string");
@@ -119,7 +122,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             if(data){
                 return data as JSON as ComponentProps['value'];
             }else{
-                return "";
+                return undefined;
             }
 
         }
@@ -173,8 +176,8 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 });
                 if(isParamNode(data) && "writeable" in data){ //metadata found
                     let tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
-                    tmp_metadata.min = data.min ? data.min as number : undefined;
-                    tmp_metadata.max = data.max ? data.max as number : undefined;
+                    tmp_metadata.min = min ?? (data.min ? data.min as number : undefined);
+                    tmp_metadata.max = max ?? (data.max ? data.max as number : undefined);
 
                     setMetadata(tmp_metadata);
                     setEndpointValue(value ?? data.value as ComponentProps["value"]);
@@ -236,6 +239,11 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                             setType(data_type);
 
                             
+                    }
+
+                    if(min != null || max!= null){
+                        let tmp_metadata: metadata_t = {readOnly: false, min: min, max: max};
+                        setMetadata(tmp_metadata);
                     }
                     
                 }
@@ -324,11 +332,11 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const onChangeHandler = (event: React.ChangeEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
-            let target = event.target as HTMLInputElement;
+            let target = event.target;
             let val: ComponentProps['value'] = "";
         
-            if(target.value != null){
-                val = target.value;
+            if("value" in target && target.value != null){
+                val = target.value as ComponentProps['value'];
             }else
             if("value" in component.current!){
                 val = component.current.value as ComponentProps['value'];

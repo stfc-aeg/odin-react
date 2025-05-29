@@ -1,11 +1,12 @@
 import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownButton, Dropdown, FloatingLabel } from "react-bootstrap"
-import { TitleCard, useAdapterEndpoint, WithEndpoint } from "../"
+import { TitleCard, useAdapterEndpoint, WithEndpoint, OdinDoubleSlider } from "../"
 import type { ParamTree, Log} from "../";
 import { useState } from "react";
 
 const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
+const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 
 interface FormData_T extends ParamTree{
     first_name: string;
@@ -54,7 +55,6 @@ export const EndpointPage: React.FC = () => {
 
     const [input, changeInput] = useState(0);
     const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
-
 
 
     return (
@@ -159,6 +159,16 @@ export const EndpointPage: React.FC = () => {
                         This button PUTs to an address that does not exist
                     </EndpointButton>
                     <EndpointInput endpoint={endpoint} fullpath="slow_put" type="number" />
+                </TitleCard>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                <TitleCard title="Slider">
+                    <OdinDoubleSlider title="Test" showMinMaxValues={false}/>
+                    <EndpointSlider title="Endpoint Slider" endpoint={endpoint} fullpath="data/clip_data" min={-20} max={20} step={0.5}/>
+                    <OdinDoubleSlider showTooltip={false} showMinMaxValues={true}/>
+                    <OdinDoubleSlider showMinMaxValues={false}/>
                 </TitleCard>
                 </Col>
             </Row>

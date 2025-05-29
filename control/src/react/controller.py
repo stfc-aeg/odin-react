@@ -15,7 +15,7 @@ class ReactController():
         self.deep_dict_num = 42
         deep_dict = {"long": {"nested": {"dict": {"path": {"val": self.deep_dict_val, "num_val": self.deep_dict_num}}}}}
         self.data_val = 10
-        self.clip_data = [0, 100]
+        self.clip_data = [-10, 5]
 
         self.string_val = "String Value Test"
         self.num_val = 10
@@ -53,7 +53,7 @@ class ReactController():
             "data": {
                 "set_data": (lambda: self.data_val, self.set_data_val),
                 "dict": (self.get_data_dict, None),
-                "clip_data": (lambda: self.clip_data, self.set_clip_data,)
+                "clip_data": (lambda: self.clip_data, self.set_clip_data)
             },
             "submit": {
                 "first_name": (lambda: self.first_name, lambda val: setattr(self, "first_name", val)),

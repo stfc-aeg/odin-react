@@ -7,7 +7,7 @@ import { DashCircle, InfoCircle, ExclamationTriangle, ExclamationOctagon, XOctag
 import { Filter, Clock, CalendarEvent, ArrowBarDown } from "react-bootstrap-icons";
 
 import style from './styles.module.css';
-import React, { useEffect, useState, CSSProperties, useRef, useMemo } from "react";
+import React, { useEffect, useState, CSSProperties, useRef, useMemo, useCallback } from "react";
 
 interface LogHeaderProps {
     displayLogLevels: boolean;
@@ -189,7 +189,7 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const RefreshLogs = async () => {
+    const RefreshLogs = useCallback(async () => {
         let newLogs: Log[] = [];
         if(getLatestLogs != null){
             newLogs = getLatestLogs(lastTimestamp);
@@ -204,7 +204,7 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
             changeEvents(oldEvents => oldEvents.concat(newLogs).slice(-maxLogs));
         }
 
-    };
+    }, [lastTimestamp, events, getLatestLogs]);
 
     useEffect(() => {
         if(autoScroll){
