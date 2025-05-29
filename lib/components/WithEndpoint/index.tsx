@@ -296,8 +296,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                         }
                     })
                     .catch((err) => {
-                        // setError(err);
-                        console.error(err);
+                        ErrCTX.setError(err);
                     })
             }
             catch (err) {

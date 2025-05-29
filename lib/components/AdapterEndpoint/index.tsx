@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import type { LoadingState, ErrorState, AdapterEndpoint_t, JSON, NodeJSON } from "../../types";
 import { isParamNode } from "../../types";
-import { useError } from "../OdinErrorContext";
+// import { useError } from "../OdinErrorContext";
 
 const DEF_API_VERSION = '0.1';
 
@@ -17,7 +17,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
 
     const [loading, setLoading] = useState<LoadingState>("idle");
 
-    const ctx = useError();
+    // const ctx = useError();
 
     const base_url = `${endpoint_url ? endpoint_url : ""}/api/${api_version}/${adapter}`;
     const axiosInstance: AxiosInstance = axios.create({
@@ -46,7 +46,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         }
         const error = new Error(errorMsg);
         setError(error);
-        ctx.setError(error);
+        // ctx.setError(error);
 
         throw error;  // rethrow error so it doesn't dissapear
     };

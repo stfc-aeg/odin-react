@@ -1,7 +1,8 @@
 import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownButton, Dropdown, FloatingLabel } from "react-bootstrap"
-import { TitleCard, useAdapterEndpoint, WithEndpoint, OdinDoubleSlider } from "../"
+import { TitleCard, WithEndpoint, OdinDoubleSlider } from "../"
 import type { ParamTree, Log} from "../";
 import { useState } from "react";
+import { AdapterEndpoint_t } from "../dist/types";
 
 const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);
@@ -49,9 +50,9 @@ export interface EndpointData_t extends ParamTree{
 
 
 
-export const EndpointPage: React.FC = () => {
+export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>}> = ({endpoint}) => {
 
-    const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL, undefined, 1000);
+    // const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL, undefined, 1000);
 
     const [input, changeInput] = useState(0);
     const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
