@@ -13,7 +13,7 @@ function App() {
 
   const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL);
   return (
-    <OdinApp title='Test' navLinks={["Workshop", "Endpoint Testing", "Periodic Endpoint Testing", "Graph Testing", "Log Display"]}>
+    <OdinApp title='Test' navLinks={["Workshop", {"Endpoints" : ["Normal", "Periodic"]}, "Graph Testing", "Log Display"]}>
       <MainPage/>
       <EndpointPage endpoint={endpoint}/>
       <PeriodicEndpointPage/>

@@ -110,10 +110,8 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             }
         }
 
-        const getValueFromEndpoint =  (): ComponentProps['value'] => {
-            // let splitPath = path.split("/");
+        const getValueFromEndpoint =  (data: JSON): ComponentProps['value'] => {
             let splitPath = fullpath.split("/");
-            let data: JSON = endpoint.data;
             splitPath.forEach((path_part) => {
                 if(isParamNode(data)){
                     data = data[path_part];
@@ -167,13 +165,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 return false;
             }
             if(endpointLoaded()){
-                let data: JSON = endpoint.metadata;
-                let splitPath = fullpath.split("/");
-                splitPath.forEach((path_part) => {
-                    if(isParamNode(data)){
-                        data = data[path_part];
-                    }
-                });
+                let data = getValueFromEndpoint(endpoint.metadata);
                 if(isParamNode(data) && "writeable" in data){ //metadata found
                     let tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
                     tmp_metadata.min = min ?? (data.min ? data.min as number : undefined);
@@ -207,8 +199,9 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     }
 
                 }else{
-                    data = data as JSON;
+                    data = getValueFromEndpoint(endpoint.data);
                     console.log("Adapter has not implemented Metadata for", fullpath);
+                    console.log(fullpath, data);
                     setEndpointValue(value ?? data as ComponentProps["value"]);
                     let data_type = (value == null ? typeof data : typeof value);
                     switch(data_type){
@@ -253,7 +246,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         useEffect(() => {
             // update flag got changed, check if we need to change anything
             if(value == null){  // if value is defined, we dont wanna overwrite anything
-                let newVal = getValueFromEndpoint();
+                let newVal = getValueFromEndpoint(endpoint.data);
                 if(newVal != endpointValue){
                     setEndpointValue(newVal);
                 }

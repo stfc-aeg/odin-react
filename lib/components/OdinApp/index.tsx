@@ -1,9 +1,9 @@
-import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState} from 'react';
+import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState, JSX} from 'react';
 
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
-import {Navbar, Nav, Card, Alert, Button, Stack} from 'react-bootstrap';
+import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack} from 'react-bootstrap';
 import { MoonFill, LightbulbFill } from 'react-bootstrap-icons';
 // import Tab from 'react-bootstrap/Tab';
 
@@ -13,10 +13,12 @@ import ProdinImg from './prodin.png'
 import styles from './styles.module.css'
 import { OdinErrorContext, OdinErrorOutlet } from '../OdinErrorContext';
 
+type NavLink_t = string | Record<string, string[]>;
+
 
 interface OdinAppProps extends PropsWithChildren{
     title: string;
-    navLinks?: string[];
+    navLinks?: NavLink_t[];
     icon_marginLeft?: string;
     icon_marginRight?: string;
 }
@@ -38,7 +40,7 @@ const Fallback: React.FC<FallbackProps> = (props) => {
 }
 
 interface routeAppProps extends PropsWithChildren{
-    routeLinks?: string[];
+    routeLinks?: NavLink_t[];
 }
 
 const RouteApp: React.FC<routeAppProps> = (props) => {
@@ -48,8 +50,20 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
 
     if(routeLinks && props.children){
 
+        let expandedRouteLinks: string[] = [];
+
+        routeLinks.forEach((link) => {
+            if(typeof link === "string"){
+                expandedRouteLinks.push(link);
+            }else{
+                let subLinkRoot = Object.keys(link)[0];
+                expandedRouteLinks.push(...link[subLinkRoot].map((subLink) => `${subLinkRoot}/${subLink}`))
+            }
+        })
+        console.log(expandedRouteLinks);
+
         childRoute = Children.map<ReactElement, ReactNode>(props.children, (child, index) => 
-                <Route path={routeLinks[index]} element={child} key={routeLinks[index]}/>
+                <Route path={expandedRouteLinks[index]} element={child} key={expandedRouteLinks[index]}/>
         ) ?? [];
 
         childRoute.push(<Route path="/"element={Children.toArray(props.children)[0]} key={"/"}/>)
@@ -102,13 +116,32 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                 </Nav.Item>
             )
         }else{
-            return navLinks.map((nav) =>
-                <Nav.Item key={nav}>
-                    <Nav.Link as={NavLink} to={nav}>
-                        {nav}
-                    </Nav.Link>
-                </Nav.Item>
-            )
+
+            let Navs: JSX.Element[] = [];
+            navLinks.forEach((nav) => {
+                if(typeof nav == "string"){
+                    Navs.push(
+                        <Nav.Item key={nav}>
+                            <Nav.Link as={NavLink} to={nav}>
+                                {nav}
+                            </Nav.Link>
+                        </Nav.Item>
+                    )
+                }else{
+                    const subLinkRoot = Object.keys(nav)[0];
+                    Navs.push(
+                        <NavDropdown title={subLinkRoot}>
+                            {nav[subLinkRoot].map((subNav) => (
+                                <NavDropdown.Item as={NavLink} to={`${subLinkRoot}/${subNav}`}>
+                                    {subNav}
+                                </NavDropdown.Item>
+                            ))}
+                        </NavDropdown>
+                    )
+                }
+            });
+            return Navs;
+        
         }
     }, [navLinks]);
 
