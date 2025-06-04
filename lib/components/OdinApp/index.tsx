@@ -11,7 +11,7 @@ import odinImg from './odin.png'
 import ProdinImg from './prodin.png'
 
 import styles from './styles.module.css'
-import { OdinErrorContext, OdinErrorOutlet } from '../OdinErrorContext';
+import { OdinErrorOutlet } from '../OdinErrorContext';
 
 type NavLink_t = string | Record<string, string[]>;
 
@@ -60,15 +60,12 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
                 expandedRouteLinks.push(...link[subLinkRoot].map((subLink) => `${subLinkRoot}/${subLink}`))
             }
         })
-        console.log(expandedRouteLinks);
 
         childRoute = Children.map<ReactElement, ReactNode>(props.children, (child, index) => 
                 <Route path={expandedRouteLinks[index]} element={child} key={expandedRouteLinks[index]}/>
         ) ?? [];
 
         childRoute.push(<Route path="/"element={Children.toArray(props.children)[0]} key={"/"}/>)
-
-        // console.log(childRoute);
 
 
     }
@@ -149,7 +146,7 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
     return (
         // <BrowserRouter>
     <ErrorBoundary FallbackComponent={Fallback}>
-        <OdinErrorContext>
+        {/* <OdinErrorContext> */}
         <BrowserRouter>
             <Navbar expand="lg"className='bg-body-secondary'>
                 <Navbar.Brand href='/'>
@@ -180,7 +177,7 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
             <OdinErrorOutlet />
             <RouteApp routeLinks={navLinks} children={props.children}/>
         </BrowserRouter>
-        </OdinErrorContext>
+        {/* </OdinErrorContext> */}
     </ErrorBoundary>
     )
 
