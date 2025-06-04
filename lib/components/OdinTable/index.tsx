@@ -1,9 +1,9 @@
 import { createContext, useContext } from "react";
-import type { CSSProperties, PropsWithChildren } from "react";
+import type { CSSProperties } from "react";
 import { Table } from "react-bootstrap";
 import { JSON, NodeJSON } from "../../types";
 
-interface OdinTableProps extends PropsWithChildren {
+interface OdinTableProps extends React.ComponentProps<typeof Table> {
     columns: {[key: string]: string};
     header?: boolean;
     widths?: {[key: string]: string};
@@ -45,7 +45,7 @@ export const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
 
 export const OdinTable: React.FC<OdinTableProps> = (props) => {
     
-    const {columns = {}, header = true, widths = {} } = props;
+    const {columns, header = true, widths = {}, children, ...leftoverProps } = props;
     const column_keys = Object.keys(columns);
 
     const renderHeader = () => {
@@ -62,11 +62,11 @@ export const OdinTable: React.FC<OdinTableProps> = (props) => {
         )
     }
     return (
-        <Table>
+        <Table {...leftoverProps}>
             {header && renderHeader()}
             <tbody>
                 <OdinTableContext.Provider value={{column_keys, widths}}>
-                    {props.children}
+                    {children}
                 </OdinTableContext.Provider>
             </tbody>
         </Table>
