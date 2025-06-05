@@ -1,6 +1,6 @@
 import {Container, Row, Col, Stack, Form} from 'react-bootstrap';
 
-import { OdinGraph, TitleCard } from "../"
+import { GraphData, Axis, OdinGraph, TitleCard } from "../"
 
 import type { Layout, PlotData } from 'plotly.js';
 import { useEffect, useState, useMemo } from 'react';
@@ -86,6 +86,15 @@ export const GraphPage: React.FC = () => {
         return () => clearInterval(interval);
     }, []);
 
+    var mid_data: GraphData[] = [
+        {data: voltage, axis: 1},
+        {data: current, axis: 2}
+    ]
+
+    const axis_def: Axis[] = [
+        {side: "left", title: "Voltage", invert: true},
+        {side: "right", title: "Current", range: [0, 15]}
+    ]
 
     return (
         <Container>
@@ -97,12 +106,12 @@ export const GraphPage: React.FC = () => {
                 </Col>
                 <Col>
                     <TitleCard title="Multiple Datasets">
-                    <OdinGraph data={data_1d_multiple}/>
+                    <OdinGraph data={data_1d_multiple} colorscale="greys"/>
                     </TitleCard>
                 </Col>
                 <Col>
                     <TitleCard title="Heatmap">
-                    <OdinGraph data={data_1d_multiple} type='heatmap'/>
+                    <OdinGraph data={data_1d_multiple} type='heatmap' colorscale="greys"/>
                     </TitleCard>
                 </Col>
             </Row>
@@ -117,6 +126,11 @@ export const GraphPage: React.FC = () => {
                     </Form>
                     <OdinGraph data={data} layout={custom_layout} />
                     </Stack>
+                    </TitleCard>
+                </Col>
+                <Col>
+                    <TitleCard title="Mid Level Complex Graph">
+                        <OdinGraph data={mid_data} axis={axis_def} series_names={["Voltage", "Current"]}/>
                     </TitleCard>
                 </Col>
             </Row>
