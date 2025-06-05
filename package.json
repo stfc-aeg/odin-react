@@ -15,7 +15,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --p ./tsconfig-build.json && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepare": "npm run build"
   },
@@ -27,6 +27,14 @@
     "react-dom": "^19.0.0",
     "react-plotly.js": "^2.6.0",
     "react-bootstrap-icons": "^1.11.5"
+  },
+  "peerDependenciesMeta": {
+    "plotly.js": {
+      "optional": true
+    },
+    "react-plotly.js": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
