@@ -5,10 +5,9 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
 import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack} from 'react-bootstrap';
 import { MoonFill, LightbulbFill } from 'react-bootstrap-icons';
-// import Tab from 'react-bootstrap/Tab';
 
-import odinImg from './odin.png'
-import ProdinImg from './prodin.png'
+import odinImg from '/odin.png'
+import ProdinImg from '/prodin.png'
 
 import styles from './styles.module.css'
 import { OdinErrorOutlet } from '../OdinErrorContext';
@@ -21,6 +20,7 @@ interface OdinAppProps extends PropsWithChildren{
     navLinks?: NavLink_t[];
     icon_marginLeft?: string;
     icon_marginRight?: string;
+    custom_icon?: string;
 }
 
 
@@ -86,7 +86,7 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
 
 export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
 {
-    const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px"} = props;
+    const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
 
     // const [key, setKey] = useState(navLinks ? navLinks[0] : "home");
     const [iconHover, changeIconHover] = useState(false);
@@ -95,6 +95,8 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
     
     const handleHoverOn = () => changeIconHover(true);
     const handleHoverOff = () => changeIconHover(false);
+
+    const icon_addr = custom_icon ?? (iconHover ? ProdinImg : odinImg);
 
     const toggleTheme = () => {
         const newDarkMode = !darkMode;
@@ -151,7 +153,7 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
             <Navbar expand="lg"className='bg-body-secondary'>
                 <Navbar.Brand href='/'>
                     <img
-                    src={iconHover ? ProdinImg : odinImg}
+                    src={icon_addr}
                     height="30"
                     style={{marginLeft: icon_marginLeft, marginRight: icon_marginRight}}
                     className="d-inline-block align-top"
