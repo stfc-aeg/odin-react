@@ -7,4 +7,6 @@ export {OdinTable, OdinTableRow } from './components/OdinTable';
 export {OdinEventLog} from './components/OdinEventLog';
 export {OdinErrorContext, OdinErrorOutlet, useError } from './components/OdinErrorContext';
 export {OdinDoubleSlider} from './components/OdinDoubleSlider';
-export type { ParamTree, Log, GraphData, Axis } from './types';
+export type { ParamTree, Log } from './types';
+export { isGraphData } from './types/optional_types';
+export type { GraphData, Axis } from './types/optional_types';

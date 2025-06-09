@@ -1,4 +1,3 @@
-import type { Layout } from "plotly.js";
 /**
  * Typedef for a JSON style object.
  */
@@ -19,27 +18,6 @@ export type ParamTree = NodeJSON;
  */
 export const isParamNode = (x: JSON): x is NodeJSON => {
     return x !== null && typeof x === 'object' && !Array.isArray(x)};
-
-/**
- * Data structure for The OdinGraph, allows you to pin data to a left or right hand axis
- */
-export interface GraphData {
-    data: number[];
-    axis?: number;
-}
-
-export interface Axis {
-    side?: Layout["yaxis"]["side"];
-    range?: [number, number];
-    invert?: boolean;
-    title?: Layout["yaxis"]["title"];
-    visible?: boolean;
-
-}
-
-export const isGraphData = (x: Object[]): x is GraphData[] => {
-    return "data" in x[0] && Array.isArray(x[0].data) && typeof x[0].data[0] === "number"
-}
 
 export type ErrorState = null | Error;
 export type LoadingState = "getting" | "putting" | "idle";

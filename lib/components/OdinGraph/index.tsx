@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, PureComponent } from 'react';
 
 import type { ColorScale, Layout, PlotData, PlotType } from 'plotly.js';
-import Plot from 'react-plotly.js';
-import type { PlotParams } from 'react-plotly.js';
+import type { PlotParams } from 'react-plotly.js'; 
 
-import type { GraphData, Axis } from '../../types';
-import { isGraphData } from '../../types';
+import type { GraphData, Axis } from '../../types/optional_types';
+import { isGraphData } from '../../types/optional_types';
 
 interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     title?: string;
@@ -16,6 +15,20 @@ interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     axis?: Axis[];
 
 }
+
+class FallbackPlotComponent extends PureComponent<PlotParams> {
+    render() {
+        return (<p>Plotly Not Installed. Do not try and use OdinGraph without first installing <code>plotly.js</code> and <code>react-plotly.js</code></p>)
+    }
+}
+
+const Plot = lazy(() => import('react-plotly.js')
+    .catch(
+    (error) => {
+        console.error("Plotly Plot unable to be imported: ", error);
+        return {default: FallbackPlotComponent};
+    })
+)
 
 export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
