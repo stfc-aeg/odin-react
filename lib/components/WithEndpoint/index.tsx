@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { AdapterEndpoint_t, isParamNode, JSON } from "../../types";
 import { useError } from "../OdinErrorContext";
@@ -76,18 +76,20 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const [type, setType] = useState<value_t>("string");
 
+        const [isPending, startTransition] = useTransition();
+
         const style: CSSProperties = endpointValue == componentValue ? {} : {backgroundColor: dif_color};
 
         const disable = useMemo(() => {
             if(disabled !== undefined){
-                return (disabled || endpoint.loading === "putting")
+                return (disabled || isPending || endpoint.loading)
             }
             if(metadata){
-                return endpoint.loading === "putting" || metadata.readOnly
+                return isPending || endpoint.loading || metadata.readOnly
             }
-            return endpoint.loading === "putting";
+            return isPending || endpoint.loading;
 
-        }, [endpoint.loading, disabled, metadata?.readOnly])
+        }, [isPending, endpoint.loading, disabled, metadata?.readOnly]);
 
         const {path, valueName} = useMemo(() => {
             let path = "";
@@ -261,36 +263,38 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const sendRequest = (val: ComponentProps['value']) => {
             try {
-                val = getTypedValue(val);
-                validate(val);
-                
+                startTransition(async () => {
+                    val = getTypedValue(val);
+                    validate(val);
+                    
 
-                if(pre_method)
-                {
-                    if(pre_args)
+                    if(pre_method)
                     {
-                        pre_method(...pre_args);
-                    }else{
-                        pre_method();
-                    }
-                }
-                const sendVal = {[valueName]: val};
-
-                endpoint.put(sendVal, path)
-                    .then((response) => {
-                        endpoint.mergeData(response, path);
-                        if(post_method)
+                        if(pre_args)
                         {
-                            if(post_args){
-                                post_method(...post_args);
-                            }else{
-                                post_method();
-                            }
+                            pre_method(...pre_args);
+                        }else{
+                            pre_method();
                         }
-                    })
-                    .catch((err) => {
-                        ErrCTX.setError(err);
-                    })
+                    }
+                    const sendVal = {[valueName]: val};
+
+                    endpoint.put(sendVal, path)
+                        .then((response) => {
+                            endpoint.mergeData(response, path);
+                            if(post_method)
+                            {
+                                if(post_args){
+                                    post_method(...post_args);
+                                }else{
+                                    post_method();
+                                }
+                            }
+                        })
+                        .catch((err) => {
+                            ErrCTX.setError(err);
+                        })
+                })
             }
             catch (err) {
                 if(err instanceof Error){

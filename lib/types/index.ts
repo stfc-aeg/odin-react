@@ -20,7 +20,7 @@ export const isParamNode = (x: JSON): x is NodeJSON => {
     return x !== null && typeof x === 'object' && !Array.isArray(x)};
 
 export type ErrorState = null | Error;
-export type LoadingState = "getting" | "putting" | "idle";
+// export type LoadingState = "getting" | "putting" | "posting" | "deleting" | "idle";
 
 export interface AdapterEndpoint_t<T = NodeJSON> {
     /**
@@ -39,11 +39,9 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
     error: ErrorState;
     /**
      * State of the http client connection to the adapter. 
-     *  - "getting" means currently waiting for a response from a GET request
-     *  - "putting" means currently waiting for a response from a PUT request
-     *  - "idle" means not currently doing anything
+     * If true, the AdapterEndpoint is awaiting a response from the adapter.
      */
-    loading: LoadingState;
+    loading: boolean;
 
     /**
      * Flag token that will change whenever the data has changed, to alert WithEndpoint components
@@ -65,6 +63,23 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
     put: (data: NodeJSON, param_path?: string) => Promise<NodeJSON>;
+
+    /**
+     * Async http POST method. Not often implemented by Adapters, but potentially used to post data
+     * files or some other new data to the adapter
+     * @param {NodeJSON} data - The data, with a key, that you wish to POST to the adapter
+     * @param param_path  - the path you want to POST to. defaults to an empty string, for a top level POST
+     * @returns An Async promise, that when resolved will return the data within the HTTP response
+     */
+    post: (data: NodeJSON, param_path?: string) => Promise<NodeJSON>;
+
+    /**
+     * Async http DELETE method. Renamed because 'delete' is a reserved word in javascript. Not often
+     * implemented by adapters.
+     * @param param_path the path to the data you want to DELETE. Defaults to an empty string
+     * @returns An Async promise, that when resolved will return the data within the HTTP response
+     */
+    remove: (param_path?: string) => Promise<NodeJSON>;
     /**
      * A method to automatically perform a top level GET request and refresh the AdapterEndpoint's current view of the data
      * @returns 

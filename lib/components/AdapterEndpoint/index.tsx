@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
-import type { LoadingState, ErrorState, AdapterEndpoint_t, JSON, NodeJSON } from "../../types";
+import type { ErrorState, AdapterEndpoint_t, JSON, NodeJSON } from "../../types";
 import { isParamNode } from "../../types";
 import { useError } from "../OdinErrorContext";
 
@@ -15,7 +15,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     const [error, setError] = useState<ErrorState>(null);
     const [updateFlag, setUpdateFlag] = useState<Symbol>(Symbol("init"));
 
-    const [loading, setLoading] = useState<LoadingState>("idle");
+    const [awaiting, changeAwaiting] = useState(false);
 
     const ctx = useError();
 
@@ -52,25 +52,22 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     };
 
     const get = async (param_path='', get_metadata=false) => {
-        // const url = [base_url, param_path].join("/") // assumes param_path does not start with a slash
-        console.debug("GET: ", base_url + "/" + param_path);
+        console.debug(`GET: ${base_url}/${param_path}`);
 
         let result: NodeJSON = {};
         let response: AxiosResponse<typeof result>;
-
+        
         try {
-            setLoading("getting");
+            //intentionally not setting the awaiting state here to avoid
+            //issues with the WithEndpoint component
             response = await axiosInstance.get(param_path, get_metadata ? 
-                           {headers: {"Accept": "application/json;metadata=true"}} :
+                        {headers: {"Accept": "application/json;metadata=true"}} :
                             undefined
                         )
             result = response.data;
         }
         catch (err) {
             handleError(err);
-        }
-        finally {
-            setLoading("idle")
         }
         console.debug("Response: ", result);
         
@@ -79,13 +76,13 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
 
     const put = async (data: NodeJSON, param_path='') => {
         // const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
-        console.debug("PUT: " + base_url + "/" + param_path + ", data: ", data);
+        console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
         
         let result: NodeJSON = {};
         let response: AxiosResponse<typeof result>;
 
         try {
-            setLoading("putting");
+            changeAwaiting(true);
             response = await axiosInstance.put(param_path, data);
             result = response.data;
         }
@@ -93,13 +90,56 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             handleError(err);
         }
         finally {
-            setLoading("idle");
+            changeAwaiting(false);
         }
         console.debug("Response: ", result);
         
         return result;
-
     };
+
+    const post = async (data: NodeJSON, param_path="") => {
+        console.debug(`POST: ${base_url}/${param_path}, data: `, data);
+
+        let result: NodeJSON = {};
+        let response: AxiosResponse<typeof result>;
+
+        try {
+            changeAwaiting(true);
+            response = await axiosInstance.post(param_path, data);
+            result = response.data;
+        }
+        catch (err: unknown) {
+            handleError(err);
+        }
+        finally {
+            changeAwaiting(false);
+        }
+        console.debug("Response: ", result);
+        
+        return result;
+    };
+
+    const remove = async (param_path="") => {
+        console.debug(`DELETE: ${base_url}/${param_path}`);
+
+        let result: NodeJSON = {};
+        let response: AxiosResponse<typeof result>;
+
+        try {
+            changeAwaiting(true);
+            response = await axiosInstance.delete(param_path);
+            result = response.data;
+        }
+        catch (err: unknown) {
+            handleError(err);
+        }
+        finally {
+            changeAwaiting(false);
+        }
+        console.debug("Response: ", result);
+        
+        return result;
+    }
 
     useEffect(() => {
         //run when the endpoint is first created, to populate its data and metadata objects
@@ -151,5 +191,5 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         setUpdateFlag(Symbol("merged"));
     }
     
-    return { data: data, metadata, error, loading, updateFlag, get, put, refreshData, mergeData}
+    return { data: data, metadata, error, loading: awaiting, updateFlag, get, put, post, remove, refreshData, mergeData}
 }
