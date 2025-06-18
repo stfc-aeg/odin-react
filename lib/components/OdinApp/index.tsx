@@ -6,8 +6,8 @@ import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack} from 'react-bootstrap';
 import { MoonFill, LightbulbFill } from 'react-bootstrap-icons';
 
-import odinImg from '/odin.png'
-import ProdinImg from '/prodin.png'
+import odinImg from '../../assets/odin.png';
+import ProdinImg from '../../assets/prodin.png'
 
 import styles from './styles.module.css'
 import { OdinErrorOutlet } from '../OdinErrorContext';
