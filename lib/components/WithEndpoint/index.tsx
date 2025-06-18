@@ -263,10 +263,10 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const sendRequest = (val: ComponentProps['value']) => {
             try {
+                val = getTypedValue(val);
+                validate(val);
+
                 startTransition(async () => {
-                    val = getTypedValue(val);
-                    validate(val);
-                    
 
                     if(pre_method)
                     {

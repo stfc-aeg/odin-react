@@ -28,7 +28,7 @@ class ReactController():
         self.logger = EventLogger(logging.getLogger())
         self.logger.info("System Starting Up")
 
-        self.loop = PeriodicCallback(self.looping_update, 1000)
+        self.loop = PeriodicCallback(self.looping_update, 20000)
         self.loop.start()
 
         self.first_name = ""

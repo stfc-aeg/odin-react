@@ -1,0 +1,36 @@
+.liveImg {
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    cursor: grab;
+    border: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.liveImg:active {
+    cursor: grabbing;
+}
+
+.centerContents {
+    text-align: center;
+    align-content: center;
+}
+
+.zoomOverlay {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    background-color: transparent;
+    visibility: hidden;
+    margin: 5px;
+}
+
+.figure {
+    position: relative;
+}
+
+.figure:hover .zoomOverlay {
+    visibility: visible;
+}

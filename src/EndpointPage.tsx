@@ -16,35 +16,35 @@ interface FormData_T extends ParamTree{
 }
 
 export interface EndpointData_t extends ParamTree{
-    string_val: string,
-    num_val: number,
-    rand_num: number,
-    select_list: string[],
-    selected: string,
-    toggle: boolean,
-    trigger: null,
+    string_val: string;
+    num_val: number;
+    rand_num: number;
+    select_list: string[];
+    selected: string;
+    toggle: boolean;
+    trigger: null;
     data: {
-        set_data: number,
+        set_data: number;
         dict: {
-            half: number,
-            is_even: boolean
+            half: number;
+            is_even: boolean;
         },
-        clip_data: number[]
-    },
+        clip_data: number[];
+    };
     deep: {
         long: {
             nested: {
                 dict: {
                     path: {
-                        val: string,
-                        num_val: number
+                        val: string;
+                        num_val: number;
                     }
                 }
             }
         }
-    },
-    logging: Log[],
-    logging_no_level: Log[],
+    };
+    logging: Log[];
+    logging_no_level: Log[];
     submit: FormData_T;
 }
 

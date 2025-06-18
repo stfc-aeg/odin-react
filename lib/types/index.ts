@@ -1,3 +1,5 @@
+import type { AxiosRequestConfig } from "axios";
+
 /**
  * Typedef for a JSON style object.
  */
@@ -21,6 +23,11 @@ export const isParamNode = (x: JSON): x is NodeJSON => {
 
 export type ErrorState = null | Error;
 // export type LoadingState = "getting" | "putting" | "posting" | "deleting" | "idle";
+
+export interface getConfig {
+    wants_metadata?: boolean;
+    responseType?: AxiosRequestConfig['responseType'];
+}
 
 export interface AdapterEndpoint_t<T = NodeJSON> {
     /**
@@ -54,7 +61,7 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
      * @param {boolean} [get_metadata] - set to true to request Metadata. Defaults to false
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    get: (param_path?: string, get_metadata?: boolean) => Promise<NodeJSON>;
+    get: <T = NodeJSON>(param_path?: string, config?: getConfig) => Promise<T>;
     /**
      * Async http PUT method. Modify the data in the param tree at the provided path
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.

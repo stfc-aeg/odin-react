@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import axios, { AxiosInstance, AxiosResponse } from "axios";
-import type { ErrorState, AdapterEndpoint_t, JSON, NodeJSON } from "../../types";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import type { ErrorState, AdapterEndpoint_t, JSON, NodeJSON, getConfig } from "../../types";
 import { isParamNode } from "../../types";
 import { useError } from "../OdinErrorContext";
 
@@ -24,7 +24,8 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         baseURL: base_url,
         timeout: timeout,
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            // "Accept": "application/json,image/*"
         }
     })
 
@@ -48,30 +49,33 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         setError(error);
         ctx.setError(error);
 
-        // throw error;  // rethrow error so it doesn't dissapear
+        return error;  // rethrow error so it doesn't dissapear
     };
 
-    const get = async (param_path='', get_metadata=false) => {
+    const get = async <T = NodeJSON>(param_path='', config?: getConfig) => {
         console.debug(`GET: ${base_url}/${param_path}`);
 
-        let result: NodeJSON = {};
-        let response: AxiosResponse<typeof result>;
+        const {wants_metadata=false, responseType='json'} = config ?? {};
+
+        let result: T;
+        let response: AxiosResponse<T>;
+
+        let request_config: AxiosRequestConfig = {responseType: responseType};
+        if(wants_metadata){
+            request_config.headers = {Accept: "application/json;metadata=true"};
+        }
         
         try {
             //intentionally not setting the awaiting state here to avoid
             //issues with the WithEndpoint component
-            response = await axiosInstance.get(param_path, get_metadata ? 
-                        {headers: {"Accept": "application/json;metadata=true"}} :
-                            undefined
-                        )
+            response = await axiosInstance.get<T>(param_path, request_config);
             result = response.data;
+            console.debug("Response Data: ", result);
+            return result;
         }
         catch (err) {
-            handleError(err);
+            throw handleError(err);
         }
-        console.debug("Response: ", result);
-        
-        return result;
     };
 
     const put = async (data: NodeJSON, param_path='') => {
@@ -85,16 +89,16 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             changeAwaiting(true);
             response = await axiosInstance.put(param_path, data);
             result = response.data;
+            
+            console.debug("Response: ", result);
+            return result;
         }
         catch (err: unknown) {
-            handleError(err);
+            throw handleError(err);
         }
         finally {
             changeAwaiting(false);
         }
-        console.debug("Response: ", result);
-        
-        return result;
     };
 
     const post = async (data: NodeJSON, param_path="") => {
@@ -146,7 +150,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         refreshData();
 
         //get metadata
-        get("", true)
+        get("", {wants_metadata: true})
         .then(result => {
             setMetadata(result);
         })
