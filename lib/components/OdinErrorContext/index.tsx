@@ -1,6 +1,6 @@
 import { useContext, createContext, useState, useMemo, PropsWithChildren } from "react";
 
-import type { ErrorState } from "../../types";
+import type { ErrorState } from "../../helpers/types";
 import { Alert } from "react-bootstrap";
 
 interface ErrorContext_t {

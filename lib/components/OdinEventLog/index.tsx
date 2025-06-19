@@ -1,5 +1,5 @@
 import { TitleCard } from "../TitleCard";
-import type {Log, AdapterEndpoint_t} from "../../types";
+import type {Log, AdapterEndpoint_t} from "../../helpers/types";
 import {Row, Col } from 'react-bootstrap';
 import { ToggleButtonGroup, ToggleButton, Form, InputGroup, Button, OverlayTrigger, Popover } from "react-bootstrap";
 

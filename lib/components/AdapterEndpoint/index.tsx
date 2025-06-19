@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import type { ErrorState, AdapterEndpoint_t, JSON, NodeJSON, getConfig } from "../../types";
-import { isParamNode } from "../../types";
+import type { ErrorState, AdapterEndpoint_t, JSON, NodeJSON, getConfig } from "../../helpers/types";
+import { isParamNode } from "../../helpers/types";
 import { useError } from "../OdinErrorContext";
 
 const DEF_API_VERSION = '0.1';

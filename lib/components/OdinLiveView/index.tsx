@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import type { AdapterEndpoint_t, NodeJSON } from '../../types';
+import type { AdapterEndpoint_t, NodeJSON} from '../../helpers/types';
+import { getValueFromPath } from '../../helpers/utils';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 
@@ -16,8 +17,9 @@ import { OdinDoubleSlider } from '../OdinDoubleSlider';
 interface LiveViewProps {
     title?: ReactNode;
     endpoint: AdapterEndpoint_t<LiveViewParam>;
-    path?: string;
+    img_path?: string;
     interval?: number;
+    addrs?: Partial<LiveViewerAddrs>;
 }
 
 interface ZoomableImageProps {
@@ -37,6 +39,14 @@ interface LiveViewParam extends NodeJSON {
     data_min_max: [number, number];
     clip_range: [number, number];
 
+}
+
+export interface LiveViewerAddrs {
+    min_max_addr: string;
+    clip_range_addr: string;
+    colormap_options_addr: string;
+    colormap_selected_addr: string;
+    frame_num_addr: string;
 }
 
 const EndpointDropdown = WithEndpoint(Dropdown);
@@ -92,9 +102,9 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
                 <Col></Col>
                 <Col xs="auto">
                 <ButtonGroup size='sm'>
-                <Button title="Zoom In" variant="secondary" onClick={() => setScale(oldScale => oldScale+10)}>+</Button>
-                <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(100)}>{`${scale}%`}</Button>
                 <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale-10, 10 ))}>-</Button>
+                <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(100)}>{`${scale}%`}</Button>
+                <Button title="Zoom In" variant="secondary" onClick={() => setScale(oldScale => oldScale+10)}>+</Button>
                 </ButtonGroup>
                 </Col>
             </Row>
@@ -103,28 +113,33 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
 }
 
 export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
-    const { title="Live View", path="image", endpoint, interval=1000 } = props;
+    const { title="Live View", img_path="image", endpoint, interval=1000, addrs={} } = props;
     
     const [imgPath, setImgPath] = useState(defaultImg);
     const [enable, setEnable] = useState(true);
     const [frameNum, setFrameNum] = useState(0);
 
+    const [colormap_options, setColormapOptions] = useState<LiveViewParam["colormap_options"]>();
+    const [colormap_selected, setColormapSelected] = useState<LiveViewParam["colormap_selected"]>("");
+    const [data_min_max, setDataMinMax] = useState<LiveViewParam["data_min_max"] | undefined>();
+    const [clip_range, setClipRange] = useState<LiveViewParam["clip_range"] | undefined>();
+
+
+    const {min_max_addr = "data_min_max",
+           clip_range_addr = "clip_range",
+           colormap_options_addr = "colormap_options",
+           colormap_selected_addr = "colormap_selected",
+           frame_num_addr = "frame/frame_num"} = addrs;
+
+
+
     const refreshImage = useCallback(() => {
-        endpoint.get<Blob>(path, {responseType: "blob"})
+        endpoint.get<Blob>(img_path, {responseType: "blob"})
         .then(result => {
             URL.revokeObjectURL(imgPath);  // memory management
             const img_url = URL.createObjectURL(result);
-            if(endpoint.data){
-                endpoint.get("frame/frame_num")
-                .then(result => {
-                    endpoint.mergeData(result, "frame/frame_num");
-                    setFrameNum(Object.values(result)[0] as number);
-                }).catch((error) => {
-                    console.error(error);
-                    setFrameNum(-1);
-                })
-            }
             setImgPath(img_url);
+            endpoint.refreshData();
         }).catch((error) => {
             console.error("IMAGE GET FAILED: ", error);
             setImgPath(defaultImg);
@@ -140,29 +155,43 @@ export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
         return () => clearInterval(timer_id);
     }, [interval, refreshImage, enable]);
 
+    useEffect(() => {
+        setColormapOptions(getValueFromPath(endpoint.data, colormap_options_addr));
+        setColormapSelected(getValueFromPath(endpoint.data, colormap_selected_addr) ?? "");
+        setDataMinMax(getValueFromPath(endpoint.data, min_max_addr));
+        setClipRange(getValueFromPath(endpoint.data, clip_range_addr));
+        setFrameNum(getValueFromPath(endpoint.data, frame_num_addr) ?? -1);
+
+
+    }, [endpoint.updateFlag]);
+
     const renderOptions = (
         <Popover>
             <Popover.Header>Options</Popover.Header>
             <Popover.Body>
                 <div className='d-grid gap-2'>
-                <EndpointDropdown endpoint={endpoint} event_type='select' fullpath='colormap_selected'
-                    className="d-grid">
-                        <Dropdown.Toggle id="colormap_dropdown">
-                            {endpoint.data.colormap_selected ?
-                            endpoint.data.colormap_options[endpoint.data.colormap_selected]
-                            : "Unknown"}
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            {endpoint.data.colormap_options ? 
-                                Object.entries(endpoint.data.colormap_options).map(([key, value], index) => (
-                                    <Dropdown.Item eventKey={key} key={index}>{value}</Dropdown.Item>
-                                )): <></>
-                                
-                            }
-                        </Dropdown.Menu>
-                </EndpointDropdown>
-                <EndpointSlider endpoint={endpoint} title='Data Clipping' fullpath='clip_range'
-                    min={endpoint.data.data_min_max?.[0] ?? 0} max={endpoint.data.data_min_max?.[1] ?? 1024}/>
+                    {(colormap_selected && colormap_options) && 
+                    <EndpointDropdown endpoint={endpoint} event_type='select' fullpath={colormap_selected_addr}
+                        className="d-grid">
+                            <Dropdown.Toggle id="colormap_dropdown">
+                                {colormap_options[colormap_selected]}
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                {colormap_options ? 
+                                    Object.entries(colormap_options).map(([key, value], index) => (
+                                        <Dropdown.Item eventKey={key} key={index} active={key == colormap_selected}>
+                                            {value}
+                                        </Dropdown.Item>
+                                    )): <></>
+                                    
+                                }
+                            </Dropdown.Menu>
+                    </EndpointDropdown>
+                    }
+                {clip_range && 
+                <EndpointSlider endpoint={endpoint} title='Data Clipping' fullpath={clip_range_addr}
+                    min={data_min_max?.[0] ?? 0} max={data_min_max?.[1] ?? 1024}/>
+                }
                 </div>
             </Popover.Body>
         </Popover>
@@ -177,18 +206,20 @@ export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
                 <ButtonGroup>
                 <Button onClick={() => setEnable(val => !val)}
                         variant={enable ? "secondary" : "outline-secondary"}
-                        title={`Toggle Live View ${enable ? "Off": "On"}`}>
-                    {enable ? `\u2714` : "\u2716"}
+                        title={`${enable ? "Disable": "Enable"} Live View`}>
+                    {enable ? `\u23f8` : "\u25b6"}
                 </Button>
-                <OverlayTrigger placement='bottom-end' overlay={renderOptions} trigger="click" rootClose> 
-                    <Button title='Options'>&equiv;</Button>
-                </OverlayTrigger>
+                {((colormap_options && colormap_selected) || clip_range) && 
+                    <OverlayTrigger placement='bottom-end' overlay={renderOptions} trigger="click" rootClose> 
+                        <Button title='Options'>&equiv;</Button>
+                    </OverlayTrigger>
+                }
                 </ButtonGroup>
                 </Col>
                 </Row>
             </Card.Header>
             <Card.Body className={style.centerContents}>
-                <ZoomableImage src={imgPath} caption={`Frame Number: ${frameNum}`}/>
+                <ZoomableImage src={imgPath} caption={frameNum > -1? `Frame Number: ${frameNum}` : ""}/>
             </Card.Body>
         </Card>
     )

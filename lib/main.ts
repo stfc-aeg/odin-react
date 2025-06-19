@@ -8,6 +8,5 @@ export {OdinEventLog} from './components/OdinEventLog';
 export {OdinErrorContext, OdinErrorOutlet, useError } from './components/OdinErrorContext';
 export {OdinDoubleSlider} from './components/OdinDoubleSlider';
 export { OdinLiveView, ZoomableImage } from './components/OdinLiveView';
-export type { ParamTree, Log } from './types';
-export { isGraphData } from './types/optional_types';
-export type { GraphData, Axis } from './types/optional_types';
+export type { ParamTree, Log } from './helpers/types';
+export type { GraphData, Axis } from './helpers/optional_types';

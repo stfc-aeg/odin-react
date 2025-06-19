@@ -1,6 +1,6 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import { AdapterEndpoint_t, isParamNode, JSON } from "../../types";
+import { AdapterEndpoint_t, isParamNode, JSON } from "../../helpers/types";
 import { useError } from "../OdinErrorContext";
 
 type event_t = "select" | "click" | "enter"
@@ -119,7 +119,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     data = data[path_part];
                 }
             });
-            if(data){
+            if(data != null){
                 return data as JSON as ComponentProps['value'];
             }else{
                 return undefined;

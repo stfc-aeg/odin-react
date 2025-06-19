@@ -23,12 +23,14 @@ export const LiveViewPage: React.FC = () => {
         <Container>
             <Row>
             <Col xs="6">
-                <OdinLiveView endpoint={liveviewEndpoint} title="Live View"/>
+                <OdinLiveView endpoint={liveviewEndpoint}/>
             </Col>
             <Col xs="6">
-                <TitleCard title="Filler">
-
-                </TitleCard>
+                <OdinLiveView endpoint={liveviewEndpoint}
+                addrs={{clip_range_addr: "not/real",
+                        colormap_options_addr: "not/real",
+                        frame_num_addr: "not/real"
+                }}/>
             </Col>
             </Row>
         </Container>

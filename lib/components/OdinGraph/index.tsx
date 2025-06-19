@@ -3,8 +3,8 @@ import { useEffect, useState, lazy, PureComponent } from 'react';
 import type { ColorScale, Layout, PlotData, PlotType } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js'; 
 
-import type { GraphData, Axis } from '../../types/optional_types';
-import { isGraphData } from '../../types/optional_types';
+import type { GraphData, Axis } from '../../helpers/optional_types';
+import { isGraphData } from '../../helpers/optional_types';
 
 interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     title?: string;
