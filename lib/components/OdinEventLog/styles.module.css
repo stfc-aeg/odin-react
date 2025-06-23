@@ -42,7 +42,7 @@
     font-weight: bold;
 }
 
-.pre-scrollable {
+.preScrollable {
     overflow-y: auto;
     overflow-x: hidden;
     border: 1px solid;

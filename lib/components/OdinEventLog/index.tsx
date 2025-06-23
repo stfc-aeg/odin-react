@@ -261,7 +261,7 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
             displayLogLevels={displayLogLevels} displayDay={displayDay} LogLevelFilter={level_filter} autoScroll={autoScroll}
             changeDisplayDay={changeDisplayDay} onFilterChange={onFilterChange} changeAutoScroll={changeAutoScroll} changeTimestampFilter={changeTimestampFilter}/>
         }>
-            <div className={style["pre-scrollable"]} style={{height: displayHeight}}>
+            <div className={style.preScrollable} style={{height: displayHeight}}>
                 {filterEvent().map((log) => renderEvent(log))}
                 <div className="scrollToBottom" ref={scrollRef}/>
             </div>

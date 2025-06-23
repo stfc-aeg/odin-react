@@ -6,9 +6,10 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import defaultImg from '../../assets/odin.png';
 
-import { Row, Col, Button, Dropdown, ButtonGroup } from 'react-bootstrap';
+import { Row, Col, Button, Dropdown, ButtonGroup, OverlayTriggerProps } from 'react-bootstrap';
 import { OverlayTrigger, Popover, Card} from 'react-bootstrap';
 
+import { ZoomIn, ZoomOut, PauseFill, PlayFill, List } from 'react-bootstrap-icons';
 
 import style from './styles.module.css';
 import { WithEndpoint } from '../WithEndpoint';
@@ -20,11 +21,13 @@ interface LiveViewProps {
     img_path?: string;
     interval?: number;
     addrs?: Partial<LiveViewerAddrs>;
+    justImage?: boolean;
 }
 
 interface ZoomableImageProps {
     src: string;
     caption?: string;
+    additional_hover?: ReactNode;
 
 }
 
@@ -54,7 +57,7 @@ const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 
 export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
 
-    const {src, caption } = props;
+    const {src, caption, additional_hover } = props;
 
     const [dims, setDims] = useState([1024, 1024]);
     const [dragStart, setDragStart] = useState([0, 0]);
@@ -99,12 +102,16 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
             </div>
             {caption && <figcaption>{caption}</figcaption>}
             <Row className={style.zoomOverlay}>
-                <Col></Col>
+                <Col>{additional_hover}</Col>
                 <Col xs="auto">
                 <ButtonGroup size='sm'>
-                <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale-10, 10 ))}>-</Button>
+                <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale-10, 10 ))}>
+                    <ZoomOut/>
+                </Button>
                 <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(100)}>{`${scale}%`}</Button>
-                <Button title="Zoom In" variant="secondary" onClick={() => setScale(oldScale => oldScale+10)}>+</Button>
+                <Button title="Zoom In" variant="secondary" onClick={() => setScale(oldScale => oldScale+10)}>
+                <ZoomIn/>
+                </Button>
                 </ButtonGroup>
                 </Col>
             </Row>
@@ -113,7 +120,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
 }
 
 export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
-    const { title="Live View", img_path="image", endpoint, interval=1000, addrs={} } = props;
+    const { title="Live View", img_path="image", endpoint, interval=1000, addrs={}, justImage } = props;
     
     const [imgPath, setImgPath] = useState(defaultImg);
     const [enable, setEnable] = useState(true);
@@ -197,30 +204,41 @@ export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
         </Popover>
     )
 
-    return (
-        <Card>
-            <Card.Header>
-                <Row>
-                <Col className={style.centerContents}>{title}</Col>
-                <Col xs="auto">
-                <ButtonGroup>
-                <Button onClick={() => setEnable(val => !val)}
-                        variant={enable ? "secondary" : "outline-secondary"}
-                        title={`${enable ? "Disable": "Enable"} Live View`}>
-                    {enable ? `\u23f8` : "\u25b6"}
-                </Button>
-                {((colormap_options && colormap_selected) || clip_range) && 
-                    <OverlayTrigger placement='bottom-end' overlay={renderOptions} trigger="click" rootClose> 
-                        <Button title='Options'>&equiv;</Button>
-                    </OverlayTrigger>
-                }
-                </ButtonGroup>
-                </Col>
-                </Row>
-            </Card.Header>
-            <Card.Body className={style.centerContents}>
-                <ZoomableImage src={imgPath} caption={frameNum > -1? `Frame Number: ${frameNum}` : ""}/>
-            </Card.Body>
-        </Card>
+    const optionButtons = (placement: OverlayTriggerProps["placement"]="bottom-end") => (
+        <ButtonGroup size='sm'>
+            <Button onClick={() => setEnable(val => !val)}
+                    variant={enable ? "secondary" : "outline-secondary"}
+                    title={`${enable ? "Disable": "Enable"} Live View`}>
+                {enable ? <PauseFill/> : <PlayFill/>}
+            </Button>
+            {((colormap_options && colormap_selected) || clip_range) && 
+                <OverlayTrigger placement={placement} overlay={renderOptions} trigger="click" rootClose> 
+                    <Button title='Options'><List/></Button>
+                </OverlayTrigger>
+            }
+        </ButtonGroup>
     )
+
+    if(justImage){
+        return (
+            <ZoomableImage src={imgPath} caption={frameNum > -1? `Frame Number: ${frameNum}` : ""}
+                           additional_hover={optionButtons("bottom-start")}/>
+        )
+    }else{
+        return (
+            <Card>
+                <Card.Header>
+                    <Row>
+                    <Col className={style.centerContents}>{title}</Col>
+                    <Col xs="auto">
+                        {optionButtons()}
+                    </Col>
+                    </Row>
+                </Card.Header>
+                <Card.Body className={style.centerContents}>
+                    <ZoomableImage src={imgPath} caption={frameNum > -1? `Frame Number: ${frameNum}` : ""}/>
+                </Card.Body>
+            </Card>
+        )
+    }
 }
