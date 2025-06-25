@@ -207,7 +207,7 @@ export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
     const optionButtons = (placement: OverlayTriggerProps["placement"]="bottom-end") => (
         <ButtonGroup size='sm'>
             <Button onClick={() => setEnable(val => !val)}
-                    variant={enable ? "secondary" : "outline-secondary"}
+                    variant="secondary"
                     title={`${enable ? "Disable": "Enable"} Live View`}>
                 {enable ? <PauseFill/> : <PlayFill/>}
             </Button>

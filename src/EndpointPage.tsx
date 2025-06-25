@@ -2,7 +2,7 @@ import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownBu
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "../"
 import type { ParamTree, Log} from "../";
 import { useState } from "react";
-import { AdapterEndpoint_t } from "../dist/types";
+import { AdapterEndpoint_t } from "../";
 
 const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);
@@ -170,6 +170,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>
                     <EndpointSlider title="Endpoint Slider" endpoint={endpoint} fullpath="data/clip_data" min={-20} max={20} step={0.5}/>
                     <OdinDoubleSlider showTooltip={false} showMinMaxValues={true}/>
                     <OdinDoubleSlider showMinMaxValues={false}/>
+                    <OdinDoubleSlider/>
                 </TitleCard>
                 </Col>
             </Row>

@@ -29,8 +29,8 @@ export const LogMessagePage = () => {
             <Row>
             <Col>
                 <TitleCard title="Table Test">
-                    <OdinTable columns={{"timestamp": "Timestamp", "message": "Message", "level": "Level"}}
-                               striped hover>
+                    <OdinTable columns={{"timestamp": "Timestamp", "level": "Level", "message": "Message"}} striped
+                                widths={{"timestamp": "20%", "level": "10px"}}>
                         {tableData.map((log) => (
                             <OdinTableRow key={log.timestamp} row={log}/>
                         ))}

@@ -1,4 +1,4 @@
-import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState, JSX} from 'react';
+import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState, JSX, CSSProperties} from 'react';
 
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
@@ -18,8 +18,8 @@ type NavLink_t = string | Record<string, string[]>;
 interface OdinAppProps extends PropsWithChildren{
     title: string;
     navLinks?: NavLink_t[];
-    icon_marginLeft?: string;
-    icon_marginRight?: string;
+    icon_marginLeft?: CSSProperties['marginLeft'];
+    icon_marginRight?: CSSProperties['marginRight'];
     custom_icon?: string;
 }
 

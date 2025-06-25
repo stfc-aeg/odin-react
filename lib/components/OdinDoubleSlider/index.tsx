@@ -6,11 +6,10 @@ import { OverlayTrigger, OverlayTriggerProps, Tooltip, InputGroup } from "react-
 import style from './styles.module.css'
 
 
-interface BasicSliderProps {
+interface SliderProps {
     min?: number;
     max?: number;
-    // low?: number;
-    // high?: number;
+    value?: number[];
     step?: number;
     title?: string;
     onChange?: React.ChangeEventHandler;
@@ -22,36 +21,17 @@ interface BasicSliderProps {
 
 }
 
-interface PropsWithValue extends BasicSliderProps{
-    low?: never;
-    high?: never;
-    value?: number[];
-}
-
-interface PropsWithLowHigh extends BasicSliderProps {
-    low?: number;
-    high?: number;
-    value?: never;
-}
-
-type SliderProps = PropsWithValue | PropsWithLowHigh
-
 interface value_t {
     low: number;
     high: number;
 }
 
-interface DivProps 
-    extends ComponentPropsWithRef<"div"> {
+interface DivProps extends ComponentPropsWithRef<"div"> {
     value?: number[];
 }
 
 interface DivRef extends HTMLDivElement {
     value?: number[];
-}
-
-interface OptionalOverlayProps extends OverlayTriggerProps {
-    show?: boolean;
 }
 
 const Div = (props: DivProps) => {
@@ -63,7 +43,7 @@ const Div = (props: DivProps) => {
     )
 }
 
-const OptionalOverlay = (props: OptionalOverlayProps) => {
+const OptionalOverlay = (props: OverlayTriggerProps) => {
     const {show, children, ...leftoverProps} = props;
     if(show) return <OverlayTrigger {...leftoverProps}>{children}</OverlayTrigger>
     else return <>{children as React.ReactNode}</>
@@ -73,7 +53,7 @@ const OptionalOverlay = (props: OptionalOverlayProps) => {
 export const OdinDoubleSlider: React.FC<SliderProps> = (props) => {
 
     const {min=0, max=100, step=1, value=[min, max]} = props;
-    const {title, showTooltip=true, tooltipPosition, disabled, showMinMaxValues=true} = props;
+    const {title, showTooltip=true, tooltipPosition="auto", disabled, showMinMaxValues=true} = props;
     const {onChange, onKeyPress} = props;
 
     const [vals, changeVals] = useState<value_t>({low: value[0], high: value[1]});

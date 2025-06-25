@@ -6,7 +6,7 @@ import { JSON, NodeJSON } from "../../helpers/types";
 interface OdinTableProps extends React.ComponentProps<typeof Table> {
     columns: {[key: string]: string};
     header?: boolean;
-    widths?: {[key: string]: string};
+    widths?: {[key: string]: CSSProperties["width"]};
 }
 
 interface OdinTableRowProps {
@@ -15,7 +15,7 @@ interface OdinTableRowProps {
 
 interface OdinTableContext_t {
     column_keys: string[];
-    widths: {[key: string]: string};
+    widths: {[key: string]: CSSProperties["width"]};
 }
 
 const OdinTableContext = createContext<OdinTableContext_t>({column_keys: [], widths: {}});
@@ -48,13 +48,16 @@ export const OdinTable: React.FC<OdinTableProps> = (props) => {
     const {columns, header = true, widths = {}, children, ...leftoverProps } = props;
     const column_keys = Object.keys(columns);
 
+    const tableDefaults: React.ComponentProps<typeof Table> = {responsive: true, striped: true};
+    const tableProps = Object.assign(tableDefaults, leftoverProps);
+
     const renderHeader = () => {
         return (
             <thead>
                 <tr>
                     {
                         Object.entries(columns).map( ([col_keys, col_name]) => (
-                            <th key={col_keys}>{col_name}</th>
+                            <th key={col_keys} style={col_keys in widths ? {width: widths[col_keys]} : {}}>{col_name}</th>
                         ))
                     }
                 </tr>
@@ -62,7 +65,7 @@ export const OdinTable: React.FC<OdinTableProps> = (props) => {
         )
     }
     return (
-        <Table {...leftoverProps}>
+        <Table {...tableProps}>
             {header && renderHeader()}
             <tbody>
                 <OdinTableContext.Provider value={{column_keys, widths}}>
