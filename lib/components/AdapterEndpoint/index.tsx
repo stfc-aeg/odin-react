@@ -13,7 +13,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     const [data, setData] = useState<T>({} as T);
     const [metadata, setMetadata] = useState<NodeJSON>({});
     const [error, setError] = useState<ErrorState>(null);
-    const [updateFlag, setUpdateFlag] = useState<Symbol>(Symbol("init"));
+    const [updateFlag, setUpdateFlag] = useState<symbol>(Symbol("init"));
 
     const [awaiting, changeAwaiting] = useState(false);
 
@@ -60,7 +60,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         let result: T;
         let response: AxiosResponse<T>;
 
-        let request_config: AxiosRequestConfig = {responseType: responseType};
+        const request_config: AxiosRequestConfig = {responseType: responseType};
         if(wants_metadata){
             request_config.headers = {Accept: "application/json;metadata=true"};
         }
@@ -178,8 +178,8 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     }
     
     const mergeData = (newData: NodeJSON, param_path: string) => {
-        let splitPath = param_path.split("/").slice(0, -1);
-        let tmpData = data;  // use tmpData as a copy of the Data that we can modify
+        const splitPath = param_path.split("/").slice(0, -1);
+        const tmpData = data;  // use tmpData as a copy of the Data that we can modify
         let pointer: JSON = tmpData;  // pointer that can traverse down the nested data
 
         if(splitPath[0]) {

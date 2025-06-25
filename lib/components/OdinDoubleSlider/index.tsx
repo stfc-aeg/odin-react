@@ -86,9 +86,9 @@ export const OdinDoubleSlider: React.FC<SliderProps> = (props) => {
 
         if(onChange != null){
             // manually trigger the onChange event with the value from the two sliders
-            let target = divRef.current!;
+            const target = divRef.current!;
             target.value = [newLow, newHigh];
-            let newEvent: React.ChangeEvent = Object.assign(event, 
+            const newEvent: React.ChangeEvent = Object.assign(event, 
             {
                target: target,
                nativeEvent: event.nativeEvent
@@ -102,11 +102,11 @@ export const OdinDoubleSlider: React.FC<SliderProps> = (props) => {
     const onMouseUp: React.MouseEventHandler<HTMLInputElement> = (event) => {
         if(onKeyPress != null){
             // we gotta fake the Enter Key Press to allow this component to work with WithEndpoint
-            let eventDetails: KeyboardEventInit = {};
+            const eventDetails: KeyboardEventInit = {};
             eventDetails.key = "Enter";
             eventDetails.shiftKey = false;
-            let nativeEvent = new KeyboardEvent("keypress", eventDetails);
-            let newEvent: React.KeyboardEvent = Object.assign(event, 
+            const nativeEvent = new KeyboardEvent("keypress", eventDetails);
+            const newEvent: React.KeyboardEvent = Object.assign(event, 
             {
                 target: divRef.current!,
                 nativeEvent: nativeEvent,

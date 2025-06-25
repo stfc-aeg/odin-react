@@ -73,9 +73,9 @@ const FilterButtons = (props: LogHeaderProps) => {
 
     const onTimestampChange = (event: React.ChangeEvent) => {
         console.debug(event);
-        let target = event.target as HTMLInputElement;
+        const target = event.target as HTMLInputElement;
         let val = new Date();
-        let zeroDate = new Date(0, 0);
+        const zeroDate = new Date(0, 0);
         
         switch(target) {
             case startDateInput.current:
@@ -195,11 +195,11 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
             newLogs = getLatestLogs(lastTimestamp);
         }else{
             // get the latest logs from the endpoint manually
-           let response = await endpoint.get(`${path}?timestamp=${lastTimestamp}`);
+           const response = await endpoint.get(`${path}?timestamp=${lastTimestamp}`);
            newLogs = Object.values(response)[0] as Log[];
         }
         if(newLogs.length){
-            let lastLog = newLogs[newLogs.length -1];
+            const lastLog = newLogs[newLogs.length -1];
             changeLastTimestamp(lastLog.timestamp);
             changeEvents(oldEvents => oldEvents.concat(newLogs).slice(-maxLogs));
         }
@@ -208,16 +208,14 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
 
     useEffect(() => {
         if(autoScroll){
-            let bottomDiv = scrollRef.current!;
-            bottomDiv.offsetTop;
-            let options: ScrollToOptions = {behavior: "smooth", top: bottomDiv.offsetTop};
+            const bottomDiv = scrollRef.current!;
+            const options: ScrollToOptions = {behavior: "smooth", top: bottomDiv.offsetTop};
             bottomDiv.parentElement!.scrollTo(options);
-                // scrollRef.current!.scrollIntoView(options);
         }
     }, [events]);
 
     useEffect(() => {
-        let timer_id = setInterval(RefreshLogs, refreshRate);
+        const timer_id = setInterval(RefreshLogs, refreshRate);
 
         return () => {
             clearInterval(timer_id);
@@ -246,10 +244,10 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
     
     const filterEvent = () => {
         const filteredLogs = events.filter((event) => {
-            let level_filtered = event.level ? level_filter.includes(event.level.toLowerCase()) : true;
-            let timestamp = new Date(event.timestamp);
-            let timestamp_filtered_start = timestamp >= timestampFilter.start;
-            let timestamp_filtered_end = timestamp < timestampFilter.end;
+            const level_filtered = event.level ? level_filter.includes(event.level.toLowerCase()) : true;
+            const timestamp = new Date(event.timestamp);
+            const timestamp_filtered_start = timestamp >= timestampFilter.start;
+            const timestamp_filtered_end = timestamp < timestampFilter.end;
             return (level_filtered && timestamp_filtered_start && timestamp_filtered_end);
         });
         return filteredLogs;

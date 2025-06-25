@@ -3,8 +3,8 @@ import { useEffect, useState, lazy, PureComponent } from 'react';
 import type { ColorScale, Layout, PlotData, PlotType } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js'; 
 
-import type { GraphData, Axis } from '../../helpers/optional_types';
-import { isGraphData } from '../../helpers/optional_types';
+import type { GraphData, Axis } from '../../helpers/types';
+import { isGraphData } from '../../helpers/types';
 
 interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     title?: string;
@@ -51,8 +51,8 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
     };
 
     useEffect(() => {
-        var tmp_data: typeof stateData = [];
-        var data_array: number[] | number[][];
+        let tmp_data: typeof stateData = [];
+        let data_array: number[] | number[][];
         if(Array.isArray(data[0])){
             // data is an array of arrays (aka a 2d array of numbers)
 
@@ -110,13 +110,13 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
         }else if(isGraphData(data)){
             // we're doing some of our own formatting, but not the full Plotly stuff
-            let tmp_layout = line_default_layout;
+            const tmp_layout = line_default_layout;
             if(axis.length){
                 //axis have been defined, huzzah
                 axis.forEach((axis, index) => {
                     const axisName: keyof Layout = (index ? `yaxis${index+1}` : "yaxis") as keyof Layout;
                     const axis_title = typeof axis.title == "string" ? {text: axis.title} : axis.title;
-                    let layout_axis: Layout["yaxis"] = {
+                    const layout_axis: Layout["yaxis"] = {
                         title: axis_title,
                         rangemode: "normal",
                         range: axis.range,

@@ -67,7 +67,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
     const imgRef = useRef<HTMLImageElement>(null);
 
     const onLoad: React.ReactEventHandler<HTMLImageElement> = (event) => {
-        let target = event.target as HTMLImageElement;
+        const target = event.target as HTMLImageElement;
         setDims([target.naturalWidth, target.naturalHeight]);
     }
 
@@ -80,13 +80,13 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
     const onDrag: React.MouseEventHandler<HTMLImageElement> = (event) => {
         event.preventDefault();
         if(event.buttons & 1){ // check if primary button active (left click)
-            let img = imgRef.current!;
-            let parent = img.parentElement!;
-            let y = parent.scrollTop;
-            let x = parent.scrollLeft;
+            const img = imgRef.current!;
+            const parent = img.parentElement!;
+            const y = parent.scrollTop;
+            const x = parent.scrollLeft;
 
-            let mouseDiffX = event.screenX - dragStart[0];
-            let mouseDiffY = event.screenY - dragStart[1];
+            const mouseDiffX = event.screenX - dragStart[0];
+            const mouseDiffY = event.screenY - dragStart[1];
             setDragStart([event.screenX, event.screenY]);
             img.parentElement!.scrollTo(x - mouseDiffX, y - mouseDiffY);
         }

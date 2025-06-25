@@ -24,7 +24,7 @@ export const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
     const ctx = useContext(OdinTableContext);
     const {row} = props;
 
-    let col_styles: {[key: string]: CSSProperties} = {};
+    const col_styles: {[key: string]: CSSProperties} = {};
 
     ctx?.column_keys.forEach((cell_name) => {
         col_styles[cell_name] = (cell_name in ctx.widths) ? {width: ctx.widths[cell_name]} : {};

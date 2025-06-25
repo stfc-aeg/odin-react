@@ -73,7 +73,7 @@ export const GraphPage: React.FC = () => {
         visible: powermode
     }}, [power, powermode]);
 
-    var data = powermode ? [voltage_dataset, current_dataset, power_dataset] : [voltage_dataset, current_dataset];
+    const data = powermode ? [voltage_dataset, current_dataset, power_dataset] : [voltage_dataset, current_dataset];
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -86,7 +86,7 @@ export const GraphPage: React.FC = () => {
         return () => clearInterval(interval);
     }, []);
 
-    var mid_data: GraphData[] = [
+    const mid_data: GraphData[] = [
         {data: voltage, axis: 1},
         {data: current, axis: 2}
     ]

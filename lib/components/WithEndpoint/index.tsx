@@ -2,6 +2,7 @@ import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransiti
 
 import { AdapterEndpoint_t, isParamNode, JSON } from "../../helpers/types";
 import { useError } from "../OdinErrorContext";
+import { getValueFromPath } from "../../helpers/utils";
 
 type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
@@ -15,10 +16,10 @@ interface ComponentProps {
     max?: number;
     event_type?: event_t;
     disabled?: boolean;
-    pre_method?: Function;
-    post_method?: Function;
-    pre_args?:Array<any>;
-    post_args?:Array<any>;
+    pre_method?: (...args: unknown[]) => void;
+    post_method?: (...args: unknown[]) => void;
+    pre_args?:Array<unknown>;
+    post_args?:Array<unknown>;
     dif_color?: CSSProperties["backgroundColor"];
 }
 
@@ -112,22 +113,6 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             }
         }
 
-        const getValueFromEndpoint =  (data: JSON): ComponentProps['value'] => {
-            let splitPath = fullpath.split("/");
-            splitPath.forEach((path_part) => {
-                if(isParamNode(data)){
-                    data = data[path_part];
-                }
-            });
-            if(data != null){
-                return data as JSON as ComponentProps['value'];
-            }else{
-                return undefined;
-            }
-
-        }
-
-
         const getTypedValue = (val: ComponentProps['value']): ComponentProps['value'] => {
             switch(type){
                 case "number":
@@ -163,13 +148,13 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             //validation to the component (writable, min, max) and sync the component value with the
             //value from the param tree
             const endpointLoaded = () => {
-                for(var _ in endpoint.metadata) return true;
+                for(const _ in endpoint.metadata) return true;
                 return false;
             }
             if(endpointLoaded()){
-                let data = getValueFromEndpoint(endpoint.metadata);
+                let data = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
                 if(isParamNode(data) && "writeable" in data){ //metadata found
-                    let tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
+                    const tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
                     tmp_metadata.min = min ?? (data.min ? data.min as number : undefined);
                     tmp_metadata.max = max ?? (data.max ? data.max as number : undefined);
 
@@ -201,11 +186,11 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     }
 
                 }else{
-                    data = getValueFromEndpoint(endpoint.data);
+                    data = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
                     console.log("Adapter has not implemented Metadata for", fullpath);
                     console.log(fullpath, data);
                     setEndpointValue(value ?? data as ComponentProps["value"]);
-                    let data_type = (value == null ? typeof data : typeof value);
+                    const data_type = (value == null ? typeof data : typeof value);
                     switch(data_type){
                         case "bigint":
                         case "number":
@@ -237,7 +222,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     }
 
                     if(min != null || max!= null){
-                        let tmp_metadata: metadata_t = {readOnly: false, min: min, max: max};
+                        const tmp_metadata: metadata_t = {readOnly: false, min: min, max: max};
                         setMetadata(tmp_metadata);
                     }
                     
@@ -248,7 +233,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         useEffect(() => {
             // update flag got changed, check if we need to change anything
             if(value == null){  // if value is defined, we dont wanna overwrite anything
-                let newVal = getValueFromEndpoint(endpoint.data);
+                const newVal = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
                 if(newVal != endpointValue){
                     setEndpointValue(newVal);
                 }
@@ -316,7 +301,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         const onClickHandler = (event: React.MouseEvent) => {
             console.debug(fullpath, "On Click Handler");
             console.debug(fullpath, event);
-            let curComponent = component.current!;
+            const curComponent = component.current!;
             let val: ComponentProps['value'];
             if(value != null){
                 val = value;
@@ -328,7 +313,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const onChangeHandler = (event: React.ChangeEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
-            let target = event.target;
+            const target = event.target;
             let val: ComponentProps['value'] = "";
         
             if("value" in target && target.value != null){

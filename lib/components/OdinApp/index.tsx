@@ -50,13 +50,13 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
 
     if(routeLinks && props.children){
 
-        let expandedRouteLinks: string[] = [];
+        const expandedRouteLinks: string[] = [];
 
         routeLinks.forEach((link) => {
             if(typeof link === "string"){
                 expandedRouteLinks.push(link);
             }else{
-                let subLinkRoot = Object.keys(link)[0];
+                const subLinkRoot = Object.keys(link)[0];
                 expandedRouteLinks.push(...link[subLinkRoot].map((subLink) => `${subLinkRoot}/${subLink}`))
             }
         })
@@ -116,7 +116,7 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
             )
         }else{
 
-            let Navs: JSX.Element[] = [];
+            const Navs: JSX.Element[] = [];
             navLinks.forEach((nav) => {
                 if(typeof nav == "string"){
                     Navs.push(
