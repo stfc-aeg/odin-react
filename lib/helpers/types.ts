@@ -123,6 +123,6 @@ export interface Axis {
     visible?: boolean;
 }
 
-export const isGraphData = (x: object[]): x is GraphData[] => {
+export const isGraphData = (x: Object[]): x is GraphData[] => {
     return "data" in x[0] && Array.isArray(x[0].data) && typeof x[0].data[0] === "number"
 }
