@@ -1,0 +1,77 @@
+
+.log {
+    padding-left: 7px;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    scroll-snap-align: end;
+}
+
+.log>:not(:last-child){
+    border-right: 2px solid;
+    border-color: inherit;
+}
+
+.debug {
+    color: var(--bs-secondary-color);
+    background-color: var(--bs-secondary-bg);
+    border-color: var(--bs-border-color);
+}
+
+.info {
+    color: var(--bs-success-text-emphasis);
+    background-color: var(--bs-success-bg-subtle);
+    border-color: var(--bs-success-border-subtle);
+}
+
+.warning {
+    color: var(--bs-warning-text-emphasis);
+    background-color: var(--bs-warning-bg-subtle);
+    border-color: var(--bs-warning-border-subtle);
+}
+
+.error {
+    color: var(--bs-danger-text-emphasis);
+    background-color: var(--bs-danger-bg-subtle);
+    border-color: var(--bs-danger-border-subtle);
+}
+
+.critical {
+    color: var(--bs-danger-text-emphasis);
+    background-color: var(--bs-danger-bg-subtle);
+    border-color: var(--bs-danger-border-subtle);
+    font-weight: bold;
+}
+
+.preScrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid;
+    border-color: var(--bs-dark-border-subtle);
+    border-radius: var(--bs-border-radius);
+    font-family: 'Courier New', Courier, monospace;
+    white-space: break-spaces;
+    font-size: smaller;
+    scroll-snap-type: y mandatory;
+    
+}
+
+.headerControl {
+    container-type: inline-size;
+    container-name: headerControlRow;
+
+    :global(.col){
+        text-align: center;
+        align-content: center;
+    }
+
+}
+
+.iconButton {
+    padding: 5.25px 6px;
+}
+
+.svg {
+    height: 24px;
+    width: 24px;
+}
+
