@@ -1,8 +1,7 @@
-import { useEffect, useState, lazy, PureComponent } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { ColorScale, Layout, PlotData, PlotType } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js'; 
-
 import type { GraphData, Axis } from '../../helpers/types';
 import { isGraphData } from '../../helpers/types';
 
@@ -15,27 +14,56 @@ interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     axis?: Axis[];
 
 }
+// import Plot from 'react-plotly.js';
 
-class FallbackPlotComponent extends PureComponent<PlotParams> {
-    render() {
-        return (<p>Plotly Not Installed. Do not try and use OdinGraph without first installing <code>plotly.js</code> and <code>react-plotly.js</code></p>)
+// class FallbackPlotComponent extends PureComponent<PlotParams> {
+//     render() {
+//         return <p>Plotly Not Installed. Do not try and use OdinGraph without first installing <code>plotly.js</code> and <code>react-plotly.js</code></p>
+//     }
+// }
+
+const FallbackPlotComponent: React.FC<Partial<PlotParams>> = () => {
+    return <p>Plotly Not Installed. Do not try and use OdinGraph without first installing <code>plotly.js</code> and <code>react-plotly.js</code></p>
+}
+
+const getPlot = async () => {
+    console.group("Importing Plot");
+    try{
+        const factory = await import('react-plotly.js');
+        console.log(factory);
+        return () => (factory.default);
+    }
+    catch (error) {
+        
+        console.error("React Plotly not available. Plot will default to fallback.");
+        console.error(error);
+        return () => (FallbackPlotComponent);
+        
+    }finally{
+        console.groupEnd();
     }
 }
 
-const Plot = lazy(() => import('react-plotly.js')
-    .then((plotlyModule) => (
-        {default: plotlyModule.default}
-    ))
-    .catch(
-    (error) => {
-        console.error("Plotly Plot unable to be imported: ", error);
-        return {default: FallbackPlotComponent};
-    })
-)
+// const Plot = lazy(() => import('react-plotly.js')
+//     .then((plotlyModule) => {
+//         if("default" in plotlyModule.default){
+//             return {default: plotlyModule.default.default}
+//         }else{
+//             return {default: plotlyModule.default}
+//         }
+//     })
+//     .catch(
+//     (error) => {
+//         console.error("Plotly Plot unable to be imported: ", error);
+//         return {default: FallbackPlotComponent};
+//     })
+// )
 
 export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
     const {title, data, layout={}, style={}, type="scatter", series_names, colorscale="Portland", axis=[], ...leftoverProps} = props;
+
+    const [_Plot, setPlot] = useState<React.ComponentType<PlotParams>>(() => (FallbackPlotComponent));
 
     const [stateData, changeData] = useState<PlotParams["data"]>([]);
     const [stateLayout, changeLayout] = useState<Exclude<OdinGraphProps['layout'], undefined>>(layout || {});
@@ -44,7 +72,6 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
     const darkMode: boolean = document.querySelector("html")?.getAttribute("data-bs-theme") == "dark";
     const defaultFont: PlotParams["layout"]["font"] = {color: darkMode ? "rgb(255, 255, 255)" : undefined};
     const defaultBackground: PlotParams["layout"]["paper_bgcolor"] = "rgba(255, 255, 255, 0)";
-    console.log(Plot);
     const line_default_layout: Partial<Layout> = {
         font: defaultFont,
         yaxis: {autorange: true, automargin: true},
@@ -61,6 +88,17 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
         paper_bgcolor: defaultBackground
     };
 
+    useEffect(() => {
+        // useEffect that only runs at the start (empty dependency array) to import the Plot component
+        // if its available
+        
+        getPlot()
+            .then((returned) => {
+                setPlot(returned);
+            })
+
+
+    }, []);
     useEffect(() => {
         let tmp_data: typeof stateData = [];
         let data_array: number[] | number[][];
@@ -172,7 +210,9 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
 
     return (
-        <Plot data={stateData} layout={stateLayout} style={stateStyle}
+        // <FallbackPlotComponent data={stateData} layout={stateLayout} style={stateStyle}
+        // {...leftoverProps} useResizeHandler={true}/>
+        <_Plot data={stateData} layout={stateLayout} style={stateStyle}
         {...leftoverProps} useResizeHandler={true}/>
     )
 }
