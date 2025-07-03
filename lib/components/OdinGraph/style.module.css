@@ -1,0 +1,16 @@
+.placeholderContainer {
+    display: flex;
+    align-items: end;
+    height: 100%;
+}
+
+.placeholder {
+    width: 15%;
+    margin: 0px 2.5%;
+}
+
+.placeholderTitle {
+    position: absolute;
+    width: 100%;
+    right: 0px;
+}

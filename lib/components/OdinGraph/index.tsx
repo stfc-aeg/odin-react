@@ -4,6 +4,10 @@ import type { ColorScale, Layout, PlotData, PlotType } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js'; 
 import type { GraphData, Axis } from '../../helpers/types';
 import { isGraphData } from '../../helpers/types';
+import { Alert, Placeholder, Spinner } from 'react-bootstrap';
+import { ExclamationTriangle } from 'react-bootstrap-icons';
+
+import Style from './style.module.css';
 
 interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     title?: string;
@@ -14,16 +18,38 @@ interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     axis?: Axis[];
 
 }
-// import Plot from 'react-plotly.js';
 
-// class FallbackPlotComponent extends PureComponent<PlotParams> {
-//     render() {
-//         return <p>Plotly Not Installed. Do not try and use OdinGraph without first installing <code>plotly.js</code> and <code>react-plotly.js</code></p>
-//     }
-// }
+const FallbackPlotComponent: React.FC<Partial<PlotParams>> = (props) => {
 
-const FallbackPlotComponent: React.FC<Partial<PlotParams>> = () => {
-    return <p>Plotly Not Installed. Do not try and use OdinGraph without first installing <code>plotly.js</code> and <code>react-plotly.js</code></p>
+    const style = Object.assign({height: "450px", textAlign: "center"}, props.style);
+    const [timeoutMessage, setMessage] = useState<React.ReactNode>('');
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setMessage(<Alert variant='warning'><ExclamationTriangle/>
+                        <strong>Timeout hit. Is Plotly installed?</strong><ExclamationTriangle/></Alert>);
+        }, 5000);
+
+        return () => clearTimeout(timeoutId);
+    }, []);
+
+    return (
+        <div style={style}>
+            <div className={Style.placeholderTitle}>
+                {timeoutMessage ? timeoutMessage :
+                <>
+                    <Spinner size='sm'/>
+                    <p>"Plotly Loading..."</p>
+                </>}</div>
+            <Placeholder className={Style.placeholderContainer} as="p" animation='glow'>
+                <Placeholder className={Style.placeholder} style={{height: "85%"}} bg="primary"/>
+                <Placeholder className={Style.placeholder} style={{height: "50%"}} bg="success"/>
+                <Placeholder className={Style.placeholder} style={{height: "40%"}} bg="warning"/>
+                <Placeholder className={Style.placeholder} style={{height: "80%"}} bg="info"/>
+                <Placeholder className={Style.placeholder} style={{height: "70%"}} bg="danger"/>
+            </Placeholder>
+        </div>
+
+    )
 }
 
 const getPlot = async () => {
@@ -50,21 +76,6 @@ const getPlot = async () => {
     }
 }
 
-// const Plot = lazy(() => import('react-plotly.js')
-//     .then((plotlyModule) => {
-//         if("default" in plotlyModule.default){
-//             return {default: plotlyModule.default.default}
-//         }else{
-//             return {default: plotlyModule.default}
-//         }
-//     })
-//     .catch(
-//     (error) => {
-//         console.error("Plotly Plot unable to be imported: ", error);
-//         return {default: FallbackPlotComponent};
-//     })
-// )
-
 export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
     const {title, data, layout={}, style={}, type="scatter", series_names, colorscale="Portland", axis=[], ...leftoverProps} = props;
@@ -73,7 +84,7 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
     const [stateData, changeData] = useState<PlotParams["data"]>([]);
     const [stateLayout, changeLayout] = useState<Exclude<OdinGraphProps['layout'], undefined>>(layout || {});
-    const [stateStyle, changeStyle] = useState<React.CSSProperties>(style || {height: '100%', width: '100%'});
+    const [stateStyle, changeStyle] = useState<React.CSSProperties>(style);
 
     const darkMode: boolean = document.querySelector("html")?.getAttribute("data-bs-theme") == "dark";
     const defaultFont: PlotParams["layout"]["font"] = {color: darkMode ? "rgb(255, 255, 255)" : undefined};
@@ -208,7 +219,7 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
         changeData(tmp_data);
 
         changeStyle(Object.assign(
-            {height: '100%', width: "99%"},
+            {width: "100%"},
             style
         ))
 
@@ -216,8 +227,6 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
 
     return (
-        // <FallbackPlotComponent data={stateData} layout={stateLayout} style={stateStyle}
-        // {...leftoverProps} useResizeHandler={true}/>
         <_Plot data={stateData} layout={stateLayout} style={stateStyle}
         {...leftoverProps} useResizeHandler={true}/>
     )
