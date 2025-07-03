@@ -31,7 +31,13 @@ const getPlot = async () => {
     try{
         const factory = await import('react-plotly.js');
         console.log(factory);
-        return () => (factory.default);
+        if(typeof factory.default === "object"){
+            // for some reason, if plotly itself is not used by a project,
+            // the import returns an object of {default: {default: Plot}}
+            return () => ((factory.default as unknown as {default: unknown}).default)
+        }else{
+            return () => (factory.default);
+        } 
     }
     catch (error) {
         
@@ -94,7 +100,7 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
         
         getPlot()
             .then((returned) => {
-                setPlot(returned);
+                setPlot(returned as () => typeof _Plot);
             })
 
 
