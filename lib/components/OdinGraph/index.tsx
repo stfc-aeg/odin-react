@@ -23,6 +23,9 @@ class FallbackPlotComponent extends PureComponent<PlotParams> {
 }
 
 const Plot = lazy(() => import('react-plotly.js')
+    .then((plotlyModule) => (
+        {default: plotlyModule.default}
+    ))
     .catch(
     (error) => {
         console.error("Plotly Plot unable to be imported: ", error);
