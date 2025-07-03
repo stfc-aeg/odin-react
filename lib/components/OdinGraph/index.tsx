@@ -41,7 +41,7 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
     const darkMode: boolean = document.querySelector("html")?.getAttribute("data-bs-theme") == "dark";
     const defaultFont: PlotParams["layout"]["font"] = {color: darkMode ? "rgb(255, 255, 255)" : undefined};
     const defaultBackground: PlotParams["layout"]["paper_bgcolor"] = "rgba(255, 255, 255, 0)";
-
+    console.log(Plot);
     const line_default_layout: Partial<Layout> = {
         font: defaultFont,
         yaxis: {autorange: true, automargin: true},
