@@ -2,7 +2,7 @@ import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransiti
 
 import { AdapterEndpoint_t, isParamNode, JSON } from "../../helpers/types";
 import { useError } from "../OdinErrorContext";
-import { getValueFromPath } from "../../helpers/utils";
+import { getValueFromPath, compareObjects } from "../../helpers/utils";
 
 type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
@@ -79,7 +79,15 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const [isPending, startTransition] = useTransition();
 
-        const style: CSSProperties = endpointValue == componentValue ? {} : {backgroundColor: dif_color};
+        const changedStyle: CSSProperties = {
+            backgroundColor: dif_color,
+            color: "var(--bs-body-color"
+        }
+        const style: CSSProperties = useMemo(() => {
+            if(typeof endpointValue == "object"){
+                return compareObjects(endpointValue as object, componentValue as object) ? {} : changedStyle;
+            }else return endpointValue == componentValue ? {} : changedStyle;
+        }, [endpointValue, componentValue]);
 
         const disable = useMemo(() => {
             if(disabled !== undefined){
