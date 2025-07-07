@@ -4,10 +4,14 @@ import type { ParamTree, Log} from "../";
 import { useState } from "react";
 import { AdapterEndpoint_t } from "../";
 
+import type { ReactNode } from "react";
+
 const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
 const EndpointSlider = WithEndpoint(OdinDoubleSlider);
+const EndpointCheckbox = WithEndpoint(Form.Check);
+const EndpointSelect = WithEndpoint((props: Partial<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
 interface FormData_T extends ParamTree{
     first_name: string;
@@ -64,10 +68,11 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>
                 <Col>
                     <TitleCard title="Click Button">
                         <Stack>
-                            <EndpointButton endpoint={endpoint} fullpath="trigger" event_type="click" value={42}>
+                            <EndpointButton endpoint={endpoint} fullpath="trigger" value={42}>
                                 Trigger
                             </EndpointButton>
                             <EndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
+                            <EndpointCheckbox type="switch" endpoint={endpoint} fullpath="toggle"/>
                         </Stack>
                     </TitleCard>
                 </Col>
@@ -79,7 +84,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>
                         </InputGroup>
                         <Alert>Half: {endpoint.data.data?.dict?.half}</Alert>
                         <Alert>Is Even: {endpoint.data.data?.dict?.is_even?.toString()}</Alert>
-                        <EndpointButton endpoint={endpoint} event_type="click" fullpath="trigger" value={10} disabled={endpoint.data.data?.dict.is_even}>
+                        <EndpointButton endpoint={endpoint} fullpath="trigger" value={10} disabled={endpoint.data.data?.dict.is_even}>
                                     Disabled on Even
                         </EndpointButton>
                     </TitleCard>
@@ -87,7 +92,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>
                 <Col>
                     <TitleCard title="Dropdown Test">
                         <Stack>
-                        <EndpointDropdown endpoint={endpoint} event_type="select" fullpath="selected"
+                        <EndpointDropdown endpoint={endpoint} fullpath="selected"
                             title={endpoint.data.selected || "Unknown"}>
                                 {endpoint.data.select_list ? endpoint.data.select_list.map(
                                     (selection, index) => (
@@ -95,6 +100,16 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>
                                     )): <></>
                                 }
                         </EndpointDropdown>
+                        <label>Choose Option:
+                            <EndpointSelect endpoint={endpoint} fullpath="selected">
+                                {endpoint.data.select_list ? endpoint.data.select_list.map(
+                                    (selection, index) => {
+                                        return <option value={selection}>{selection}</option>;
+                                }) : <option value="">Unknown</option>
+                                    }
+                            </EndpointSelect>
+                        </label>
+
                         <EndpointInput endpoint={endpoint} fullpath="deep/long/nested/dict/path/val" />
                         </Stack>
                     </TitleCard>
@@ -116,7 +131,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>
                     <InputGroup>
                     <InputGroup.Text>Enter Value</InputGroup.Text>
                     <Form.Control type="number" value={input} onChange={(event) => changeInput(Number(event.target.value))}/>
-                    <EndpointButton endpoint={endpoint} fullpath="num_val" event_type="click" value={input}>
+                    <EndpointButton endpoint={endpoint} fullpath="num_val" value={input}>
                         Submit Value
                     </EndpointButton>
                     </InputGroup>
@@ -149,14 +164,14 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>
                         </Row>
                         
                     </Form>
-                    <EndpointButton endpoint={endpoint} fullpath="submit" value={formData} event_type="click">
+                    <EndpointButton endpoint={endpoint} fullpath="submit" value={formData}>
                     Submit Form Data 
                     </EndpointButton>
                 </TitleCard>
                 </Col>
                 <Col>
                 <TitleCard title="Error Handling">
-                    <EndpointButton endpoint={endpoint} fullpath="invalid" value="true" event_type="click">
+                    <EndpointButton endpoint={endpoint} fullpath="invalid" value="true">
                         This button PUTs to an address that does not exist
                     </EndpointButton>
                     <EndpointInput endpoint={endpoint} fullpath="slow_put" type="number" />

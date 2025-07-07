@@ -63,7 +63,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         
         
 
-        const component = useRef<typeof WrappedComponent>(null);
+        const component = useRef<Element>(null);
         const ErrCTX = useError();
 
         //initialised with an OnChange handler to avoid the 
@@ -102,13 +102,35 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             return {path, valueName};
         }, [fullpath]);
 
+        const componentPassedValue = useMemo(() => {
+            const curComponent = component.current;
+            if(curComponent){
+                // coded using switch case to future proof if there's other special case component types
+                switch(curComponent.nodeName){
+                    case "INPUT":
+                            const input_type = (curComponent as HTMLInputElement).type;
+                            switch(input_type){
+                                case "checkbox":
+                                case "radio":
+                                    return {checked: componentValue};
+                                default:
+                                    return {value: componentValue};
+                            }
+                            break;
+                    default:
+                        return {value: componentValue};
+                }
+            }
+            return {value: componentValue};
+        }, [component.current, componentValue]);
+
         const validate = (value: ComponentProps['value']) => {
             if(metadata && typeof value == "number"){
                 if(metadata.min && metadata.min > value){
                     throw Error(`Value ${value} below minimum ${metadata.min}`);
                 }
                 if(metadata.max && metadata.max < value){
-                    throw Error(`Value ${value} above maxmium ${metadata.max}`);
+                    throw Error(`Value ${value} above maximum ${metadata.max}`);
                 }
             }
         }
@@ -119,7 +141,9 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     val =  Number(val);
                     break;
                 case "boolean":
-                    val = Boolean(val);
+                    if(typeof val === "string" && val.toLowerCase() === "false"){
+                        val = false;
+                    }else{val = Boolean(val);}
                     break;
                 case "list":
                     if(Array.isArray(val)){
@@ -152,7 +176,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 return false;
             }
             if(endpointLoaded()){
-                let data = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
+                let data = getValueFromPath<ComponentProps['value']>(endpoint.metadata, fullpath);
                 if(isParamNode(data) && "writeable" in data){ //metadata found
                     const tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
                     tmp_metadata.min = min ?? (data.min ? data.min as number : undefined);
@@ -285,7 +309,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 if(err instanceof Error){
                     ErrCTX.setError(err);
                 }else{
-                    ErrCTX.setError(Error("UNKNOWN ERROR OCCURED"));
+                    ErrCTX.setError(Error("UNKNOWN ERROR OCCURRED"));
                 }
             }
         };
@@ -306,7 +330,13 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             if(value != null){
                 val = value;
             }else{
-                val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
+                const compType = component.current!.nodeName;
+                // if the type of component is a checkbox or a radio button, get the value from the "checked" prop
+                if(compType === "INPUT" && ["checkbox", "radio"].includes((component.current! as HTMLInputElement).type)){
+                        val = (component.current! as HTMLInputElement).checked;
+                }else{
+                    val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
+                }
             }
             sendRequest(val);
         };
@@ -323,6 +353,13 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 val = component.current.value as ComponentProps['value'];
             }
             setComponentValue(val);
+
+            // special case. If the underlying component is a html <select> tag, send the request
+            // without needing the onEnterHandler
+            const compType = component.current!.nodeName;
+            if(compType === "SELECT"){
+                sendRequest(val);
+            }
         };
 
         const onEnterHandler = (event: React.KeyboardEvent) => {
@@ -335,17 +372,58 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         };
 
         useEffect(() => {
-            switch(event_type){
-                case "select":
-                    setEventProp({onSelect: (eventKey, event) => onSelectHandler(event, eventKey)});
-                    break;
-                case "click":
-                    setEventProp({onClick: (event) => onClickHandler(event)});
-                    break;
-                case "enter":
-                default:
-                    setEventProp({onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)});
+            if(event_type){
+                switch(event_type){
+                    case "select":
+                        setEventProp({onSelect: (eventKey, event) => onSelectHandler(event, eventKey)});
+                        break;
+                    case "click":
+                        setEventProp({onClick: (event) => onClickHandler(event)});
+                        break;
+                    case "enter":
+                    default:
+                        setEventProp({onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)});
+                }
+            }else{
+                const curComponent = component.current
+                if(curComponent){
+                    switch(curComponent.nodeName){
+                        case "BUTTON":
+                            //default buttons to using the onClick event handler
+                            setEventProp({onClick: (event) => onClickHandler(event)});
+                            break;
 
+                        case "INPUT":
+                            const input_type = (curComponent as HTMLInputElement).type;
+                            switch(input_type){
+                                case "checkbox":
+                                case "radio":
+                                    //default checkboxes and radios to using the onClick event handler
+                                    setEventProp({onClick: (event) => onClickHandler(event)});
+                                    break;
+                                case "text":
+                                case "number":
+                                default:
+                                    //default input boxes to using the onChange and OnEnter event handlers
+                                    setEventProp({onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)});
+                            }
+                            break;
+
+                        case "DIV":
+                            const divClass = (curComponent as HTMLDivElement).className;
+                            if(divClass === "dropdown"){
+                                //bootstrap dropdowns are contained in a div with a classname of "dropdown"
+                                setEventProp({onSelect: (eventKey, event) => onSelectHandler(event, eventKey)});
+                            }
+                            break;
+                        case "SELECT":
+                            // the onSelect event handler is a specially created one for bootstrap dropdowns
+                            // standard html dropdowns (<select> tags) use the onChange event handler by default
+                            setEventProp({onChange: (event) => onChangeHandler(event)});
+                            break;
+                    }
+
+                }
             }
         }, [event_type, value, componentValue, component.current, type]);
 
@@ -356,7 +434,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                     readOnly={metadata?.readOnly}
                     min={metadata?.min}
                     max={metadata?.max}
-                    value={componentValue}
+                    {...componentPassedValue}
                     disabled={disable}
                     ref={component}
                 />)
