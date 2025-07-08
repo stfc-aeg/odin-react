@@ -12,7 +12,7 @@ import libAssetsPlugin from '@laynezh/vite-plugin-lib-assets'
 export default defineConfig({
   plugins: [
     react(),
-    externalizeDeps(),
+    // externalizeDeps(),
     libInjectCss(),
     dts({ include: ['lib'] }),
     libAssetsPlugin()
