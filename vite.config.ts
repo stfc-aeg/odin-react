@@ -5,14 +5,13 @@ import { glob } from 'glob'
 import react from '@vitejs/plugin-react'
 import dts from 'unplugin-dts/vite'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
-import { externalizeDeps } from 'vite-plugin-externalize-deps'
 import libAssetsPlugin from '@laynezh/vite-plugin-lib-assets'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    externalizeDeps(),
+    // externalizeDeps(),
     libInjectCss(),
     dts({ include: ['lib'] }),
     libAssetsPlugin()

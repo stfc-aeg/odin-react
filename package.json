@@ -1,7 +1,7 @@
 {
   "name": "odin-react",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.1",
   "type": "module",
   "main": "dist/main.js",
   "types": "dist/main.d.ts",
@@ -24,26 +24,26 @@
   "peerDependencies": {
     "bootstrap": "^5.3.5",
     "plotly.js": "^3.0.1",
-    "react": "^19.0.0",
+    "react": "^19.1.0",
     "react-bootstrap": "^2.10.9",
+    "react-dom": "^19.1.0",
     "react-plotly.js": "^2.6.0"
   },
   "peerDependenciesMeta": {
-    "plotly.js": {
-      "optional": true
-    },
     "react-plotly.js": {
       "optional": true
     }
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
-    "@laynezh/vite-plugin-lib-assets": "^1.1.0",
+    "@laynezh/vite-plugin-lib-assets": "^2.1.0",
+    "@microsoft/api-extractor": "^7.52.8",
+    "@types/lodash": "^4.17.20",
     "@storybook/addon-docs": "^9.0.13",
     "@storybook/addon-onboarding": "^9.0.13",
     "@storybook/react-vite": "^9.0.13",
-    "@types/node": "^22.13.4",
-    "@types/plotly.js": "^2.35.5",
+    "@types/node": "^24.0.10",
+    "@types/plotly.js": "^3.0.2",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@types/react-plotly.js": "^2.6.3",
@@ -53,7 +53,7 @@
     "eslint-plugin-react-refresh": "^0.4.18",
     "eslint-plugin-storybook": "^9.0.13",
     "glob": "^11.0.1",
-    "globals": "^15.14.0",
+    "globals": "^16.3.0",
     "msw": "^2.10.2",
     "msw-storybook-addon": "^2.0.5",
     "react": "^19.0.0",
@@ -62,15 +62,15 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.22.0",
     "unplugin-dts": "^1.0.0-beta.2",
-    "vite": "^6.1.0",
-    "vite-plugin-externalize-deps": "^0.9.0",
+    "vite": "^7.0.0",
     "vite-plugin-lib-inject-css": "^2.2.1"
   },
   "dependencies": {
     "@storybook/addon-themes": "^9.0.13",
     "axios": "^1.8.1",
+    "lodash": "^4.17.21",
     "react-bootstrap-icons": "^1.11.5",
-    "react-error-boundary": "^5.0.0",
+    "react-error-boundary": "^6.0.0",
     "react-router": "^7.5.1",
     "utility-types": "^3.11.0"
   },
