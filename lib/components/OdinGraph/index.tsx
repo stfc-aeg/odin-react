@@ -53,10 +53,8 @@ const FallbackPlotComponent: React.FC<Partial<PlotParams>> = (props) => {
 }
 
 const getPlot = async () => {
-    console.group("Importing Plot");
     try{
         const factory = await import('react-plotly.js');
-        console.log(factory);
         if(typeof factory.default === "object"){
             // for some reason, if plotly itself is not used by a project,
             // the import returns an object of {default: {default: Plot}}
@@ -67,8 +65,6 @@ const getPlot = async () => {
     }
     catch (error) {
         
-        console.error("React Plotly not available. Plot will default to fallback.");
-        console.error(error);
         return () => (FallbackPlotComponent);
         
     }finally{
