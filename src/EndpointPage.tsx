@@ -11,7 +11,7 @@ const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
 const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 const EndpointCheckbox = WithEndpoint(Form.Check);
-const EndpointSelect = WithEndpoint((props: Partial<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
+const EndpointSelect = WithEndpoint((props: React.HTMLAttributes<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
 interface FormData_T extends ParamTree{
     first_name: string;
@@ -104,7 +104,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>
                             <EndpointSelect endpoint={endpoint} fullpath="selected">
                                 {endpoint.data.select_list ? endpoint.data.select_list.map(
                                     (selection, index) => {
-                                        return <option value={selection}>{selection}</option>;
+                                        return <option key={index} value={selection}>{selection}</option>;
                                 }) : <option value="">Unknown</option>
                                     }
                             </EndpointSelect>

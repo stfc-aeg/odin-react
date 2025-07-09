@@ -2,7 +2,8 @@ import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransiti
 
 import { AdapterEndpoint_t, isParamNode, JSON } from "../../helpers/types";
 import { useError } from "../OdinErrorContext";
-import { getValueFromPath, compareObjects } from "../../helpers/utils";
+import { getValueFromPath } from "../../helpers/utils";
+import { isEqual } from 'lodash';
 
 type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
@@ -83,11 +84,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             backgroundColor: dif_color,
             color: "var(--bs-body-color"
         }
-        const style: CSSProperties = useMemo(() => {
-            if(typeof endpointValue == "object"){
-                return compareObjects(endpointValue as object, componentValue as object) ? {} : changedStyle;
-            }else return endpointValue == componentValue ? {} : changedStyle;
-        }, [endpointValue, componentValue]);
+        const style: CSSProperties = isEqual(endpointValue, componentValue) ? {} : changedStyle;
 
         const disable = useMemo(() => {
             if(disabled !== undefined){
@@ -116,6 +113,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 // coded using switch case to future proof if there's other special case component types
                 switch(curComponent.nodeName){
                     case "INPUT":
+                        {
                             const input_type = (curComponent as HTMLInputElement).type;
                             switch(input_type){
                                 case "checkbox":
@@ -124,7 +122,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                                 default:
                                     return {value: componentValue};
                             }
-                            break;
+                        }
                     default:
                         return {value: componentValue};
                 }
@@ -330,9 +328,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             sendRequest(eventKey);
         }
 
-        const onClickHandler = (event: React.MouseEvent) => {
-            console.debug(fullpath, "On Click Handler");
-            console.debug(fullpath, event);
+        const onClickHandler = (_event: React.MouseEvent) => {
             const curComponent = component.current!;
             let val: ComponentProps['value'];
             if(value != null){
@@ -364,7 +360,7 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
             // special case. If the underlying component is a html <select> tag, send the request
             // without needing the onEnterHandler
-            const compType = component.current!.nodeName;
+            const compType = component.current?.nodeName;
             if(compType === "SELECT"){
                 sendRequest(val);
             }
@@ -372,67 +368,67 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
         const onEnterHandler = (event: React.KeyboardEvent) => {
             if (event.key === "Enter" && !event.shiftKey) {
-                console.debug(fullpath, "onEnterHandler");
-                console.debug(fullpath, event);
-                
                 sendRequest(componentValue);
             }
         };
 
         useEffect(() => {
+            let events: selectEvent_t = {onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)};
             if(event_type){
                 switch(event_type){
                     case "select":
-                        setEventProp({onSelect: (eventKey, event) => onSelectHandler(event, eventKey)});
+                        events = {onSelect: (eventKey, event) => onSelectHandler(event, eventKey)};
                         break;
                     case "click":
-                        setEventProp({onClick: (event) => onClickHandler(event)});
+                        events = {onClick: (event) => onClickHandler(event)};
                         break;
                     case "enter":
                     default:
-                        setEventProp({onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)});
+                        break;
                 }
             }else{
-                const curComponent = component.current
+                const curComponent = component.current;
                 if(curComponent){
                     switch(curComponent.nodeName){
                         case "BUTTON":
                             //default buttons to using the onClick event handler
-                            setEventProp({onClick: (event) => onClickHandler(event)});
+                            events = {onClick: (event) => onClickHandler(event)};
                             break;
 
-                        case "INPUT":
+                        case "INPUT": 
+                        {
                             const input_type = (curComponent as HTMLInputElement).type;
                             switch(input_type){
                                 case "checkbox":
                                 case "radio":
                                     //default checkboxes and radios to using the onClick event handler
-                                    setEventProp({onClick: (event) => onClickHandler(event)});
+                                    events = {onClick: (event) => onClickHandler(event)};
                                     break;
                                 case "text":
                                 case "number":
                                 default:
-                                    //default input boxes to using the onChange and OnEnter event handlers
-                                    setEventProp({onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)});
+                                    break;
                             }
                             break;
-
+                        }
                         case "DIV":
+                        {
                             const divClass = (curComponent as HTMLDivElement).className;
                             if(divClass === "dropdown"){
                                 //bootstrap dropdowns are contained in a div with a classname of "dropdown"
-                                setEventProp({onSelect: (eventKey, event) => onSelectHandler(event, eventKey)});
+                                events = {onSelect: (eventKey, event) => onSelectHandler(event, eventKey)};
                             }
                             break;
+                        }
                         case "SELECT":
                             // the onSelect event handler is a specially created one for bootstrap dropdowns
                             // standard html dropdowns (<select> tags) use the onChange event handler by default
-                            setEventProp({onChange: (event) => onChangeHandler(event)});
+                           events = {onChange: (event) => onChangeHandler(event)};
                             break;
                     }
-
                 }
             }
+            setEventProp(events);
         }, [event_type, value, componentValue, component.current, type]);
 
         return (<WrappedComponent
