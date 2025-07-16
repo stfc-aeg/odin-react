@@ -134,8 +134,9 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
     )
 }
 
-const OdinLiveView: React.FC<LiveViewProps> = (props) => {
-    const { title="Live View", img_path="image", endpoint, interval=1000, addrs={}, justImage } = props;
+const OdinLiveView: React.FC<LiveViewProps> = (
+    { title="Live View", img_path="image", endpoint, interval=1000, addrs={}, justImage }
+) => {
     
     const [imgPath, setImgPath] = useState(defaultImg);
     const [enable, setEnable] = useState(true);

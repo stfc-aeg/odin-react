@@ -21,21 +21,17 @@ interface getConfig {
 
 const imgBlob = await fetch(defaultImg).then(response => {return response.blob()})
 
-interface endpointData_standard_t extends ParamTree {
-    frame: {
+interface endpointData_t extends ParamTree {
+    frame?: {
         frame_num: number;
     }
-    colormap_options: Record<string, string>;
-    colormap_selected: string;
-    data_min_max: [number, number];
-    clip_range: [number, number];
+    colormap_options?: Record<string, string>;
+    colormap_selected?: string;
+    data_min_max?: [number, number];
+    clip_range?: [number, number];
 }
 
-interface endpointData_noControls_t extends ParamTree {
-    unused: string;
-}
-
-const endpointData_standard: endpointData_standard_t = {
+const endpointData_standard: endpointData_t = {
   frame: {
       frame_num: 12
   },
@@ -46,19 +42,36 @@ const endpointData_standard: endpointData_standard_t = {
 
 };
 
-const endpointData_noControls: endpointData_noControls_t = {
-    unused: "test"
+const endpointData_noControls: endpointData_t = {
+    
+}
+
+const endpointData_noClip: endpointData_t = {
+  frame: {
+      frame_num: 12
+  },
+  colormap_options: {"test": "Test", "blue": "Blue"},
+  colormap_selected: "test",
+}
+
+const endpointData_noFrame: endpointData_t = {
+  colormap_options: {"test": "Test", "blue": "Blue"},
+  colormap_selected: "test",
+  data_min_max: [0, 1024],
+  clip_range: [0, 1024]
 }
 
 const genericGet = (data : ParamTree) => {
   
-  const get = async <T = ParamTree>(param_path='', config?: getConfig) => {
+  const get = async <T = ParamTree>(param_path = "", config?: getConfig): Promise<T> => {
+    let result: T;
     if(config?.responseType == "blob"){
-      return imgBlob as T;
+      result = imgBlob as T;
     }
     else{
-      return getValueFromPath(data, param_path) as T;
+      result = getValueFromPath<T>(data, param_path);
     }
+    return result;
   }
 
   return get;
@@ -73,31 +86,26 @@ const put = async (data: ParamTree, param_path?: string) => {
 
 }
 
-
-export const MockEndpoint_standard: AdapterEndpoint_t<endpointData_standard_t> = {
-  data: endpointData_standard,
-  metadata: {},
-  error: null,
-  loading: false,
-  updateFlag: Symbol("mocked"),
-  get: fn(genericGet(endpointData_standard)),
-  put: fn(put),
-  post: fn(),
-  remove: fn(),
-  refreshData: fn(() => {}),
-  mergeData: fn((newData: ParamTree, param_path: string) => {})
+const getMockedEndpoint = <T extends ParamTree>(data: T) => {
+  const endpoint: AdapterEndpoint_t<T> = {
+    data: data,
+    metadata: data,
+    error: null,
+    loading: false,
+    updateFlag: Symbol("mocked"),
+    get: fn(genericGet(data)),
+    put: fn(put),
+    post: fn(),
+    remove: fn(),
+    refreshData: fn(() => {}),
+    mergeData: fn((newData: ParamTree, param_path: string) => {})
+  }
+  return endpoint;
 }
 
-export const MockEndpoint_noControls: AdapterEndpoint_t<endpointData_noControls_t> = {
-  data: endpointData_noControls,
-  metadata: {},
-  error: null,
-  loading: false,
-  updateFlag: Symbol("mocked"),
-  get: fn(genericGet(endpointData_noControls)),
-  put: fn(put),
-  post: fn(),
-  remove: fn(),
-  refreshData: fn(() => {}),
-  mergeData: fn((newData: ParamTree, param_path: string) => {})
-} 
+export const MockEndpoint_standard = getMockedEndpoint(endpointData_standard);
+export const MockEndpoint_noControls = getMockedEndpoint(endpointData_noControls);
+export const MockEndpoint_noClip = getMockedEndpoint(endpointData_noClip);
+export const MockEndpoint_noFrame = getMockedEndpoint(endpointData_noFrame);
+
+
