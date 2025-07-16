@@ -4,6 +4,8 @@ import { withThemeByDataAttribute } from '@storybook/addon-themes';
 
 import { initialize, mswLoader } from 'msw-storybook-addon';
 
+import { OdinErrorContext } from '../lib/main';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 /*
@@ -11,7 +13,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
  * See https://github.com/mswjs/msw-storybook-addon#configuring-msw
  * to learn how to customize it
  */
-initialize();
+// initialize();
 
 const preview: Preview = {
   parameters: {
@@ -22,12 +24,15 @@ const preview: Preview = {
       },
     },
   },
-  tags: ['autodocs'],
-  loaders: [mswLoader]
-};
-
-export const decorators = [
-  withThemeByDataAttribute({
+  decorators: [
+    (Story) => (
+      <OdinErrorContext>
+        <div style={{ margin: '1rem 10rem' }}>
+        <Story />
+        </div>
+      </OdinErrorContext>
+    ),
+    withThemeByDataAttribute({
     themes: {
       light: 'light',
       dark: 'dark',
@@ -35,6 +40,9 @@ export const decorators = [
     defaultTheme: 'light',
     attributeName: 'data-bs-theme',
   }),
-];
+  ],
+  tags: ['autodocs'],
+  // loaders: [mswLoader]
+};
 
 export default preview;
