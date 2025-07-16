@@ -1,13 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { OdinTable, OdinTableRow } from './index';
+import type { OdinTableRowProps } from './index';
 
-import { Default as RowDefault, Test } from './index.OdinTableRow.stories'
-
-// RowStories from './index.OdinTableRow.stories';
+const RowDefs: {[key: string]: OdinTableRowProps["row"]} = {
+  "Normal": {"name": "Default", "val": 25},
+  "Extra Value": {"name": "Test", "val": "Testing One", "unrendered": true},
+  "Missing Matching": {"name": "Missing"},
+  "No Matching": {"unrendered": true}
+}
 
 const meta = {
   component: OdinTable,
+  subcomponents: { OdinTableRow },
   argTypes: {
     widths: {
       control: "object",
@@ -19,18 +24,20 @@ const meta = {
       table: { defaultValue: {summary: "true"} }
     },
     children: {
-      options: ["None", "Single", "Multiple"],
-      mapping: {
-        None: undefined,
-        Single: <OdinTableRow {...RowDefault.args} />,
-        Multiple: <><OdinTableRow {...RowDefault.args} /><OdinTableRow {...Test.args}/></>
-      },
-      control: {type: "radio"}
+      options: Object.keys(RowDefs),
+      mapping: Object.keys(RowDefs).reduce(
+        (prev, cur) =>
+        ({...prev, [cur]: <OdinTableRow row={RowDefs[cur]}/>}), {}
+      ),
+      control: {type: "check"}
     }
   },
   args: {
     header: true,
-    widths: undefined
+    widths: undefined,
+    bordered: false,
+    striped: true,
+    hover: true
   }
 } satisfies Meta<typeof OdinTable>;
 
@@ -38,11 +45,10 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-
 export const Default: Story = {
   args: {
     columns: {"name": "Name", "val": "Value"},
-    children: "Multiple",
+    children: ["Normal", "Extra Value"],
   }
 };
 
