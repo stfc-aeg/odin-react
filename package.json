@@ -40,7 +40,6 @@
     "@microsoft/api-extractor": "^7.52.8",
     "@types/lodash": "^4.17.20",
     "@storybook/addon-docs": "^9.0.13",
-    "@storybook/addon-onboarding": "^9.0.13",
     "@storybook/react-vite": "^9.0.13",
     "@types/node": "^24.0.10",
     "@types/plotly.js": "^3.0.2",
