@@ -1,6 +1,5 @@
 .liveImg {
     max-width: 100%;
-    aspect-ratio: 1 / 1;
     overflow-x: hidden;
     overflow-y: hidden;
     cursor: grab;
@@ -29,6 +28,8 @@
 
 .figure {
     position: relative;
+    text-align: center;
+    align-content: center;
 }
 
 .figure:hover .zoomOverlay {

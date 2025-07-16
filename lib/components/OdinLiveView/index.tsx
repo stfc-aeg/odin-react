@@ -9,7 +9,7 @@ import defaultImg from '../../assets/odin.png';
 import { Row, Col, Button, Dropdown, ButtonGroup, OverlayTriggerProps } from 'react-bootstrap';
 import { OverlayTrigger, Popover, Card} from 'react-bootstrap';
 
-import { ZoomIn, ZoomOut, PauseFill, PlayFill, List } from 'react-bootstrap-icons';
+import { ZoomIn, ZoomOut, PauseFill, PlayFill, List, ArrowsAngleContract, ArrowsAngleExpand } from 'react-bootstrap-icons';
 
 import style from './styles.module.css';
 import { WithEndpoint } from '../WithEndpoint';
@@ -33,8 +33,6 @@ interface ZoomableImageProps {
 
 interface LiveViewParam extends NodeJSON {
     frame: {
-        dtype: string;
-        shape: number[];
         frame_num: number;
     }
     colormap_options: Record<string, string>;
@@ -60,15 +58,22 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
     const {src, caption, additional_hover } = props;
 
     const [dims, setDims] = useState([1024, 1024]);
+    const [divWidth, setDivWidth] = useState(500);
     const [dragStart, setDragStart] = useState([0, 0]);
     const [scale, setScale] = useState(100);
     // const [overlayVisible, setVisible] = useState<CSSProperties["visibility"]>("hidden");
 
     const imgRef = useRef<HTMLImageElement>(null);
 
+    useEffect(() => {
+        setScale(getFitScale());
+    }, [imgRef.current, dims[0]]);
+
     const onLoad: React.ReactEventHandler<HTMLImageElement> = (event) => {
         const target = event.target as HTMLImageElement;
+        const parent = target.parentElement as HTMLDivElement;
         setDims([target.naturalWidth, target.naturalHeight]);
+        setDivWidth(parent.clientWidth);
     }
 
     const onMouseDown: React.MouseEventHandler<HTMLImageElement> = (event) => {
@@ -92,9 +97,14 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
         }
     }
 
+    const getFitScale = () => {
+        // gets the scale we need to apply to the image to make it fit the container its in
+        return (divWidth / dims[0]) * 100;
+    }
+
     return (
         <figure className={style.figure}>
-            <div className={style.liveImg}>
+            <div className={style.liveImg} style={{aspectRatio: `${dims[0]} / ${dims[1]}`}}>
                 <img src={src} onLoad={onLoad} width={dims[0]*(scale/100)}
                      onMouseMove={onDrag} onMouseDown={onMouseDown} ref={imgRef}
                      draggable={false}/>
@@ -108,9 +118,14 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
                 <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale-10, 10 ))}>
                     <ZoomOut/>
                 </Button>
-                <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(100)}>{`${scale}%`}</Button>
+                <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(getFitScale())}>
+                    <ArrowsAngleContract/>
+                </Button>
+                <Button title='Full Scale' variant='secondary' onClick={() => setScale(100)}>
+                    <ArrowsAngleExpand/>
+                </Button>
                 <Button title="Zoom In" variant="secondary" onClick={() => setScale(oldScale => oldScale+10)}>
-                <ZoomIn/>
+                    <ZoomIn/>
                 </Button>
                 </ButtonGroup>
                 </Col>
