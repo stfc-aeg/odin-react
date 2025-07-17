@@ -21,7 +21,7 @@ export default defineConfig({
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg'],
   build: {
     copyPublicDir: false,
-    minify: false,
+    // minify: false,
     manifest: true,
     emitAssets: true,
     lib: {
@@ -29,9 +29,8 @@ export default defineConfig({
       formats: ['es']
     },
     rollupOptions: {
-      external: ['react', 'react/jsx-runtime', "bootstrap", "react-bootstrap", 
-                 "plotly.js", "react-plotly.js", "react-bootstrap-icons", "lodash", "axios",
-                "lib/**/*stories*.tsx"],
+      external: ['react', 'react/jsx-runtime', "bootstrap", "react-bootstrap",
+                 "plotly.js", "react-plotly.js", "react-bootstrap-icons"],
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input
         glob.sync('lib/**/*.{ts,tsx}', {

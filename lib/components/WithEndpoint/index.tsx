@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import type { AdapterEndpoint_t, JSON } from "../AdapterEndpoint";
 import { isParamNode, getValueFromPath } from "../AdapterEndpoint";

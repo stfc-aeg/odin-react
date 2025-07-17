@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { AdapterEndpoint_t, NodeJSON} from '../AdapterEndpoint';
 import { getValueFromPath } from '../AdapterEndpoint';
 
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 
 import defaultImg from '../../assets/odin.png';
 

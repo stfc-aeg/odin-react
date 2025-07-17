@@ -7,7 +7,7 @@ import { DashCircle, InfoCircle, ExclamationTriangle, ExclamationOctagon, XOctag
 import { Filter, Clock, CalendarEvent, ArrowBarDown } from "react-bootstrap-icons";
 
 import style from './styles.module.css';
-import React, { useEffect, useState, CSSProperties, useRef, useMemo, useCallback } from "react";
+import { useEffect, useState, CSSProperties, useRef, useMemo, useCallback } from "react";
 
 interface Log extends NodeJSON {
     level?: "debug" | "info" | "warning" | "error" | "critical";
