@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { ComponentPropsWithRef } from "react";
 
 import { OverlayTrigger, OverlayTriggerProps, Tooltip, InputGroup } from "react-bootstrap";

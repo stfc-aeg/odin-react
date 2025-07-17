@@ -14,14 +14,14 @@ export default defineConfig({
     react(),
     // externalizeDeps(),
     libInjectCss(),
-    dts({ tsconfigPath: './tsconfig-build.json' }),
+    dts({ tsconfigPath: './tsconfig-build.json', bundleTypes: true }),
     libAssetsPlugin()
     
   ],
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg'],
   build: {
     copyPublicDir: false,
-    minify: false,
+    // minify: false,
     manifest: true,
     emitAssets: true,
     lib: {
@@ -30,8 +30,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ['react', 'react/jsx-runtime', "bootstrap", "react-bootstrap",
-                 "plotly.js", "react-plotly.js", "react-bootstrap-icons",
-                "lib/**/*stories*.tsx"],
+                 "plotly.js", "react-plotly.js", "react-bootstrap-icons"],
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input
         glob.sync('lib/**/*.{ts,tsx}', {

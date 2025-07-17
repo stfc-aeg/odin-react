@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import { AdapterEndpoint_t, isParamNode, JSON } from "../../helpers/types";
 import { useError } from "../OdinErrorContext";
