@@ -1,16 +1,22 @@
-import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState, JSX, CSSProperties} from 'react';
+import {Children, ReactElement, ReactNode, useMemo, useState, JSX} from 'react';
+import type { PropsWithChildren, CSSProperties } from 'react';
 
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
-import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack} from 'react-bootstrap';
-import { MoonFill, LightbulbFill } from 'react-bootstrap-icons';
+import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack, Container, Modal} from 'react-bootstrap';
+import { MoonFill, LightbulbFill, Info } from 'react-bootstrap-icons';
 
 import odinImg from '../../assets/odin.png';
 import ProdinImg from '../../assets/prodin.png'
 
+import {version} from '../../../package.json';
+
 import styles from './styles.module.css'
 import { OdinErrorOutlet } from '../OdinErrorContext';
+
+// import type { OdinAppProps, RouteAppProps } from './types';
+import { OdinTable, OdinTableRow } from '../OdinTable';
 
 type NavLink_t = string | Record<string, string[]>;
 
@@ -39,11 +45,11 @@ const Fallback: React.FC<FallbackProps> = (props) => {
     )
 }
 
-interface routeAppProps extends PropsWithChildren{
+interface RouteAppProps extends PropsWithChildren{
     routeLinks?: NavLink_t[];
 }
 
-const RouteApp: React.FC<routeAppProps> = (props) => {
+const RouteApp: React.FC<RouteAppProps> = (props) => {
     
     const {routeLinks} = props;
     let childRoute: ReactNode[] = [];
@@ -84,14 +90,16 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
     }
 }
 
-const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
-{
-    const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
+
+const OdinApp: React.FC<OdinAppProps> = (
+    {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon, children}
+) => {
 
     // const [key, setKey] = useState(navLinks ? navLinks[0] : "home");
     const [iconHover, changeIconHover] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
 
+    const [showInfo, setShowInfo] = useState(false);
     
     const handleHoverOn = () => changeIconHover(true);
     const handleHoverOff = () => changeIconHover(false);
@@ -151,12 +159,12 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
         {/* <OdinErrorContext> */}
         <BrowserRouter>
             <Navbar expand="lg"className='bg-body-secondary'>
+                <Container>
                 <Navbar.Brand href='/'>
                     <img
                     src={icon_addr}
-                    height="30"
+                    className={styles.brandImage}
                     style={{marginLeft: icon_marginLeft, marginRight: icon_marginRight}}
-                    className="d-inline-block align-top"
                     alt="Odin Control Logo"
                     onMouseEnter={handleHoverOn}
                     onMouseLeave={handleHoverOff}
@@ -169,15 +177,39 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                     {createNavList}
                 </Nav>
                 </Navbar.Collapse>
-                <Nav className={'me-2 d-none d-lg-block ' + styles.darkmodeToggle}>
-                    <Button className={styles.btn} variant={darkMode? "outline-light" : "outline-dark" } onClick={toggleTheme}>
+                <Nav className={'d-none d-lg-block ' + styles.darkmodeToggle}>
+                    <Button className={styles.btn} variant="outline-secondary" onClick={()=> setShowInfo(true)}>
+                        <Info className={styles.svg} title="App Info" size={32}/>
+                    </Button>
+                </Nav>
+                <Nav className={'d-none d-lg-block ' + styles.darkmodeToggle}>
+                    <Button className={styles.btn} variant="outline-secondary" onClick={toggleTheme}>
                         {darkMode ? <LightbulbFill className={styles.svg} title='Set Light Mode' size={24}/> 
                                 : <MoonFill className={styles.svg} title='Set Dark Mode' size={24}/>}
                     </Button>
                 </Nav>
+            </Container>
             </Navbar>
             <OdinErrorOutlet />
-            <RouteApp routeLinks={navLinks} children={props.children}/>
+            {<Modal show={showInfo} onHide={() => setShowInfo(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Odin React Info</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Odin React was built with the following libraries:</p>
+                    <OdinTable columns={{lib: "Library", version: "Version"}} widths={{lib: "10%"}} size='sm'>
+                    <OdinTableRow row={{lib: "Vite", version: import.meta.env.VITE_VERSION_VITE}}/>
+                    <OdinTableRow row={{lib: "React", version: import.meta.env.VITE_VERSION_REACT}}/>
+                    <OdinTableRow row={{lib: "Node JS", version: import.meta.env.VITE_VERSION_NODEJS}}/>
+                    <OdinTableRow row={{lib: "Axios", version: import.meta.env.VITE_VERSION_AXIOS}}/>
+                    <OdinTableRow row={{lib: "Bootstrap", version: import.meta.env.VITE_VERSION_BOOTSTRAP}}/>
+                    </OdinTable>
+                </Modal.Body>
+                <Modal.Footer>
+                    {`Odin React: ${version}`}
+                </Modal.Footer>
+            </Modal>}
+            <RouteApp routeLinks={navLinks} children={children}/>
         </BrowserRouter>
         {/* </OdinErrorContext> */}
     </ErrorBoundary>

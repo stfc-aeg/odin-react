@@ -5,7 +5,6 @@ import { TitleCard } from './index';
 
 const meta = {
   title: "TitleCard",
-  decorators: [(story) => <div style={{ margin: '3rem' }}>{story()}</div>],
   component: TitleCard,
   argTypes: {
     children: {

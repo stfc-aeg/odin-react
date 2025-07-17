@@ -9,7 +9,7 @@ interface OdinTableProps extends React.ComponentProps<typeof Table> {
     widths?: {[key: string]: CSSProperties["width"]};
 }
 
-interface OdinTableRowProps {
+export interface OdinTableRowProps {
     row: {[key: string] : Exclude<JSON, NodeJSON | JSON[]>};
 }
 
@@ -42,13 +42,20 @@ const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
 
 }
 
-
-const OdinTable: React.FC<OdinTableProps> = (props) => {
+/**
+ * Table component for displaying selected values. Based on the React Bootstrap Table
+ * 
+ * @see {@link https://react-bootstrap.netlify.app/docs/components/table/ Bootstrap Table}
+ * 
+ */
+const OdinTable: React.FC<OdinTableProps> = (
+    {columns, header = true, widths = {}, children, ...leftoverProps }
+) => {
     
-    const {columns, header = true, widths = {}, children, ...leftoverProps } = props;
+    // const {columns, header = true, widths = {}, children, ...leftoverProps } = props;
     const column_keys = Object.keys(columns);
 
-    const tableDefaults: React.ComponentProps<typeof Table> = {responsive: true, striped: true};
+    const tableDefaults: React.ComponentProps<typeof Table> = {responsive: true, striped: true, hover: true};
     const tableProps = Object.assign(tableDefaults, leftoverProps);
 
     const renderHeader = () => {

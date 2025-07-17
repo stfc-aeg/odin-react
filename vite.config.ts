@@ -7,6 +7,7 @@ import dts from 'unplugin-dts/vite'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import libAssetsPlugin from '@laynezh/vite-plugin-lib-assets'
 
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -18,7 +19,6 @@ export default defineConfig({
     
   ],
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg'],
-
   build: {
     copyPublicDir: false,
     minify: false,
@@ -30,11 +30,12 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ['react', 'react/jsx-runtime', "bootstrap", "react-bootstrap", 
-        "plotly.js", "react-plotly.js", "react-bootstrap-icons", "lodash", "axios"],
+                 "plotly.js", "react-plotly.js", "react-bootstrap-icons", "lodash", "axios",
+                "lib/**/*stories*.tsx"],
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input
         glob.sync('lib/**/*.{ts,tsx}', {
-          ignore: ["lib/**/*.d.ts", "lib/**/*.types.ts"],
+          ignore: ["lib/**/*.d.ts", "lib/**/*.types.ts", "lib/**/*stories*"],
         }).map(file => [
           // 1. The name of the entry point
           // lib/nested/foo.js becomes nested/foo

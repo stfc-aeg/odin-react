@@ -24,10 +24,23 @@ const preview: Preview = {
       },
     },
   },
+  globalTypes: {
+    margin: {
+      description: "Add Margins to the side of the Component",
+      toolbar: {
+        title: "Margin",
+        items: ["0", "5", "10", "20"],
+        dynamicTitle: true
+      }
+    }
+  },
+  initialGlobals: {
+    margin: "5"
+  },
   decorators: [
-    (Story) => (
+    (Story, context) => (
       <OdinErrorContext>
-        <div style={{ margin: '1rem 10rem' }}>
+        <div style={{ margin: `1rem ${context.globals.margin || "0"}rem` }}>
         <Story />
         </div>
       </OdinErrorContext>

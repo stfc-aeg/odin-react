@@ -22,7 +22,7 @@ const OdinErrorContext = (props: PropsWithChildren) => {
     )
 }
 
-const OdinErrorOutlet = () => {
+const OdinErrorOutlet: React.FC = () => {
 
     const {error, setError} = useError();
 
