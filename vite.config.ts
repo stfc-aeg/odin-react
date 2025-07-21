@@ -30,7 +30,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ['react', 'react/jsx-runtime', "bootstrap", "react-bootstrap",
-                 "plotly.js", "react-plotly.js", "react-bootstrap-icons"],
+                 "plotly.js", "react-plotly.js", "react-bootstrap-icons", "lodash", "axios"],
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input
         glob.sync('lib/**/*.{ts,tsx}', {
