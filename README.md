@@ -1,6 +1,6 @@
 # Odin React
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/stfc-aeg/odin-react)
-![GitHub package.json dev/peer/optional dependency version](https://img.shields.io/github/package-json/dependency-version/stfc-aeg/odin-react/dev/react)
+![GitHub package.json dev/peer/optional dependency version](https://img.shields.io/github/package-json/dependency-version/stfc-aeg/odin-react/peer/react)
 ![GitHub package.json dev/peer/optional dependency version](https://img.shields.io/github/package-json/dependency-version/stfc-aeg/odin-react/dev/vite)
 
 Component Library designed for Odin Control Interfaces, build with [Vite](https://vite.dev/)
