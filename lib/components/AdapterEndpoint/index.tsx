@@ -1,19 +1,31 @@
 import { useState, useEffect } from "react";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import type { ErrorState, AdapterEndpoint_t, JSON, NodeJSON, getConfig } from "../../helpers/types";
-import { isParamNode } from "../../helpers/types";
+import type { AdapterEndpoint_t, JSON, NodeJSON, getConfig, status } from "./AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 
 const DEF_API_VERSION = '0.1';
 
-export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
+enum updateFlag_enum {
+    INIT = "init",
+    FIRST = "first",
+    REFRESH = "refreshed",
+    MERGED = "merged",
+    ERROR = "error"
+}
+
+const isParamNode = (x: JSON): x is NodeJSON => {
+    return x !== null && typeof x === "object" && !Array.isArray(x);
+}
+
+function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number, api_version=DEF_API_VERSION
 ): AdapterEndpoint_t<T> {
 
     const [data, setData] = useState<T>({} as T);
     const [metadata, setMetadata] = useState<NodeJSON>({});
-    const [error, setError] = useState<ErrorState>(null);
-    const [updateFlag, setUpdateFlag] = useState<symbol>(Symbol("init"));
+    const [error, setError] = useState<Error | null>(null);
+    const [updateFlag, setUpdateFlag] = useState(Symbol(updateFlag_enum.INIT));
+    const [statusFlag, setStatusFlag] = useState<status>("init");
 
     const [awaiting, changeAwaiting] = useState(false);
 
@@ -47,6 +59,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         }
         const error = new Error(errorMsg);
         setError(error);
+        setStatusFlag("error");
         ctx.setError(error);
 
         return error;  // rethrow error so it doesn't dissapear
@@ -71,6 +84,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             response = await axiosInstance.get<T>(param_path, request_config);
             result = response.data;
             console.debug("Response Data: ", result);
+            setStatusFlag("connected");
             return result;
         }
         catch (err) {
@@ -91,6 +105,7 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             result = response.data;
             
             console.debug("Response: ", result);
+            setStatusFlag("connected");
             return result;
         }
         catch (err: unknown) {
@@ -111,9 +126,10 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             changeAwaiting(true);
             response = await axiosInstance.post(param_path, data);
             result = response.data;
+            setStatusFlag("connected");
         }
         catch (err: unknown) {
-            handleError(err);
+            throw handleError(err);
         }
         finally {
             changeAwaiting(false);
@@ -133,9 +149,10 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             changeAwaiting(true);
             response = await axiosInstance.delete(param_path);
             result = response.data;
+            setStatusFlag("connected");
         }
         catch (err: unknown) {
-            handleError(err);
+            throw handleError(err);
         }
         finally {
             changeAwaiting(false);
@@ -145,20 +162,34 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         return result;
     }
 
-    useEffect(() => {
-        //run when the endpoint is first created, to populate its data and metadata objects
-        refreshData();
-
-        //get metadata
-        get("", {wants_metadata: true})
+    // some sort of looping attempt at first connection until we get a response? so if the adapter
+    // isn't running at first for whatever reason, we keep trying until it is?
+    const getInitialData = () => {
+        get("")
         .then(result => {
-            setMetadata(result);
+            setData(result as T);
+            get("", {wants_metadata: true})
+            .then(result => {
+                setMetadata(result);
+            });
         })
-    }, []); // no dependencies, intentionally so that it runs only at the start when the component mounts
+        .catch(err => console.debug(err));
+    }
+
+    useEffect(() => {
+        let init_timer: NodeJS.Timeout;
+
+        if(statusFlag !== "connected"){
+            init_timer = setInterval(getInitialData, interval ?? 1000);
+        }
+
+        return () =>  clearInterval(init_timer);
+
+    }, [statusFlag, interval]);
 
     useEffect(() => { // interval effect. refreshes data if the interval is set
         let timer_id: NodeJS.Timeout | null = null;
-        if(interval) {
+        if(interval && statusFlag == "connected") {
             timer_id = setInterval(refreshData, interval);
         }
 
@@ -167,13 +198,13 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
                 clearInterval(timer_id);
             }
         }
-    }, [interval]);
+    }, [interval, statusFlag]);
 
     const refreshData = () => {
         get("")
         .then(result => {
             setData(result as T);
-            setUpdateFlag(Symbol("refreshed"));
+            setUpdateFlag(Symbol(updateFlag_enum.REFRESH));
         });
     }
     
@@ -192,8 +223,11 @@ export function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         // becasue pointer was a copy of tmpData, changes made to it will also be made to tmpData
         Object.assign(pointer, newData);
         setData(tmpData);
-        setUpdateFlag(Symbol("merged"));
+        setUpdateFlag(Symbol(updateFlag_enum.MERGED));
     }
     
-    return { data: data, metadata, error, loading: awaiting, updateFlag, get, put, post, remove, refreshData, mergeData}
+    return { data: data, metadata, error, loading: awaiting, updateFlag, status: statusFlag, get, put, post, remove, refreshData, mergeData}
 }
+
+export { useAdapterEndpoint, isParamNode };
+export type { AdapterEndpoint_t, JSON, NodeJSON };

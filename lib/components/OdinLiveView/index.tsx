@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { AdapterEndpoint_t, NodeJSON} from '../../helpers/types';
+import type { AdapterEndpoint_t, NodeJSON} from '../AdapterEndpoint';
 import { getValueFromPath } from '../../helpers/utils';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
