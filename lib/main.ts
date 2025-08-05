@@ -8,7 +8,8 @@ export {OdinEventLog} from './components/OdinEventLog';
 export {OdinErrorContext, OdinErrorOutlet, useError } from './components/OdinErrorContext';
 export {OdinDoubleSlider} from './components/OdinDoubleSlider';
 export { OdinLiveView, ZoomableImage } from './components/OdinLiveView';
-export type { Log, GraphData, Axis } from './helpers/types';
 
+export type { GraphData, Axis } from './components/OdinGraph';
 export type { AdapterEndpoint_t, NodeJSON as ParamTree } from "./components/AdapterEndpoint";
+export type { Log } from './components/OdinEventLog';
 

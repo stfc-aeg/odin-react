@@ -17,6 +17,27 @@ const isParamNode = (x: JSON): x is NodeJSON => {
     return x !== null && typeof x === "object" && !Array.isArray(x);
 }
 
+/**
+ * Nagivates down a nested dict-like structure to get the value at the path
+ * @param data the nested JSON dict-like structure to naviagate down
+ * @param path the path, separated by slashes, to navigate down
+ * @returns the value at the specified path (which is either a single value, or a JSON Node with Key/Val pair(s))
+ * or Undefined if the value was not found at that path
+ */
+function getValueFromPath<T>(data: JSON, path: string): T | undefined {
+    const splitPath = path.split("/");
+    splitPath.forEach((pathPart) => {
+        if(isParamNode(data)){
+            data = data[pathPart];
+        }
+    });
+    if(data != null){
+        return data as T;
+    }else{
+        return undefined;
+    }
+}
+
 function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number, api_version=DEF_API_VERSION
 ): AdapterEndpoint_t<T> {
@@ -229,5 +250,5 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     return { data: data, metadata, error, loading: awaiting, updateFlag, status: statusFlag, get, put, post, remove, refreshData, mergeData}
 }
 
-export { useAdapterEndpoint, isParamNode };
+export { useAdapterEndpoint, isParamNode, getValueFromPath };
 export type { AdapterEndpoint_t, JSON, NodeJSON };

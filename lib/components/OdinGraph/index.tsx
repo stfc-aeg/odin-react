@@ -2,12 +2,27 @@ import { useEffect, useState } from 'react';
 
 import type { ColorScale, Layout, PlotData, PlotType } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js'; 
-import type { GraphData, Axis } from '../../helpers/types';
-import { isGraphData } from '../../helpers/types';
 import { Alert, Placeholder, Spinner } from 'react-bootstrap';
 import { ExclamationTriangle } from 'react-bootstrap-icons';
 
 import Style from './style.module.css';
+
+export interface GraphData {
+    data: number[];
+    axis?: number;
+}
+
+export interface Axis {
+    side?: Layout["yaxis"]["side"];
+    range?: [number, number];
+    invert?: boolean;
+    title?: Layout["yaxis"]["title"];
+    visible?: boolean;
+}
+
+const isGraphData = (x: Object[]): x is GraphData[] => {
+    return "data" in x[0] && Array.isArray(x[0].data) && typeof x[0].data[0] === "number"
+}
 
 interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     title?: string;

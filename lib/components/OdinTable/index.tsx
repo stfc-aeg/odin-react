@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import type { CSSProperties } from "react";
 import { Table } from "react-bootstrap";
-import { JSON, NodeJSON } from "../../helpers/types";
+import { JSON, NodeJSON } from "../AdapterEndpoint";
 
 interface OdinTableProps extends React.ComponentProps<typeof Table> {
     columns: {[key: string]: string};

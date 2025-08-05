@@ -1,9 +1,8 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import type { AdapterEndpoint_t, JSON } from "../AdapterEndpoint";
-import { isParamNode } from "../AdapterEndpoint";
+import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { useError } from "../OdinErrorContext";
-import { getValueFromPath } from "../../helpers/utils";
 import { isEqual } from 'lodash';
 
 type event_t = "select" | "click" | "enter"
