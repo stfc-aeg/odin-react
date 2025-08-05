@@ -7,11 +7,9 @@ interface TitleCardProps extends PropsWithChildren{
     title?: ReactNode;
 }
 /**
- * TEST DOC STRING HELLO
- * @param props 
- * @returns 
+ * A simple Card component with optional header, used to group similar Components together visually.
  */
-export const TitleCard: React.FC<TitleCardProps> = (props) => {
+const TitleCard: React.FC<TitleCardProps> = (props) => {
     const {title} = props;
 
     return (
@@ -21,3 +19,5 @@ export const TitleCard: React.FC<TitleCardProps> = (props) => {
         </Card>
     )
 }
+
+export { TitleCard };

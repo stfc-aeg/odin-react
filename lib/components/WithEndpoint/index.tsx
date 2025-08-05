@@ -1,8 +1,8 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import { AdapterEndpoint_t, isParamNode, JSON } from "../../helpers/types";
+import type { AdapterEndpoint_t, JSON } from "../AdapterEndpoint";
+import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { useError } from "../OdinErrorContext";
-import { getValueFromPath } from "../../helpers/utils";
 import { isEqual } from 'lodash';
 
 type event_t = "select" | "click" | "enter"
@@ -45,7 +45,7 @@ type InjectedProps = metadata_t & selectEvent_t & {
 
 }
 
-export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
+const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
 {
     type WrapperComponentProps = React.PropsWithChildren<
              Omit<P, keyof InjectedProps> & ComponentProps>;
@@ -181,15 +181,17 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                 for(const _ in endpoint.metadata) return true;
                 return false;
             }
-            if(endpointLoaded()){
+            if(endpointLoaded() && endpoint.status != "error"){
                 let data = getValueFromPath<ComponentProps['value']>(endpoint.metadata, fullpath);
+                let val: JSON;
+                const tmp_metadata: metadata_t = {readOnly: false, min: min, max: max};
                 if(isParamNode(data) && "writeable" in data){ //metadata found
-                    const tmp_metadata: metadata_t = {readOnly: ! (data['writeable'] as boolean)};
+                    tmp_metadata.readOnly = !(data['writeable'] as boolean);
                     tmp_metadata.min = min ?? (data.min ? data.min as number : undefined);
                     tmp_metadata.max = max ?? (data.max ? data.max as number : undefined);
 
-                    setMetadata(tmp_metadata);
-                    setEndpointValue(value ?? data.value as ComponentProps["value"]);
+                    // setMetadata(tmp_metadata);
+                    val = value ?? data.value as ComponentProps["value"];
 
                     switch(data.type as string){
                         case "int":
@@ -217,9 +219,8 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
 
                 }else{
                     data = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
-                    console.log("Adapter has not implemented Metadata for", fullpath);
-                    console.log(fullpath, data);
-                    setEndpointValue(value ?? data as ComponentProps["value"]);
+                    console.debug("Adapter has not implemented Metadata for", fullpath);
+                    val = value ?? data as ComponentProps["value"];
                     const data_type = (value == null ? typeof data : typeof value);
                     switch(data_type){
                         case "bigint":
@@ -241,22 +242,20 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
                             break;
                         case "function":
                         case "symbol":
-                        case "undefined":
+                        case "undefined": {
                             console.error("Something went wrong getting the typeof Data: ", data, typeof data);
+                            const error = new Error(`Invalid Data type ${data_type} for path ${fullpath}. If Undefined, check fullPath is correct`);
+                            ErrCTX.setError(error);
                             break;
+                        }
                         case "boolean":
                         case "string":
                             setType(data_type);
-
-                            
                     }
-
-                    if(min != null || max!= null){
-                        const tmp_metadata: metadata_t = {readOnly: false, min: min, max: max};
-                        setMetadata(tmp_metadata);
-                    }
-                    
                 }
+                setEndpointValue(val);
+                setComponentValue(val);
+                setMetadata(tmp_metadata);
             }
         }, [endpoint.metadata]);
 
@@ -328,7 +327,8 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
             sendRequest(eventKey);
         }
 
-        const onClickHandler = (_event: React.MouseEvent) => {
+        const onClickHandler = (event: React.MouseEvent) => {
+            console.debug(fullpath, event);
             const curComponent = component.current!;
             let val: ComponentProps['value'];
             if(value != null){
@@ -449,3 +449,6 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         WithEndpointComponent
     )
 };
+
+
+export { WithEndpoint };

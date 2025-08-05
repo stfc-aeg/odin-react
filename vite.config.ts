@@ -13,7 +13,7 @@ export default defineConfig({
     react(),
     // externalizeDeps(),
     libInjectCss(),
-    dts({ include: ['lib'] }),
+    dts({ tsconfigPath: './tsconfig-build.json', bundleTypes: true }),
     libAssetsPlugin()
     
   ],
@@ -29,11 +29,12 @@ export default defineConfig({
       formats: ['es']
     },
     rollupOptions: {
-      external: ['react', 'react/jsx-runtime', "bootstrap", "react-bootstrap", "plotly.js", "react-plotly.js", "react-bootstrap-icons"],
+      external: ['react', 'react/jsx-runtime', "bootstrap", "react-bootstrap", 
+        "plotly.js", "react-plotly.js", "react-bootstrap-icons", "lodash", "axios"],
       input: Object.fromEntries(
         // https://rollupjs.org/configuration-options/#input
         glob.sync('lib/**/*.{ts,tsx}', {
-          ignore: ["lib/**/*.d.ts"],
+          ignore: ["lib/**/*.d.ts", "lib/**/*.types.ts"],
         }).map(file => [
           // 1. The name of the entry point
           // lib/nested/foo.js becomes nested/foo

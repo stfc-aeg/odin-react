@@ -1,36 +1,8 @@
 import type { AxiosRequestConfig } from "axios";
-import type {Layout} from "plotly.js"
 
-/**
- * Typedef for a JSON style object.
- */
-export type JSON = string | number | boolean | null | undefined | JSON[] | NodeJSON;
+type status = "init" | "connected" | "error";
 
-export type NodeJSON = {[key:string]: JSON};
-
-/**ParamTree is a type that behaves like the JSON response from an Endpoint. Extend this to create
- * an interface declaring the known structure of your Paramter Tree response, and pass that
- * to the useAdapterEndpoint hook to define your data's structure
- */
-export type ParamTree = NodeJSON;
-
-/**
- * type guard function, required to check typing of custom ParamNode objects.
- * @param x a JSON object that is either a key/value pair(s) or a basic JSON value
- * @returns boolean, true if x has key(s), false otherwise
- */
-export const isParamNode = (x: JSON): x is NodeJSON => {
-    return x !== null && typeof x === 'object' && !Array.isArray(x)};
-
-export type ErrorState = null | Error;
-// export type LoadingState = "getting" | "putting" | "posting" | "deleting" | "idle";
-
-export interface getConfig {
-    wants_metadata?: boolean;
-    responseType?: AxiosRequestConfig['responseType'];
-}
-
-export interface AdapterEndpoint_t<T = NodeJSON> {
+interface AdapterEndpoint_t<T = NodeJSON> {
     /**
      *  Recursive Nested dictionary structure representing the adapter Param Tree. Should be read only
      * from this interface
@@ -44,7 +16,7 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
     /**
      *  Any Errors that occur during http methods or otherwise will be accessible here
      */
-    error: ErrorState;
+    error: null | Error;
     /**
      * State of the http client connection to the adapter. 
      * If true, the AdapterEndpoint is awaiting a response from the adapter.
@@ -55,6 +27,11 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
      * Flag token that will change whenever the data has changed, to alert WithEndpoint components
      */
     updateFlag: symbol;
+
+    /**
+     * Connection status for the AdapterEndpoint.
+     */
+    status: status;
     /**
      * Async http GET method. Request the provided value(s) from the parameter tree.
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
@@ -104,25 +81,19 @@ export interface AdapterEndpoint_t<T = NodeJSON> {
 
 }
 
-export interface Log extends NodeJSON {
-    level?: "debug" | "info" | "warning" | "error" | "critical";
-    timestamp: string;
-    message: string;
+/**
+ * Defines allowed values for JSON dict.
+ */
+type JSON = string | number | boolean | null | undefined | JSON[] | NodeJSON;
+
+/**
+ * JSON Dict, defines key/value pairing.
+ */
+type NodeJSON = {[key:string]: JSON};
+
+interface getConfig {
+    wants_metadata?: boolean;
+    responseType?: AxiosRequestConfig['responseType'];
 }
 
-export interface GraphData {
-    data: number[];
-    axis?: number;
-}
-
-export interface Axis {
-    side?: Layout["yaxis"]["side"];
-    range?: [number, number];
-    invert?: boolean;
-    title?: Layout["yaxis"]["title"];
-    visible?: boolean;
-}
-
-export const isGraphData = (x: Object[]): x is GraphData[] => {
-    return "data" in x[0] && Array.isArray(x[0].data) && typeof x[0].data[0] === "number"
-}
+export type { AdapterEndpoint_t, JSON, NodeJSON, getConfig, status};

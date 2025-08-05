@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import type { CSSProperties } from "react";
 import { Table } from "react-bootstrap";
-import { JSON, NodeJSON } from "../../helpers/types";
+import { JSON, NodeJSON } from "../AdapterEndpoint";
 
 interface OdinTableProps extends React.ComponentProps<typeof Table> {
     columns: {[key: string]: string};
@@ -20,7 +20,7 @@ interface OdinTableContext_t {
 
 const OdinTableContext = createContext<OdinTableContext_t>({column_keys: [], widths: {}});
 
-export const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
+const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
     const ctx = useContext(OdinTableContext);
     const {row} = props;
 
@@ -43,7 +43,7 @@ export const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
 }
 
 
-export const OdinTable: React.FC<OdinTableProps> = (props) => {
+const OdinTable: React.FC<OdinTableProps> = (props) => {
     
     const {columns, header = true, widths = {}, children, ...leftoverProps } = props;
     const column_keys = Object.keys(columns);
@@ -76,3 +76,5 @@ export const OdinTable: React.FC<OdinTableProps> = (props) => {
     )
 
 }
+
+export {OdinTable, OdinTableRow };

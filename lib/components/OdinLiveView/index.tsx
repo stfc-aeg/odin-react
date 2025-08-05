@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import type { AdapterEndpoint_t, NodeJSON} from '../../helpers/types';
-import { getValueFromPath } from '../../helpers/utils';
+import type { AdapterEndpoint_t, NodeJSON} from '../AdapterEndpoint';
+import { getValueFromPath } from '../AdapterEndpoint';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 
@@ -9,7 +9,7 @@ import defaultImg from '../../assets/odin.png';
 import { Row, Col, Button, Dropdown, ButtonGroup, OverlayTriggerProps } from 'react-bootstrap';
 import { OverlayTrigger, Popover, Card} from 'react-bootstrap';
 
-import { ZoomIn, ZoomOut, PauseFill, PlayFill, List } from 'react-bootstrap-icons';
+import { ZoomIn, ZoomOut, PauseFill, PlayFill, List, ArrowsAngleContract, ArrowsAngleExpand } from 'react-bootstrap-icons';
 
 import style from './styles.module.css';
 import { WithEndpoint } from '../WithEndpoint';
@@ -33,8 +33,6 @@ interface ZoomableImageProps {
 
 interface LiveViewParam extends NodeJSON {
     frame: {
-        dtype: string;
-        shape: number[];
         frame_num: number;
     }
     colormap_options: Record<string, string>;
@@ -44,7 +42,7 @@ interface LiveViewParam extends NodeJSON {
 
 }
 
-export interface LiveViewerAddrs {
+interface LiveViewerAddrs {
     min_max_addr: string;
     clip_range_addr: string;
     colormap_options_addr: string;
@@ -55,20 +53,27 @@ export interface LiveViewerAddrs {
 const EndpointDropdown = WithEndpoint(Dropdown);
 const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 
-export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
+const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
 
     const {src, caption, additional_hover } = props;
 
     const [dims, setDims] = useState([1024, 1024]);
+    const [divWidth, setDivWidth] = useState(500);
     const [dragStart, setDragStart] = useState([0, 0]);
     const [scale, setScale] = useState(100);
     // const [overlayVisible, setVisible] = useState<CSSProperties["visibility"]>("hidden");
 
     const imgRef = useRef<HTMLImageElement>(null);
 
+    useEffect(() => {
+        setScale(getFitScale());
+    }, [imgRef.current, dims[0]]);
+
     const onLoad: React.ReactEventHandler<HTMLImageElement> = (event) => {
         const target = event.target as HTMLImageElement;
+        const parent = target.parentElement as HTMLDivElement;
         setDims([target.naturalWidth, target.naturalHeight]);
+        setDivWidth(parent.clientWidth);
     }
 
     const onMouseDown: React.MouseEventHandler<HTMLImageElement> = (event) => {
@@ -92,9 +97,14 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
         }
     }
 
+    const getFitScale = () => {
+        // gets the scale we need to apply to the image to make it fit the container its in
+        return (divWidth / dims[0]) * 100;
+    }
+
     return (
         <figure className={style.figure}>
-            <div className={style.liveImg}>
+            <div className={style.liveImg} style={{aspectRatio: `${dims[0]} / ${dims[1]}`}}>
                 <img src={src} onLoad={onLoad} width={dims[0]*(scale/100)}
                      onMouseMove={onDrag} onMouseDown={onMouseDown} ref={imgRef}
                      draggable={false}/>
@@ -108,9 +118,14 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
                 <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale-10, 10 ))}>
                     <ZoomOut/>
                 </Button>
-                <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(100)}>{`${scale}%`}</Button>
+                <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(getFitScale())}>
+                    <ArrowsAngleContract/>
+                </Button>
+                <Button title='Full Scale' variant='secondary' onClick={() => setScale(100)}>
+                    <ArrowsAngleExpand/>
+                </Button>
                 <Button title="Zoom In" variant="secondary" onClick={() => setScale(oldScale => oldScale+10)}>
-                <ZoomIn/>
+                    <ZoomIn/>
                 </Button>
                 </ButtonGroup>
                 </Col>
@@ -119,7 +134,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
     )
 }
 
-export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
+const OdinLiveView: React.FC<LiveViewProps> = (props) => {
     const { title="Live View", img_path="image", endpoint, interval=1000, addrs={}, justImage } = props;
     
     const [imgPath, setImgPath] = useState(defaultImg);
@@ -242,3 +257,5 @@ export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
         )
     }
 }
+
+export { ZoomableImage, OdinLiveView};

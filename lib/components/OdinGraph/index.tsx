@@ -2,12 +2,27 @@ import { useEffect, useState } from 'react';
 
 import type { ColorScale, Layout, PlotData, PlotType } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js'; 
-import type { GraphData, Axis } from '../../helpers/types';
-import { isGraphData } from '../../helpers/types';
 import { Alert, Placeholder, Spinner } from 'react-bootstrap';
 import { ExclamationTriangle } from 'react-bootstrap-icons';
 
 import Style from './style.module.css';
+
+interface GraphData {
+    data: number[];
+    axis?: number;
+}
+
+interface Axis {
+    side?: Layout["yaxis"]["side"];
+    range?: [number, number];
+    invert?: boolean;
+    title?: Layout["yaxis"]["title"];
+    visible?: boolean;
+}
+
+const isGraphData = (x: Object[]): x is GraphData[] => {
+    return "data" in x[0] && Array.isArray(x[0].data) && typeof x[0].data[0] === "number"
+}
 
 interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
     title?: string;
@@ -72,7 +87,7 @@ const getPlot = async () => {
     }
 }
 
-export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
+const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
     const {title, data, layout={}, style={}, type="scatter", series_names, colorscale="Portland", axis=[], ...leftoverProps} = props;
 
@@ -227,3 +242,6 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
         {...leftoverProps} useResizeHandler={true}/>
     )
 }
+
+export type { GraphData, Axis};
+export { OdinGraph}

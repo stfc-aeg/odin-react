@@ -1,5 +1,5 @@
 import { TitleCard } from "../TitleCard";
-import type {Log, AdapterEndpoint_t} from "../../helpers/types";
+import type {AdapterEndpoint_t, NodeJSON} from "../AdapterEndpoint";
 import {Row, Col } from 'react-bootstrap';
 import { ToggleButtonGroup, ToggleButton, Form, InputGroup, Button, OverlayTrigger, Popover } from "react-bootstrap";
 
@@ -8,6 +8,12 @@ import { Filter, Clock, CalendarEvent, ArrowBarDown } from "react-bootstrap-icon
 
 import style from './styles.module.css';
 import React, { useEffect, useState, CSSProperties, useRef, useMemo, useCallback } from "react";
+
+interface Log extends NodeJSON {
+    level?: "debug" | "info" | "warning" | "error" | "critical";
+    timestamp: string;
+    message: string;
+}
 
 interface LogHeaderProps {
     displayLogLevels: boolean;
@@ -160,7 +166,7 @@ const FilterButtons = (props: LogHeaderProps) => {
     )
 }
 
-export const OdinEventLog: React.FC<EventLogProps> = (props) => {
+const OdinEventLog: React.FC<EventLogProps> = (props) => {
 
     const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500 } = props;
     const propEvents = props.events;
@@ -266,3 +272,6 @@ export const OdinEventLog: React.FC<EventLogProps> = (props) => {
         </TitleCard>
     )
 }
+
+export type { Log };
+export { OdinEventLog };

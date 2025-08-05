@@ -1,19 +1,18 @@
 import { useContext, createContext, useState, useMemo, PropsWithChildren } from "react";
 
-import type { ErrorState } from "../../helpers/types";
 import { Alert } from "react-bootstrap";
 
 interface ErrorContext_t {
-    error: ErrorState;
-    setError: React.Dispatch<React.SetStateAction<ErrorState>>;
+    error: Error | null;
+    setError: React.Dispatch<React.SetStateAction<Error | null>>;
 
 }
 
 const ErrorContext = createContext<ErrorContext_t | null>(null);
 
-export const OdinErrorContext = (props: PropsWithChildren) => {
+const OdinErrorContext = (props: PropsWithChildren) => {
 
-    const [error, setError] = useState<ErrorState>(null);
+    const [error, setError] = useState<Error | null>(null);
     const context = useMemo<ErrorContext_t>(() => ({error, setError}), [error]);
 
     return (
@@ -23,7 +22,7 @@ export const OdinErrorContext = (props: PropsWithChildren) => {
     )
 }
 
-export const OdinErrorOutlet = () => {
+const OdinErrorOutlet = () => {
 
     const {error, setError} = useError();
 
@@ -37,7 +36,7 @@ export const OdinErrorOutlet = () => {
     )
 }
 
-export const useError = () => {
+const useError = () => {
     const ctx = useContext(ErrorContext);
 
     if(ctx ==  null){
@@ -48,3 +47,5 @@ export const useError = () => {
 
     return ctx;
 }
+
+export { OdinErrorContext, OdinErrorOutlet, useError};
