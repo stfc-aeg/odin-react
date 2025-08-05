@@ -45,7 +45,7 @@ type InjectedProps = metadata_t & selectEvent_t & {
 
 }
 
-export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
+const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
 {
     type WrapperComponentProps = React.PropsWithChildren<
              Omit<P, keyof InjectedProps> & ComponentProps>;
@@ -449,3 +449,6 @@ export const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =
         WithEndpointComponent
     )
 };
+
+
+export { WithEndpoint };

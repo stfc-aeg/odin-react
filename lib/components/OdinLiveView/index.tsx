@@ -42,7 +42,7 @@ interface LiveViewParam extends NodeJSON {
 
 }
 
-export interface LiveViewerAddrs {
+interface LiveViewerAddrs {
     min_max_addr: string;
     clip_range_addr: string;
     colormap_options_addr: string;
@@ -53,7 +53,7 @@ export interface LiveViewerAddrs {
 const EndpointDropdown = WithEndpoint(Dropdown);
 const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 
-export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
+const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
 
     const {src, caption, additional_hover } = props;
 
@@ -134,7 +134,7 @@ export const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
     )
 }
 
-export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
+const OdinLiveView: React.FC<LiveViewProps> = (props) => {
     const { title="Live View", img_path="image", endpoint, interval=1000, addrs={}, justImage } = props;
     
     const [imgPath, setImgPath] = useState(defaultImg);
@@ -257,3 +257,5 @@ export const OdinLiveView: React.FC<LiveViewProps> = (props) => {
         )
     }
 }
+
+export { ZoomableImage, OdinLiveView};

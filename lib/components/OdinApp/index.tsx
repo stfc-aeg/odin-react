@@ -84,7 +84,7 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
     }
 }
 
-export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
+const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
 {
     const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
 
@@ -184,3 +184,5 @@ export const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
     )
 
 }
+
+export { OdinApp };

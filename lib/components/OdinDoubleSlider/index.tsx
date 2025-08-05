@@ -50,7 +50,7 @@ const OptionalOverlay = (props: OverlayTriggerProps) => {
 
 }
 
-export const OdinDoubleSlider: React.FC<SliderProps> = (props) => {
+const OdinDoubleSlider: React.FC<SliderProps> = (props) => {
 
     const {min=0, max=100, step=1, value=[min, max]} = props;
     const {title, showTooltip=true, tooltipPosition="auto", disabled, showMinMaxValues=true} = props;
@@ -157,3 +157,5 @@ export const OdinDoubleSlider: React.FC<SliderProps> = (props) => {
         </div>
     )
 }
+
+export { OdinDoubleSlider };

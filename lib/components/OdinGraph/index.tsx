@@ -7,12 +7,12 @@ import { ExclamationTriangle } from 'react-bootstrap-icons';
 
 import Style from './style.module.css';
 
-export interface GraphData {
+interface GraphData {
     data: number[];
     axis?: number;
 }
 
-export interface Axis {
+interface Axis {
     side?: Layout["yaxis"]["side"];
     range?: [number, number];
     invert?: boolean;
@@ -87,7 +87,7 @@ const getPlot = async () => {
     }
 }
 
-export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
+const OdinGraph: React.FC<OdinGraphProps> = (props) => {
 
     const {title, data, layout={}, style={}, type="scatter", series_names, colorscale="Portland", axis=[], ...leftoverProps} = props;
 
@@ -242,3 +242,6 @@ export const OdinGraph: React.FC<OdinGraphProps> = (props) => {
         {...leftoverProps} useResizeHandler={true}/>
     )
 }
+
+export type { GraphData, Axis};
+export { OdinGraph}
