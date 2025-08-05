@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { AdapterEndpoint_t, NodeJSON} from '../AdapterEndpoint';
 import { getValueFromPath } from '../AdapterEndpoint';
 
-import { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import defaultImg from '../../assets/odin.png';
 
@@ -24,12 +24,28 @@ interface LiveViewProps {
     justImage?: boolean;
 }
 
-interface ZoomableImageProps {
-    src: string;
-    caption?: string;
-    additional_hover?: ReactNode;
+interface ControlsProps {
+    ref: HTMLDivElement;
+    placement?: OverlayTriggerProps["placement"];
 
 }
+
+interface ZoomableImageBasics {
+    src: string;
+    caption?: string;
+}
+
+interface ZoomableImagePropsWithNodeHover extends ZoomableImageBasics {
+    additional_hover?: ReactNode;
+    AdditionalHoverComponent?: never;
+}
+
+interface ZoomableImagePropsWithComponentHover extends ZoomableImageBasics {
+    additional_hover?: never;
+    AdditionalHoverComponent?: (props: ControlsProps) => JSX.Element;
+}
+
+type ZoomableImageProps = ZoomableImagePropsWithComponentHover | ZoomableImagePropsWithNodeHover;
 
 interface LiveViewParam extends NodeJSON {
     frame: {
@@ -53,9 +69,10 @@ interface LiveViewerAddrs {
 const EndpointDropdown = WithEndpoint(Dropdown);
 const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 
-const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
+const ZoomableImage: React.FC<ZoomableImageProps> = (
+    {src, caption, additional_hover, AdditionalHoverComponent }
+) => {
 
-    const {src, caption, additional_hover } = props;
 
     const [dims, setDims] = useState([1024, 1024]);
     const [divWidth, setDivWidth] = useState(500);
@@ -64,6 +81,7 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
     // const [overlayVisible, setVisible] = useState<CSSProperties["visibility"]>("hidden");
 
     const imgRef = useRef<HTMLImageElement>(null);
+    const divRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setScale(getFitScale());
@@ -111,8 +129,9 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
                 
             </div>
             {caption && <figcaption>{caption}</figcaption>}
-            <Row className={style.zoomOverlay}>
-                <Col>{additional_hover}</Col>
+            <div className={style.zoomOverlay}>
+                {additional_hover && <Col xs="auto">{additional_hover}</Col>}
+                {AdditionalHoverComponent && <Col xs="auto" ref={divRef}>{AdditionalHoverComponent({ref: divRef.current!, placement: "bottom"})}</Col>}
                 <Col xs="auto">
                 <ButtonGroup size='sm'>
                 <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale-10, 10 ))}>
@@ -129,7 +148,7 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
                 </Button>
                 </ButtonGroup>
                 </Col>
-            </Row>
+            </div>
         </figure>
     )
 }
@@ -154,7 +173,7 @@ const OdinLiveView: React.FC<LiveViewProps> = (
            colormap_selected_addr = "colormap_selected",
            frame_num_addr = "frame/frame_num"} = addrs;
 
-
+    const div = useRef<HTMLDivElement>(null);
 
     const refreshImage = useCallback(() => {
         endpoint.get<Blob>(img_path, {responseType: "blob"})
@@ -220,7 +239,7 @@ const OdinLiveView: React.FC<LiveViewProps> = (
         </Popover>
     )
 
-    const optionButtons = (placement: OverlayTriggerProps["placement"]="bottom-end") => (
+    const optionButtons = (props: ControlsProps) => (
         <ButtonGroup size='sm'>
             <Button onClick={() => setEnable(val => !val)}
                     variant="secondary"
@@ -228,7 +247,8 @@ const OdinLiveView: React.FC<LiveViewProps> = (
                 {enable ? <PauseFill/> : <PlayFill/>}
             </Button>
             {((colormap_options && colormap_selected) || clip_range) && 
-                <OverlayTrigger placement={placement} overlay={renderOptions} trigger="click" rootClose> 
+                <OverlayTrigger placement={props.placement ?? "bottom-end"} overlay={renderOptions} trigger="click" rootClose
+                    container={props.ref}> 
                     <Button title='Options'><List/></Button>
                 </OverlayTrigger>
             }
@@ -238,7 +258,7 @@ const OdinLiveView: React.FC<LiveViewProps> = (
     if(justImage){
         return (
             <ZoomableImage src={imgPath} caption={frameNum > -1? `Frame Number: ${frameNum}` : ""}
-                           additional_hover={optionButtons("bottom-start")}/>
+                           AdditionalHoverComponent={optionButtons}/>
         )
     }else{
         return (
@@ -246,8 +266,8 @@ const OdinLiveView: React.FC<LiveViewProps> = (
                 <Card.Header>
                     <Row>
                     <Col className={style.centerContents}>{title}</Col>
-                    <Col xs="auto">
-                        {optionButtons()}
+                    <Col xs="auto" ref={div}>
+                        {optionButtons({ref: div.current!})}
                     </Col>
                     </Row>
                 </Card.Header>

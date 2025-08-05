@@ -3,7 +3,7 @@ import { fn } from 'storybook/test';
 import defaultImg from '../../assets/testImage.png';
 
 import type { AdapterEndpoint_t, ParamTree } from '../../main';
-import { getValueFromPath } from '../../helpers/utils';
+import { getValueFromPath } from '../AdapterEndpoint';
 
 type ResponseType =
     | 'arraybuffer'
