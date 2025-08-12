@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import type { AdapterEndpoint_t, NodeJSON} from '../AdapterEndpoint';
 import { getValueFromPath } from '../AdapterEndpoint';
 
+
+
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import defaultImg from '../../assets/odin.png';
@@ -42,7 +44,7 @@ interface ZoomableImagePropsWithNodeHover extends ZoomableImageBasics {
 
 interface ZoomableImagePropsWithComponentHover extends ZoomableImageBasics {
     additional_hover?: never;
-    AdditionalHoverComponent?: (props: ControlsProps) => JSX.Element;
+    AdditionalHoverComponent?: React.FC<any>;
 }
 
 type ZoomableImageProps = ZoomableImagePropsWithComponentHover | ZoomableImagePropsWithNodeHover;
@@ -131,7 +133,7 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (
             {caption && <figcaption>{caption}</figcaption>}
             <div className={style.zoomOverlay}>
                 {additional_hover && <Col xs="auto">{additional_hover}</Col>}
-                {AdditionalHoverComponent && <Col xs="auto" ref={divRef}>{AdditionalHoverComponent({ref: divRef.current!, placement: "bottom"})}</Col>}
+                {AdditionalHoverComponent && <Col xs="auto" ref={divRef}><AdditionalHoverComponent ref={divRef.current!} placement="bottom"/></Col>}
                 <Col xs="auto">
                 <ButtonGroup size='sm'>
                 <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale-10, 10 ))}>
@@ -239,7 +241,7 @@ const OdinLiveView: React.FC<LiveViewProps> = (
         </Popover>
     )
 
-    const optionButtons = (props: ControlsProps) => (
+    const OptionButtons: React.FC<ControlsProps> = (props) => (
         <ButtonGroup size='sm'>
             <Button onClick={() => setEnable(val => !val)}
                     variant="secondary"
@@ -258,7 +260,7 @@ const OdinLiveView: React.FC<LiveViewProps> = (
     if(justImage){
         return (
             <ZoomableImage src={imgPath} caption={frameNum > -1? `Frame Number: ${frameNum}` : ""}
-                           AdditionalHoverComponent={optionButtons}/>
+                           AdditionalHoverComponent={OptionButtons}/>
         )
     }else{
         return (
@@ -267,7 +269,7 @@ const OdinLiveView: React.FC<LiveViewProps> = (
                     <Row>
                     <Col className={style.centerContents}>{title}</Col>
                     <Col xs="auto" ref={div}>
-                        {optionButtons({ref: div.current!})}
+                        <OptionButtons ref={div.current!}/>
                     </Col>
                     </Row>
                 </Card.Header>

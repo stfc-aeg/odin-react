@@ -34,6 +34,8 @@
 
 .zoomOverlay > :global(.col-auto):hover {
     opacity: 1 !important;
+    border-color: var(--bs-highlight-color);
+
 }
 
 .zoomOverlay > :global(.col-auto) {
@@ -48,7 +50,6 @@
 
 .zoomOverlay > :not(:first-child) {
     border-bottom-left-radius: 0;
-    border-left-style: none;
     /* border-style: none none solid solid; */
 }
 
