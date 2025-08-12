@@ -28,7 +28,6 @@ class ReactAdapter(ApiAdapter):
         :param request: HTTP request object
         :return: an ApiAdapterResponse object containing the appropriate response
         """
-        logging.debug(request.query_arguments)
         metadata = wants_metadata(request)
         try:
             query = {k: [val.decode("utf-8") for val in v] for (k, v) in request.query_arguments.items()}

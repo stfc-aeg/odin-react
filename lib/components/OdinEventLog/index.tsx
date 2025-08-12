@@ -166,23 +166,24 @@ const FilterButtons = (props: LogHeaderProps) => {
     )
 }
 
-const OdinEventLog: React.FC<EventLogProps> = (props) => {
+const OdinEventLog: React.FC<EventLogProps> = (
+    { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500, events }
+) => {
 
-    const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500 } = props;
-    const propEvents = props.events;
+    // const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500 } = props;
 
     const log_levels = ["debug", "info", "warning", "error", "critical"];
 
     const [level_filter, setLevelFilter] = useState(log_levels);
     //timestamp boundaries set as min and max possible dates to start with
     const [timestampFilter, changeTimestampFilter] = useState<TimestampFilter_t>({start: new Date(0), end: new Date(8.64e15)});
-    const [events, changeEvents] = useState(propEvents);
+    const [stateEvents, changeEvents] = useState(events);
     const [lastTimestamp, changeLastTimestamp] = useState("");
 
     const [displayDay, changeDisplayDay] = useState(false);
     const [autoScroll, changeAutoScroll] = useState(true);
 
-    const displayLogLevels = events[0] ? "level" in events[0] : false;
+    const displayLogLevels = stateEvents[0] ? "level" in stateEvents[0] : false;
 
     const dateFormatter = new Intl.DateTimeFormat("en-UK", {
         dateStyle: "short"
@@ -210,7 +211,7 @@ const OdinEventLog: React.FC<EventLogProps> = (props) => {
             changeEvents(oldEvents => oldEvents.concat(newLogs).slice(-maxLogs));
         }
 
-    }, [lastTimestamp, events, getLatestLogs]);
+    }, [lastTimestamp, stateEvents, getLatestLogs]);
 
     useEffect(() => {
         if(autoScroll){
@@ -218,7 +219,7 @@ const OdinEventLog: React.FC<EventLogProps> = (props) => {
             const options: ScrollToOptions = {behavior: "smooth", top: bottomDiv.offsetTop};
             bottomDiv.parentElement!.scrollTo(options);
         }
-    }, [events]);
+    }, [stateEvents]);
 
     useEffect(() => {
         const timer_id = setInterval(RefreshLogs, refreshRate);
@@ -249,7 +250,7 @@ const OdinEventLog: React.FC<EventLogProps> = (props) => {
     const onFilterChange = (val: string[]) => setLevelFilter(val);
     
     const filterEvent = () => {
-        const filteredLogs = events.filter((event) => {
+        const filteredLogs = stateEvents.filter((event) => {
             const level_filtered = event.level ? level_filter.includes(event.level.toLowerCase()) : true;
             const timestamp = new Date(event.timestamp);
             const timestamp_filtered_start = timestamp >= timestampFilter.start;

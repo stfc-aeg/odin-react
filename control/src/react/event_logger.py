@@ -55,7 +55,6 @@ class EventLogger():
             timestamp = parse(timestamp)
         else:
             timestamp = datetime(1, 1, 1)
-        logging.debug(timestamp)
         return [
             {
                 "timestamp": datetime.strftime(event.timestamp, self.TIMESTAMP_FORMAT),

@@ -38,9 +38,10 @@
     "@eslint/js": "^9.19.0",
     "@laynezh/vite-plugin-lib-assets": "^2.1.0",
     "@microsoft/api-extractor": "^7.52.8",
-    "@types/lodash": "^4.17.20",
     "@storybook/addon-docs": "^9.0.13",
+    "@storybook/addon-vitest": "^9.1.1",
     "@storybook/react-vite": "^9.0.13",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^24.0.10",
     "@types/plotly.js": "^3.0.2",
     "@types/react": "^19.0.8",
@@ -60,7 +61,11 @@
     "typescript-eslint": "^8.22.0",
     "unplugin-dts": "^1.0.0-beta.2",
     "vite": "^7.0.0",
-    "vite-plugin-lib-inject-css": "^2.2.1"
+    "vite-plugin-lib-inject-css": "^2.2.1",
+    "vitest": "^3.2.4",
+    "@vitest/browser": "^3.2.4",
+    "playwright": "^1.54.2",
+    "@vitest/coverage-v8": "^3.2.4"
   },
   "dependencies": {
     "@storybook/addon-themes": "^9.0.13",
