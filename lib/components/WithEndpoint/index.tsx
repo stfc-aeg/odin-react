@@ -82,9 +82,11 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
 
         const changedStyle: CSSProperties = {
             backgroundColor: dif_color,
-            color: "var(--bs-body-color"
+            color: "var(--bs-body-color)"
         }
-        const style: CSSProperties = isEqual(endpointValue, componentValue) ? {} : changedStyle;
+        const style: CSSProperties = ["null", "list", "dict"].includes(type) ? 
+                isEqual(endpointValue, componentValue) ? {} : changedStyle :
+                componentValue == endpointValue ? {} : changedStyle;
 
         const disable = useMemo(() => {
             if(disabled !== undefined){

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import type { AdapterEndpoint_t, JSON, NodeJSON, getConfig, status } from "./AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
@@ -38,11 +38,12 @@ function getValueFromPath<T>(data: JSON, path: string): T | undefined {
     }
 }
 
+
 function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number, api_version=DEF_API_VERSION
 ): AdapterEndpoint_t<T> {
 
-    const [data, setData] = useState<T>({} as T);
+    const data = useRef<T>({} as T);
     const [metadata, setMetadata] = useState<NodeJSON>({});
     const [error, setError] = useState<Error | null>(null);
     const [updateFlag, setUpdateFlag] = useState(Symbol(updateFlag_enum.INIT));
@@ -105,7 +106,7 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             response = await axiosInstance.get<T>(param_path, request_config);
             result = response.data;
             console.debug("Response Data: ", result);
-            setStatusFlag("connected");
+            setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);  // modified to ensure the init for metadata and data runs no matter what
             return result;
         }
         catch (err) {
@@ -126,7 +127,7 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             result = response.data;
             
             console.debug("Response: ", result);
-            setStatusFlag("connected");
+            setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);
             return result;
         }
         catch (err: unknown) {
@@ -147,7 +148,7 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             changeAwaiting(true);
             response = await axiosInstance.post(param_path, data);
             result = response.data;
-            setStatusFlag("connected");
+            setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);
         }
         catch (err: unknown) {
             throw handleError(err);
@@ -170,7 +171,7 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
             changeAwaiting(true);
             response = await axiosInstance.delete(param_path);
             result = response.data;
-            setStatusFlag("connected");
+            setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);
         }
         catch (err: unknown) {
             throw handleError(err);
@@ -188,13 +189,13 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     const getInitialData = () => {
         get("")
         .then(result => {
-            setData(result as T);
-            get("", {wants_metadata: true})
-            .then(result => {
-                setMetadata(result);
-            });
-        })
-        .catch(err => console.debug(err));
+            data.current = result as T;
+        });
+        get("", {wants_metadata: true})
+        .then(result => {
+            setMetadata(result);
+            setStatusFlag("connected");
+        });
     }
 
     useEffect(() => {
@@ -224,14 +225,14 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     const refreshData = () => {
         get("")
         .then(result => {
-            setData(result as T);
+            data.current = result as T;
             setUpdateFlag(Symbol(updateFlag_enum.REFRESH));
         });
     }
     
     const mergeData = (newData: NodeJSON, param_path: string) => {
         const splitPath = param_path.split("/").slice(0, -1);
-        const tmpData = data;  // use tmpData as a copy of the Data that we can modify
+        const tmpData = data.current;  // use tmpData as a copy of the Data that we can modify
         let pointer: JSON = tmpData;  // pointer that can traverse down the nested data
 
         if(splitPath[0]) {
@@ -243,11 +244,11 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         }
         // becasue pointer was a copy of tmpData, changes made to it will also be made to tmpData
         Object.assign(pointer, newData);
-        setData(tmpData);
+        data.current = tmpData;
         setUpdateFlag(Symbol(updateFlag_enum.MERGED));
     }
     
-    return { data: data, metadata, error, loading: awaiting, updateFlag, status: statusFlag, get, put, post, remove, refreshData, mergeData}
+    return { data: data.current, metadata, error, loading: awaiting, updateFlag, status: statusFlag, get, put, post, remove, refreshData, mergeData}
 }
 
 export { useAdapterEndpoint, isParamNode, getValueFromPath };
