@@ -21,6 +21,7 @@ export const PeriodicEndpointPage: React.FC = () => {
                                 Trigger
                             </EndpointButton>
                             <EndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
+                            <EndpointInput endpoint={endpoint} fullpath="rand_num" type="number"/>
                         </Stack>
                     </TitleCard>
                 </Col>
