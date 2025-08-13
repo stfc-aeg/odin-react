@@ -43,6 +43,8 @@ interface routeAppProps extends PropsWithChildren{
     routeLinks?: NavLink_t[];
 }
 
+const darkModeAttr = "data-bs-theme";
+
 const RouteApp: React.FC<routeAppProps> = (props) => {
     
     const {routeLinks} = props;
@@ -88,10 +90,7 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
 {
     const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
 
-    // const [key, setKey] = useState(navLinks ? navLinks[0] : "home");
     const [iconHover, changeIconHover] = useState(false);
-    const [darkMode, setDarkMode] = useState(false);
-
     
     const handleHoverOn = () => changeIconHover(true);
     const handleHoverOff = () => changeIconHover(false);
@@ -99,10 +98,9 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
     const icon_addr = custom_icon ?? (iconHover ? ProdinImg : odinImg);
 
     const toggleTheme = () => {
-        const newDarkMode = !darkMode;
-        setDarkMode(newDarkMode);
-        const htmlElement = document.querySelector("html");
-        htmlElement?.setAttribute("data-bs-theme", newDarkMode ? "dark": "light");
+        const curDarkMode = document.querySelector("html")?.getAttribute(darkModeAttr);
+        document.querySelector("html")?.setAttribute(darkModeAttr,
+            curDarkMode == "dark" ? "light" : "dark");
     }
 
     const createNavList = useMemo(() => {
@@ -170,9 +168,9 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                 </Nav>
                 </Navbar.Collapse>
                 <Nav className={'me-2 d-none d-lg-block ' + styles.darkmodeToggle}>
-                    <Button className={styles.btn} variant={darkMode? "outline-light" : "outline-dark" } onClick={toggleTheme}>
-                        {darkMode ? <LightbulbFill className={styles.svg} title='Set Light Mode' size={24}/> 
-                                : <MoonFill className={styles.svg} title='Set Dark Mode' size={24}/>}
+                    <Button className={styles.btn} onClick={toggleTheme} variant='none'>
+                        <LightbulbFill className={`${styles.svg} ${styles.dark}`} title='Set Light Mode' size={24}/>
+                        <MoonFill className={`${styles.svg} ${styles.light}`} title='Set Dark Mode' size={24}/>
                     </Button>
                 </Nav>
             </Navbar>
