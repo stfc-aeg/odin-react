@@ -33,7 +33,8 @@ interface metadata_t {
 type selectEvent_t = {onSelect?: (eventKey: number | string, event: React.SyntheticEvent) => void,
                       onClick?: (event: React.MouseEvent) => void,
                       onKeyPress?: (event: React.KeyboardEvent) => void,
-                      onChange?: (event: React.ChangeEvent) => void
+                      onChange?: (event: React.ChangeEvent) => void,
+                      onMouseUp?: (event: React.MouseEvent) => void
 
 };
 
@@ -72,8 +73,8 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         // we will be assigning event handlers after component initialisation
         const [eventProp, setEventProp] = useState<selectEvent_t>({onChange: (event) => onChangeHandler(event)});
 
-        const [componentValue, setComponentValue] = useState<typeof value>(value ?? undefined);
-        const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? undefined);
+        const [componentValue, setComponentValue] = useState<typeof value>(value ?? "");
+        const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? "");
         const [metadata, setMetadata] = useState<metadata_t | null>(null);
 
         const [type, setType] = useState<value_t>("string");
@@ -81,8 +82,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         const [isPending, startTransition] = useTransition();
 
         const changedStyle: CSSProperties = {
-            backgroundColor: dif_color,
-            color: "var(--bs-body-color"
+            backgroundColor: dif_color
         }
         const style: CSSProperties = isEqual(endpointValue, componentValue) ? {} : changedStyle;
 
@@ -345,6 +345,20 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
             sendRequest(val);
         };
 
+        const onMouseUpHandler = (event: React.MouseEvent) => {
+            console.debug(fullpath, event);
+
+            const curComponent = component.current!;
+            let val: ComponentProps['value'];
+            if(value != null){
+                val = value;
+            }else{
+                val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
+            }
+
+            sendRequest(val);
+        }
+
         const onChangeHandler = (event: React.ChangeEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
             const target = event.target;
@@ -404,6 +418,11 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                                     //default checkboxes and radios to using the onClick event handler
                                     events = {onClick: (event) => onClickHandler(event)};
                                     break;
+                                case "range":
+                                    // needs some sort of OnMouseUp event?
+                                    events = {onChange: (event) => onChangeHandler(event),
+                                              onMouseUp: (event) => onMouseUpHandler(event)}
+                                    break;
                                 case "text":
                                 case "number":
                                 default:
@@ -417,6 +436,10 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                             if(divClass === "dropdown"){
                                 //bootstrap dropdowns are contained in a div with a classname of "dropdown"
                                 events = {onSelect: (eventKey, event) => onSelectHandler(event, eventKey)};
+                            }
+                            if(divClass === "DoubleSlider"){
+                                events = {onChange: (event) => onChangeHandler(event),
+                                          onMouseUp: (event) => onMouseUpHandler(event)}
                             }
                             break;
                         }

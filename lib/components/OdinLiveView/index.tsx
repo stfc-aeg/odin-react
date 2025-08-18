@@ -19,7 +19,7 @@ import { OdinDoubleSlider } from '../OdinDoubleSlider';
 
 interface LiveViewProps {
     title?: ReactNode;
-    endpoint: AdapterEndpoint_t<LiveViewParam>;
+    endpoint: AdapterEndpoint_t<NodeJSON>;
     img_path?: string;
     interval?: number;
     addrs?: Partial<LiveViewerAddrs>;
