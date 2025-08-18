@@ -2,31 +2,37 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { OdinLiveView, ZoomableImage } from './index';
 
-import { MockEndpoint_standard, MockEndpoint_noControls, MockEndpoint_noFrame, MockEndpoint_noClip } from './stories.mock';
+import { useAdapterEndpoint } from '../AdapterEndpoint';
+import React from 'react';
 
+
+interface ContainerProps 
+  extends Omit<React.ComponentProps<typeof OdinLiveView>, "endpoint"> {
+    adapter: string;
+}
+
+const Container: React.FC<ContainerProps> = ({adapter, ...props}) => {
+  const endpoint = useAdapterEndpoint(adapter, "http://localhost:1337");
+
+  return (
+    <OdinLiveView endpoint={endpoint} {...props}/>
+  )
+
+}
 
 const meta = {
-  component: OdinLiveView,
-  subcomponents: {ZoomableImage},
+  component: Container,
+  subcomponents: {OdinLiveView, ZoomableImage},
   argTypes: {
-    endpoint: {
-      options: ["Standard", "No Controls", "No Frame Number", "No Clipping Controls", "Custom Control Addrs"],
-      mapping: {
-        "Standard": MockEndpoint_standard,
-        "No Controls": MockEndpoint_noControls,
-        "No Frame Number": MockEndpoint_noFrame,
-        "No Clipping Controls": MockEndpoint_noClip
-      },
-      control: {type: "radio"}
-    },
-    title: {
-      control: {type: "text"}
+    adapter: {
+      control: false
     }
   },
   args: {
-    endpoint: "Standard"
+    justImage: false
   }
-} satisfies Meta<typeof OdinLiveView>;
+
+} satisfies Meta<typeof Container>;
 
 export default meta;
 
@@ -34,19 +40,25 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    endpoint: "Standard"
+    adapter: "live_view"
   }
 };
 
-export const NoControls: Story = {
+export const NoColor: Story = {
   args: {
-    endpoint: "No Controls"
+    adapter: "live_view_nc"
+  }
+};
+
+export const NoClip: Story = {
+  args: {
+    adapter: "live_view_clipless"
   }
 };
 
 export const JustImage: Story = {
   args: {
-    endpoint: "Standard",
+    adapter: "live_view",
     justImage: true
   }
 };
