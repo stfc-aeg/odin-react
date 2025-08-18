@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { fn } from 'storybook/test';
+
 import { OdinDoubleSlider } from './index';
 
 import type { OverlayTriggerProps } from 'react-bootstrap';
@@ -29,7 +31,7 @@ const meta = {
       options: PlacementOptionsList
     },
     onChange: {type: "function"},
-    onKeyPress: {type: "function"}
+    onMouseUp: {type: "function"}
   }
 } satisfies Meta<typeof OdinDoubleSlider>;
 
@@ -69,3 +71,10 @@ export const ValueAndStep: Story = {
     max: 82
   }
 };
+
+export const MouseUpEvent: Story = {
+  args: {
+    onMouseUp: fn((event) => {console.log(event.target)}),
+    onChange: fn()
+  }
+}

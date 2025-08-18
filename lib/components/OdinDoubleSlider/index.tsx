@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type { ComponentPropsWithRef } from "react";
 
 import { OverlayTrigger, OverlayTriggerProps, Tooltip, InputGroup } from "react-bootstrap";
@@ -13,11 +13,12 @@ interface SliderProps {
     step?: number;
     title?: string;
     onChange?: React.ChangeEventHandler;
-    onKeyPress?: React.KeyboardEventHandler;
+    onMouseUp?: React.MouseEventHandler;
     showTooltip?: boolean;
     showMinMaxValues?: boolean;
     tooltipPosition?: OverlayTriggerProps["placement"];
     disabled?: boolean;
+    ref?: React.RefObject<DivRef>;
 
 }
 
@@ -34,7 +35,7 @@ interface DivRef extends HTMLDivElement {
     value?: number[];
 }
 
-const Div = (props: DivProps) => {
+const divWithValue = (props: DivProps) => {
 
     return (
         <div {...props}>
@@ -52,8 +53,8 @@ const OptionalOverlay = (props: OverlayTriggerProps) => {
 
 const OdinDoubleSlider: React.FC<SliderProps> = (
     {min=0, max=100, step=1, value=[min, max],
-    title, showTooltip=true, tooltipPosition="auto", disabled, showMinMaxValues=true,
-    onChange, onKeyPress}
+    title, showTooltip=true, tooltipPosition="auto", disabled, showMinMaxValues=true, ref=null,
+    onChange, onMouseUp}
     ) => {
 
     const [vals, changeVals] = useState<value_t>({low: value[0], high: value[1]});
@@ -62,7 +63,7 @@ const OdinDoubleSlider: React.FC<SliderProps> = (
         changeVals({low: value[0], high: value[1]})
     }, [value[0], value[1]]);
 
-    const divRef = useRef<DivRef>(null);
+    const divRef = ref || useRef<DivRef>(null);
 
     const onSlide: React.ChangeEventHandler<HTMLInputElement> = (event) => {
         const id = event.target.id;
@@ -99,30 +100,18 @@ const OdinDoubleSlider: React.FC<SliderProps> = (
         }
     }
 
-    const onMouseUp: React.MouseEventHandler<HTMLInputElement> = (event) => {
-        if(onKeyPress != null){
-            // we gotta fake the Enter Key Press to allow this component to work with WithEndpoint
-            const eventDetails: KeyboardEventInit = {};
-            eventDetails.key = "Enter";
-            eventDetails.shiftKey = false;
-            const nativeEvent = new KeyboardEvent("keypress", eventDetails);
-            const newEvent: React.KeyboardEvent = Object.assign(event, 
+    const onSlideMouseUp: React.MouseEventHandler<HTMLInputElement | DivRef> = (event) => {
+        console.debug("ON SLIDE MOUSE UP", event);
+        
+        if(onMouseUp != null){
+            // manually trigger the onMouseUp event with the value from both sliders
+            const target = divRef.current!;
+            const newEvent: React.MouseEvent = Object.assign(event,
             {
-                target: divRef.current!,
-                nativeEvent: nativeEvent,
-                key: "Enter",
-                code: "Enter",
-                charCode: 13,
-                which: 13,
-                keyCode: 0,
-                locale: "undefined",
-                location: 0,
-                repeat: false
-
+                target: target,
+                nativeEvent: event.nativeEvent
             });
-            
-            onKeyPress(newEvent);
-
+            onMouseUp(newEvent);
         }
     }
 
@@ -140,19 +129,19 @@ const OdinDoubleSlider: React.FC<SliderProps> = (
         </div>
     )
     return (
-        <div>
+        <div className="DoubleSlider" ref={divRef} value={[vals.low, vals.high]} style={{pointerEvents: "none"}}>
             {titleDiv}
             <OptionalOverlay placement={tooltipPosition} overlay={tooltip} show={showTooltip}>
-                <Div ref={divRef} value={[vals.low, vals.high]} className={style.div}>
+                <div className={style.div}>
                     <input disabled={disabled} type="range" id="left_slider"
                         className={`${style.input} ${style.left}`}
-                        onChange={onSlide} onMouseUp={onMouseUp}
+                        onChange={onSlide} onMouseUp={onSlideMouseUp}
                         min={min} max={max} step={step} value={vals.low}/>
                     <input disabled={disabled} type="range" id="right_slider"
                     className={`${style.input} ${style.right}`}
-                        onChange={onSlide} onMouseUp={onMouseUp}
+                        onChange={onSlide} onMouseUp={onSlideMouseUp}
                         min={min} max={max} step={step} value={vals.high}/>
-                </Div>
+                </div>
             </OptionalOverlay>
         </div>
     )

@@ -5,7 +5,7 @@ import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { useError } from "../OdinErrorContext";
 import { isEqual } from 'lodash';
 
-type event_t = "select" | "click" | "enter"
+type event_t = "select" | "click" | "enter" | "mouseUp"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 
 interface ComponentProps {
@@ -241,10 +241,13 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                             }
                             break;
                         case "function":
-                        case "symbol":
+                        case "symbol": {
+                            const error = new Error(`Invalid Data Type ${data_type} for path ${fullpath}`);
+                            ErrCTX.setError(error);
+                        }
+                        break;
                         case "undefined": {
-                            console.error("Something went wrong getting the typeof Data: ", data, typeof data);
-                            const error = new Error(`Invalid Data type ${data_type} for path ${fullpath}. If Undefined, check fullPath is correct`);
+                            const error = new Error(`Undefined data type for path ${fullpath}. This is most commonly caused by a typo in the path`);
                             ErrCTX.setError(error);
                             break;
                         }
@@ -347,13 +350,14 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
 
         const onMouseUpHandler = (event: React.MouseEvent) => {
             console.debug(fullpath, event);
-
-            const curComponent = component.current!;
+            const target = event.target;
             let val: ComponentProps['value'];
-            if(value != null){
-                val = value;
-            }else{
-                val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
+            
+            if("value" in target && target.value != null){
+                val = target.value as ComponentProps['value'];
+            }else
+            if("value" in component.current!){
+                val = component.current.value as ComponentProps['value'];
             }
 
             sendRequest(val);
@@ -396,6 +400,10 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                     case "click":
                         events = {onClick: (event) => onClickHandler(event)};
                         break;
+                    case "mouseUp":
+                        events = {onChange: (event) => onChangeHandler(event),
+                                  onMouseUp: (event) => onMouseUpHandler(event)};
+                        break;
                     case "enter":
                     default:
                         break;
@@ -421,7 +429,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                                 case "range":
                                     // needs some sort of OnMouseUp event?
                                     events = {onChange: (event) => onChangeHandler(event),
-                                              onMouseUp: (event) => onMouseUpHandler(event)}
+                                              onMouseUp: (event) => onMouseUpHandler(event)};
                                     break;
                                 case "text":
                                 case "number":
