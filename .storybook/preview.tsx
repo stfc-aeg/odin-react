@@ -3,7 +3,7 @@ import type { Preview } from '@storybook/react-vite'
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
 
 import { initialize, mswLoader } from 'msw-storybook-addon';
-import { http } from 'msw';
+import { http, passthrough } from 'msw';
 
 import { OdinErrorContext } from '../lib/main';
 
@@ -16,7 +16,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
  * See https://github.com/mswjs/msw-storybook-addon#configuring-msw
  * to learn how to customize it
  */
-initialize();
+initialize({quiet: true});
 
 const preview: Preview = {
   parameters: {
@@ -30,6 +30,7 @@ const preview: Preview = {
       handlers: [
         http.get<{adapter: string}>("http://localhost:1337/api/0.1/:adapter", getHandler),
         http.get<{adapter: string, path: string[]}>("http://localhost:1337/api/0.1/:adapter/:path+", getHandler),
+        http.get("/lib/assets/:asset", passthrough),
         http.put<{adapter: string}>("http://localhost:1337/api/0.1/:adapter", putHandler),
         http.put<{adapter: string, path: string[]}>("http://localhost:1337/api/0.1/:adapter/:path+", putHandler)
       ]

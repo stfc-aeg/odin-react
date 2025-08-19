@@ -85,12 +85,78 @@ let OtherTestData = {
   other_string: "Other String"
 }
 
+let LoggingTestData = {
+  events: [
+    {
+        "level": "DEBUG",
+        "message": "Random Number: 64",
+        "timestamp": "2025-08-18T17:15:18.625680"
+    },
+    {
+        "level": "DEBUG",
+        "message": "Random Number: 70",
+        "timestamp": "2025-08-18T17:15:38.626060"
+    },
+    {
+        "level": "ERROR",
+        "message": "Random Number below 30: 12",
+        "timestamp": "2025-08-18T17:15:58.625833"
+    },
+    {
+        "level": "INFO",
+        "message": "Random Number below 60: 57",
+        "timestamp": "2025-08-18T17:16:18.625657"
+    },
+    {
+        "level": "WARNING",
+        "message": "Random Number below 50: 37",
+        "timestamp": "2025-08-18T17:16:38.625653"
+    },
+    {
+        "level": "CRITICAL",
+        "message": "Random Number below 10: 8",
+        "timestamp": "2025-08-18T17:16:58.626215"
+    },
+    {
+        "level": "DEBUG",
+        "message": "Random Number: 91",
+        "timestamp": "2025-08-18T17:17:18.625343"
+    },
+    {
+        "level": "CRITICAL",
+        "message": "Random Number below 10: 3",
+        "timestamp": "2025-08-18T17:17:38.625410"
+    },
+    {
+        "level": "CRITICAL",
+        "message": "Random Number below 10: 8",
+        "timestamp": "2025-08-18T17:17:58.625477"
+    },
+    {
+        "level": "DEBUG",
+        "message": "Random Number: 64",
+        "timestamp": "2025-08-18T17:18:18.625553"
+    },
+    {
+        "level": "DEBUG",
+        "message": "Random Number: 100",
+        "timestamp": "2025-08-18T17:18:38.625523"
+    },
+    {
+        "level": "DEBUG",
+        "message": "Random Number: 72",
+        "timestamp": "2025-08-18T17:18:58.625989"
+    }
+
+  ]
+}
+
 let ApiData = {
   Test: TestAdapterData,
   live_view: LiveViewAdapterData,
   live_view_nc: LiveViewNoColormapData,
   live_view_clipless: LiveViewNoClip,
-  Other: OtherTestData
+  Logger: LoggingTestData
 }
 
 const readOnlyPaths = ["select_list", "deep/long/nested/dict/path/readOnly"]

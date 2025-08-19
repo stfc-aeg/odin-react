@@ -35,7 +35,7 @@ interface DivRef extends HTMLDivElement {
     value?: number[];
 }
 
-const divWithValue = (props: DivProps) => {
+const DivWithValue = (props: DivProps) => {
 
     return (
         <div {...props}>
@@ -129,7 +129,7 @@ const OdinDoubleSlider: React.FC<SliderProps> = (
         </div>
     )
     return (
-        <div className="DoubleSlider" ref={divRef} value={[vals.low, vals.high]} style={{pointerEvents: "none"}}>
+        <DivWithValue className="DoubleSlider" ref={divRef} value={[vals.low, vals.high]} style={{pointerEvents: "none"}}>
             {titleDiv}
             <OptionalOverlay placement={tooltipPosition} overlay={tooltip} show={showTooltip}>
                 <div className={style.div}>
@@ -143,7 +143,7 @@ const OdinDoubleSlider: React.FC<SliderProps> = (
                         min={min} max={max} step={step} value={vals.high}/>
                 </div>
             </OptionalOverlay>
-        </div>
+        </DivWithValue>
     )
 }
 

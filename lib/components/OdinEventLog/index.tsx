@@ -9,6 +9,8 @@ import { Filter, Clock, CalendarEvent, ArrowBarDown } from "react-bootstrap-icon
 import style from './styles.module.css';
 import { useEffect, useState, CSSProperties, useRef, useMemo, useCallback } from "react";
 
+import { merge } from "lodash";
+
 interface Log extends NodeJSON {
     level?: "debug" | "info" | "warning" | "error" | "critical";
     timestamp: string;
@@ -33,14 +35,14 @@ interface TimestampFilter_t {
 }
 
 interface BasicProps {
-    events: Log[];
+    events?: Log[];
     refreshRate?: number;
     displayHeight?: CSSProperties['height'];
     maxLogs?: number;
 };
 
 interface PropsWithMethod extends BasicProps {
-    getLatestLogs: (timestamp: string) => Log[];
+    getLatestLogs: ((timestamp: string) => Log[]) | ((timestamp: string) => Promise<Log[]>);
     endpoint?: never;
     path?: never;
 }
@@ -51,7 +53,7 @@ interface PropsWithEndpoint extends BasicProps {
     path: string;
 }
 
-type EventLogProps = PropsWithMethod | PropsWithEndpoint;
+type EventLogProps = PropsWithEndpoint | PropsWithMethod ;
 
 const FilterButtons = (props: LogHeaderProps) => {
 
@@ -167,7 +169,7 @@ const FilterButtons = (props: LogHeaderProps) => {
 }
 
 const OdinEventLog: React.FC<EventLogProps> = (
-    { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500, events }
+    { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500, events=[] }
 ) => {
 
     // const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500 } = props;
@@ -199,7 +201,7 @@ const OdinEventLog: React.FC<EventLogProps> = (
     const RefreshLogs = useCallback(async () => {
         let newLogs: Log[] = [];
         if(getLatestLogs != null){
-            newLogs = getLatestLogs(lastTimestamp);
+            newLogs = await getLatestLogs(lastTimestamp);
         }else{
             // get the latest logs from the endpoint manually
            const response = await endpoint.get(`${path}?timestamp=${lastTimestamp}`);
@@ -208,7 +210,7 @@ const OdinEventLog: React.FC<EventLogProps> = (
         if(newLogs.length){
             const lastLog = newLogs[newLogs.length -1];
             changeLastTimestamp(lastLog.timestamp);
-            changeEvents(oldEvents => oldEvents.concat(newLogs).slice(-maxLogs));
+            changeEvents(oldEvents => merge(oldEvents, newLogs).slice(-maxLogs));
         }
 
     }, [lastTimestamp, stateEvents, getLatestLogs]);
