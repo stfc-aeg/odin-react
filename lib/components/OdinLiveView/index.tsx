@@ -32,22 +32,13 @@ interface ControlsProps {
 
 }
 
-interface ZoomableImageBasics {
+interface ZoomableImageProps {
     src: string;
     caption?: string;
-}
-
-interface ZoomableImagePropsWithNodeHover extends ZoomableImageBasics {
     additional_hover?: ReactNode;
-    AdditionalHoverComponent?: never;
-}
-
-interface ZoomableImagePropsWithComponentHover extends ZoomableImageBasics {
-    additional_hover?: never;
     AdditionalHoverComponent?: React.FC<any>;
 }
 
-type ZoomableImageProps = ZoomableImagePropsWithComponentHover | ZoomableImagePropsWithNodeHover;
 
 interface LiveViewParam extends NodeJSON {
     frame: {
