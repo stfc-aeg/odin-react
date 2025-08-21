@@ -1,6 +1,6 @@
 import { TitleCard } from "../TitleCard";
 import type {AdapterEndpoint_t, NodeJSON} from "../AdapterEndpoint";
-import {Row, Col } from 'react-bootstrap';
+import {Row, Col, Container } from 'react-bootstrap';
 import { ToggleButtonGroup, ToggleButton, Form, InputGroup, Button, OverlayTrigger, Popover } from "react-bootstrap";
 
 import { DashCircle, InfoCircle, ExclamationTriangle, ExclamationOctagon, XOctagon } from "react-bootstrap-icons";
@@ -39,6 +39,7 @@ interface BasicProps {
     refreshRate?: number;
     displayHeight?: CSSProperties['height'];
     maxLogs?: number;
+    justLogs?: boolean;
 };
 
 interface PropsWithMethod extends BasicProps {
@@ -146,8 +147,6 @@ const FilterButtons = (props: LogHeaderProps) => {
     )
 
     return (
-        <Row className={style.headerControl}>
-        <Col>Event Log</Col>
         <Col xs="auto">
             <OverlayTrigger placement="bottom-end" overlay={renderOptions} trigger="click" rootClose>
             <Button className={style.iconButton} variant="outline-secondary"><Filter className={style.svg} title="Filter Options"/></Button>
@@ -162,14 +161,11 @@ const FilterButtons = (props: LogHeaderProps) => {
                               <CalendarEvent className={style.svg} title="Show Date"/>}
             </Button>
         </Col>
-        
-        
-        </Row>
     )
 }
 
 const OdinEventLog: React.FC<EventLogProps> = (
-    { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500, events=[] }
+    { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500, events=[], justLogs=false }
 ) => {
 
     // const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500 } = props;
@@ -262,18 +258,38 @@ const OdinEventLog: React.FC<EventLogProps> = (
         return filteredLogs;
     }
 
-
-    return (
-        <TitleCard title={<FilterButtons
-            displayLogLevels={displayLogLevels} displayDay={displayDay} LogLevelFilter={level_filter} autoScroll={autoScroll}
-            changeDisplayDay={changeDisplayDay} onFilterChange={onFilterChange} changeAutoScroll={changeAutoScroll} changeTimestampFilter={changeTimestampFilter}/>
-        }>
+    if(justLogs){
+        return (
+            <Container className={style.container}>
             <div className={style.preScrollable} style={{height: displayHeight}}>
                 {filterEvent().map((log) => renderEvent(log))}
                 <div className="scrollToBottom" ref={scrollRef}/>
             </div>
-        </TitleCard>
-    )
+            <div className={style.overlay}>
+                <FilterButtons
+                displayLogLevels={displayLogLevels} displayDay={displayDay} LogLevelFilter={level_filter} autoScroll={autoScroll}
+                changeDisplayDay={changeDisplayDay} onFilterChange={onFilterChange} changeAutoScroll={changeAutoScroll} changeTimestampFilter={changeTimestampFilter}/>
+            </div>
+            </Container>
+        )
+    }else{
+        return (
+            <TitleCard title={
+                    <Row className={style.headerControl}>
+                    <Col>Event Log</Col>
+                    <FilterButtons
+                        displayLogLevels={displayLogLevels} displayDay={displayDay} LogLevelFilter={level_filter} autoScroll={autoScroll}
+                        changeDisplayDay={changeDisplayDay} onFilterChange={onFilterChange} changeAutoScroll={changeAutoScroll} changeTimestampFilter={changeTimestampFilter}/>
+                    </Row>
+                    }>
+                    
+                <div className={style.preScrollable} style={{height: displayHeight}}>
+                    {filterEvent().map((log) => renderEvent(log))}
+                    <div className="scrollToBottom" ref={scrollRef}/>
+                </div>
+            </TitleCard>
+        )
+    }
 }
 
 export type { Log };

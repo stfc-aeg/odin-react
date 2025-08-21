@@ -55,19 +55,14 @@
     
 }
 
-.headerControl {
-    container-type: inline-size;
-    container-name: headerControlRow;
-
-    :global(.col){
-        text-align: center;
-        align-content: center;
-    }
+.headerControl > :global(.col){
+    text-align: center;
+    align-content: center;
 
 }
 
 .iconButton {
-    padding: 5.25px 6px;
+    padding: 5.25px 6px !important;
 }
 
 .svg {
@@ -75,3 +70,37 @@
     width: 24px;
 }
 
+.container {
+    position: relative;
+}
+
+.overlay {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    /* visibility: hidden; */
+    display: flex;
+    justify-content: right;
+    padding: 0px 12px;
+
+}
+
+.overlay > :global(.col-auto){
+    background-color: var(--bs-body-bg);
+    padding: calc(.5rem + var(--bs-border-width)) calc(.75rem + var(--bs-border-width));
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-bottom-left-radius: var(--bs-border-radius);
+    opacity: 0;
+    transition: opacity .15s linear;
+}
+
+.container:hover .overlay > :global(.col-auto) {
+    opacity: .5;
+}
+
+.overlay :global(.col-auto):hover {
+    opacity: 1 !important;
+    border-color: var(--bs-highlight-color);
+}

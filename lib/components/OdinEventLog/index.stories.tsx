@@ -48,8 +48,56 @@ const meta = {
   argTypes: {
     endpoint: {
       table: {
-        control: false
+        type: {summary: "AdapterEndpoint_t | never", detail: "Cannot coexist with getLatestLogs prop"},
+        category: "Mutually Exclusive",
+        subcategory: "Endpoint"
+      },
+      control: false,
+      type: {required: true, name: "other", value: "AdapterEndpoint_t"}
+    },
+    path: {
+      table: {
+        type: {summary: "string | never", detail: "Cannot coexist with getLatestLogs"},
+        category: "Mutually Exclusive",
+        subcategory: "Endpoint"
+      },
+      type: {required: true, name: "string"}
+    },
+    getLatestLogs: {
+      table: {
+        type: {summary: "Function | never", detail: "Cannot coexist with endpoint or path"},
+        category: "Mutually Exclusive",
+        subcategory: "Function"
+      },
+      type: {required: true, name: "function"},
+      control: false
+    },
+    refreshRate: {
+      control: {type: "number"},
+      table: {
+        type: {summary: "number"}
       }
+    },
+    displayHeight: {
+      control: {type: "text"},
+      table: {
+        type: {summary: "CSSProperties['height']",
+          detail: "string | number"
+        }
+      }
+    },
+    maxLogs: {
+      control: {type: "number"},
+      table: {
+        type: {summary: "number"}
+      }
+    },
+    events: {
+      table: {type: {summary: "Log[]"}}
+    },
+    justLogs: {
+      control: {type: "boolean"},
+      table: {type: {summary: "boolean"}}
     }
   }
 } satisfies Meta<typeof OdinEventLog>;
@@ -58,7 +106,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const WithEndpoint: Story = {
   args: {
     path: "events",
     endpoint: PlaceholderEndpoint
@@ -69,12 +117,36 @@ export const Default: Story = {
 export const WithMethod: Story = {
   args: {
     getLatestLogs: getEventLogs
+  },
+  argTypes: {
+    endpoint: {
+      table: {
+        disable: true
+      }
+    },
+    path: {
+      table: {
+        disable: true
+      }
+    }
   }
 }
 
 export const WithAsyncMethod: Story = {
   args: {
     getLatestLogs: getAsyncEventLogs
+  },
+  argTypes: {
+    endpoint: {
+      table: {
+        disable: true
+      }
+    },
+    path: {
+      table: {
+        disable: true
+      }
+    }
   }
 }
 
