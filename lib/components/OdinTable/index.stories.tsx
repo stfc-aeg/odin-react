@@ -27,7 +27,7 @@ const meta = {
       options: Object.keys(RowDefs),
       mapping: Object.keys(RowDefs).reduce(
         (prev, cur) =>
-        ({...prev, [cur]: <OdinTableRow row={RowDefs[cur]}/>}), {}
+        ({...prev, [cur]: <OdinTableRow key={cur} row={RowDefs[cur]}/>}), {}
       ),
       control: {type: "check"}
     }

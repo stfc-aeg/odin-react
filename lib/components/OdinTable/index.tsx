@@ -20,9 +20,10 @@ interface OdinTableContext_t {
 
 const OdinTableContext = createContext<OdinTableContext_t>({column_keys: [], widths: {}});
 
-const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
+const OdinTableRow: React.FC<OdinTableRowProps> = (
+    {row}
+) => {
     const ctx = useContext(OdinTableContext);
-    const {row} = props;
 
     const col_styles: {[key: string]: CSSProperties} = {};
 
@@ -52,7 +53,6 @@ const OdinTable: React.FC<OdinTableProps> = (
     {columns, header = true, widths = {}, children, ...leftoverProps }
 ) => {
     
-    // const {columns, header = true, widths = {}, children, ...leftoverProps } = props;
     const column_keys = Object.keys(columns);
 
     const tableDefaults: React.ComponentProps<typeof Table> = {responsive: true, striped: true, hover: true};
