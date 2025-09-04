@@ -5,6 +5,9 @@ import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { useError } from "../OdinErrorContext";
 import { isEqual } from 'lodash';
 
+// imported for defaults at the bottom
+import { Form, Button, DropdownButton } from "react-bootstrap";
+
 type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 
@@ -451,6 +454,15 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         WithEndpointComponent
     )
 };
+
+
+const EndpointInput = WithEndpoint(Form.Control);
+const EndpointButton = WithEndpoint(Button);
+const EndpointDropdown = WithEndpoint(DropdownButton);
+const EndpointCheckbox = WithEndpoint(Form.Check);
+
+
+export {EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox};
 
 
 export { WithEndpoint };

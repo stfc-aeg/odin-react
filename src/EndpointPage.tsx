@@ -1,16 +1,17 @@
 import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownButton, Dropdown, FloatingLabel } from "react-bootstrap"
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "../"
+import { EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox } from "../";
 import type { ParamTree, Log} from "../";
 import { useState } from "react";
 import { AdapterEndpoint_t } from "../";
 
 import type { ReactNode } from "react";
 
-const EndpointInput = WithEndpoint(Form.Control);
-const EndpointButton = WithEndpoint(Button);
-const EndpointDropdown = WithEndpoint(DropdownButton);
+// const EndpointInput = WithEndpoint(Form.Control);
+// const EndpointButton = WithEndpoint(Button);
+// const EndpointDropdown = WithEndpoint(DropdownButton);
 const EndpointSlider = WithEndpoint(OdinDoubleSlider);
-const EndpointCheckbox = WithEndpoint(Form.Check);
+// const EndpointCheckbox = WithEndpoint(Form.Check);
 const EndpointSelect = WithEndpoint((props: React.HTMLAttributes<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
 interface FormData_T extends ParamTree{
