@@ -1,5 +1,6 @@
 export { useAdapterEndpoint } from './components/AdapterEndpoint';
 export { WithEndpoint } from './components/WithEndpoint';
+export {EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox } from './components/WithEndpoint/Defaults';
 export { TitleCard } from './components/TitleCard';
 export { OdinApp } from './components/OdinApp';
 export { OdinGraph } from './components/OdinGraph';
