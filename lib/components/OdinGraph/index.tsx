@@ -48,7 +48,7 @@ const FallbackPlotComponent: React.FC<Partial<PlotParams>> = (props) => {
     }, []);
 
     return (
-        <div style={style}>
+        <div className={Style.container} style={style}>
             <div className={Style.placeholderTitle}>
                 {timeoutMessage ? timeoutMessage :
                 <>
