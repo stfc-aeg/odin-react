@@ -45,17 +45,18 @@ type InjectedProps = metadata_t & selectEvent_t & {
 
 }
 
-const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
-{
-    type WrapperComponentProps = React.PropsWithChildren<
-             Omit<P, keyof InjectedProps> & ComponentProps>;
-
-    const trimByChar = (string: string, character: string) => {
+const trimByChar = (string: string, character: string) => {
         const arr = Array.from(string);
         const first = arr.findIndex(char => char !==character);
         const last = arr.reverse().findIndex(char => char !== character);
         return (first === -1 && last === -1) ? '' : string.substring(first, string.length - last);
     }
+
+const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
+{
+    type WrapperComponentProps = React.PropsWithChildren<
+             Omit<P, keyof InjectedProps> & ComponentProps>;
+
 
     const WithEndpointComponent: React.FC<WrapperComponentProps> = (props) => {
         const {endpoint, fullpath, value, event_type, disabled,
@@ -453,4 +454,4 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
 };
 
 
-export { WithEndpoint };
+export { WithEndpoint, trimByChar };
