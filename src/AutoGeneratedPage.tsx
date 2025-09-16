@@ -1,11 +1,9 @@
 import { ParamController } from "../";
 
-import { Container, Row, Col, InputGroup, Alert, Form } from "react-bootstrap";
-import { TitleCard, WithEndpoint } from "../";
+import { Container, Row, Col } from "react-bootstrap";
 
 import type { AdapterEndpoint_t } from "../";
 
-const EndpointInput = WithEndpoint(Form.Control);
 
 interface AutoGenPageProps {
     endpoint: AdapterEndpoint_t;

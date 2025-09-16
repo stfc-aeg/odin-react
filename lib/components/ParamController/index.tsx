@@ -4,7 +4,7 @@ import type { NodeJSON, JSON } from "../AdapterEndpoint";
 import { trimByChar, WithEndpoint } from "../WithEndpoint";
 
 import { useMemo } from "react";
-import { Button, Form, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Button, Form, InputGroup, OverlayTrigger, Tooltip, DropdownButton, Dropdown } from "react-bootstrap";
 
 
 interface ParamControllerProps {
@@ -18,6 +18,7 @@ type ValType =  "string" | "number" | "boolean" | "null" | "list" | "dict";
 const EndpointInput = WithEndpoint(Form.Control);
 const EndpointCheckbox = WithEndpoint(Form.Switch);
 const EndpointButton = WithEndpoint(Button);
+const EndpointDropdown = WithEndpoint(DropdownButton);
 
 const ParamController: React.FC<ParamControllerProps> = (
     {endpoint, path="", title}
@@ -36,7 +37,7 @@ const ParamController: React.FC<ParamControllerProps> = (
         return valName;
     }, [path]);
 
-    const {param, ParamType} = useMemo(() => {
+    const {param, ParamType, metadata} = useMemo(() => {
         const metadata = getValueFromPath<JSON>(endpoint.metadata, path);
         const param: JSON = getValueFromPath<JSON>(endpoint.data, path);
         let type: ValType;
@@ -44,7 +45,8 @@ const ParamController: React.FC<ParamControllerProps> = (
         const rawType = isParamNode(metadata) && "writeable" in metadata ? 
             metadata.type as string : typeof param;
         
-            switch(rawType){
+        
+        switch(rawType){
             case "int":
             case "float":
             case "complex":
@@ -89,64 +91,84 @@ const ParamController: React.FC<ParamControllerProps> = (
                 break;
         }
 
-        return {param, ParamType: type};
+        return {param, ParamType: type, metadata};
 
     },
     [endpoint.metadata, endpoint.updateFlag, path]);
 
 
+    if(isParamNode(metadata) && "allowed_values" in metadata){
+        type selectType = string | number;
+        return (
+            <InputGroup>
+            <InputGroup.Text>{name}</InputGroup.Text>
+            <EndpointDropdown endpoint={endpoint} fullpath={path}
+                title={param || "Unknown"}>
+                    {(metadata.allowed_values as JSON[]).map(
+                        (selection, index) => (
+                            <Dropdown.Item eventKey={selection as selectType} key={index} active={selection == param}>
+                                {selection as selectType}
+                            </Dropdown.Item>
+                        )
+                    )}
+            </EndpointDropdown>
+            </InputGroup>
+        )
+    }else{
 
-
-    switch (ParamType) {
-        case "dict":
-            return (
-                <TitleCard title={name}>
-                    {Object.keys(param as NodeJSON).map((val, index) => (
-                        <ParamController
-                            key={index}
-                            endpoint={endpoint}
-                            path={path ? [path, val].join("/") : val}
-                            title={val}
+        switch (ParamType) {
+            case "dict": // recursily create more Param Controller controls within a TitleCard
+                return (
+                    <TitleCard title={name}>
+                        <div className="d-grid gap-2">
+                        {Object.keys(param as NodeJSON).map((val, index) => (
+                            <ParamController
+                                key={index}
+                                endpoint={endpoint}
+                                path={path ? [path, val].join("/") : val}
+                                title={val}
+                            />
+                        ))}
+                        </div>
+                    </TitleCard>
+                )
+            case "boolean":  // Toggle Switch
+                return (
+                    <InputGroup>
+                        <InputGroup.Text>{name}</InputGroup.Text>
+                        <InputGroup.Text>
+                        <EndpointCheckbox endpoint={endpoint} fullpath={path}
+                            type="switch"/>
+                        </InputGroup.Text>
+                    </InputGroup>                    
+                )
+            case "string":
+            case "number":
+                return (
+                    <InputGroup>
+                        <InputGroup.Text>{name}</InputGroup.Text>
+                        <EndpointInput endpoint={endpoint} fullpath={path}
+                            type={ParamType == "number" ? "number" : undefined}
                         />
-                    ))}
-                </TitleCard>
-            )
-        case "boolean":
-            return (
-                <InputGroup>
-                    <InputGroup.Text>{name}</InputGroup.Text>
-                    <EndpointCheckbox endpoint={endpoint} fullpath={path}
-                        type="switch"/>
-                </InputGroup>                    
-            )
-        case "string":
-        case "number":
-            return (
-                <InputGroup>
-                    <InputGroup.Text>{name}</InputGroup.Text>
-                    <EndpointInput endpoint={endpoint} fullpath={path}
-                        type={ParamType == "number" ? "number" : undefined}
-                    />
-                </InputGroup>
-            )
-        case "null":
-            return (
-                <div className="d-grid">
+                    </InputGroup>
+                )
+            case "null":
+                return (
                     <OverlayTrigger overlay={<Tooltip id={name}>Value assumed to be True</Tooltip>}>
-                    <EndpointButton endpoint={endpoint} fullpath={path} value={true}>
-                        {name}
-                    </EndpointButton>
+                        <EndpointButton endpoint={endpoint} fullpath={path} value={true}>
+                            {name}
+                        </EndpointButton>
                     </OverlayTrigger>
-                </div>
-            )
-        case "list":
-            return (
-                <></>
-            )
-        default:
-            return (
-                <p>{param as string | number}</p>
-            )
+                )
+            case "list":
+                return (
+                    <></>
+                )
+            default:
+                return (
+                    <p>{param as string | number}</p>
+                )
+        }
     }
 
 }
