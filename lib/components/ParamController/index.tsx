@@ -4,7 +4,7 @@ import type { NodeJSON, JSON } from "../AdapterEndpoint";
 import { trimByChar, WithEndpoint } from "../WithEndpoint";
 
 import { useMemo } from "react";
-import { Button, Form, InputGroup, OverlayTrigger, Tooltip, DropdownButton, Dropdown } from "react-bootstrap";
+import { Button, Form, InputGroup, OverlayTrigger, Tooltip, DropdownButton, Dropdown, Table } from "react-bootstrap";
 
 
 interface ParamControllerProps {
@@ -160,9 +160,34 @@ const ParamController: React.FC<ParamControllerProps> = (
                         </EndpointButton>
                     </OverlayTrigger>
                 )
-            case "list":
+            case "list":  // render a table? do we need to worry about if its editable? I dont think list Params are editable
                 return (
-                    <></>
+                    <Table striped bordered hover>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th colSpan={1000}>{name}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {(param as JSON[]).map(
+                                (val, index) => (
+                                    <tr>
+                                        <td>{index}</td>
+                                        {typeof val == "object" && val != null ?
+                                            Object.entries(val).map(
+                                                ([key, mapVal]) => (
+                                                    <td>{`${key}: ${mapVal}`}</td>
+                                                )
+                                            )
+                                        :
+                                        <td>{String(val)}</td>
+                                        }
+                                    </tr>
+                                )
+                            )}
+                        </tbody>
+                    </Table>
                 )
             default:
                 return (
