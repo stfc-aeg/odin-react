@@ -1,6 +1,6 @@
 import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState, JSX, CSSProperties} from 'react';
 
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router';
+import { HashRouter, NavLink, Route, Routes } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
 import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack} from 'react-bootstrap';
@@ -67,7 +67,7 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
                 <Route path={expandedRouteLinks[index]} element={child} key={expandedRouteLinks[index]}/>
         ) ?? [];
 
-        childRoute.push(<Route path="/"element={Children.toArray(props.children)[0]} key={"/"}/>)
+        childRoute.push(<Route index element={Children.toArray(props.children)[0]} key={"/"}/>)
 
 
     }
@@ -80,7 +80,7 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
     }else{
         return (
             <Routes>
-                <Route path='/' element={props.children} />
+                <Route index element={props.children} />
             </Routes>
         )
     }
@@ -144,10 +144,9 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
 
 
     return (
-        // <BrowserRouter>
     <ErrorBoundary FallbackComponent={Fallback}>
         {/* <OdinErrorContext> */}
-        <BrowserRouter>
+        <HashRouter>
             <Navbar expand="lg"className='bg-body-secondary'>
                 <Navbar.Brand href='/'>
                     <img
@@ -176,8 +175,7 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
             </Navbar>
             <OdinErrorOutlet />
             <RouteApp routeLinks={navLinks} children={props.children}/>
-        </BrowserRouter>
-        {/* </OdinErrorContext> */}
+        </HashRouter>
     </ErrorBoundary>
     )
 
