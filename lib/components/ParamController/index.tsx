@@ -58,12 +58,15 @@ const ParamController: React.FC<ParamControllerProps> = (
   // const param: JSON = getValueFromPath(endpoint.data, path);
 
   const name: string = useMemo(() => {
-    console.log(path);
     if (title) return title;
+    const metadata = getValueFromPath<JSON>(endpoint.metadata, path);
+    if(isParamNode(metadata) && "name" in metadata){
+      return metadata.name as string;
+    }
 
     let valName = trimByChar(path, "/");
     if (valName.includes("/")) {
-      valName = valName.split(/\/(?!.*\/)(.*)/, 2)[-1]
+      valName = valName.split(/\/(?!.*\/)(.*)/, 2).pop()!;
     }
     return valName;
   }, [path]);
@@ -129,16 +132,16 @@ const ParamController: React.FC<ParamControllerProps> = (
 
 
   if (isParamNode(metadata) && "allowed_values" in metadata) {
-
+    type selectionType = string | number;
     return (
       <InputGroup>
         <InputGroup.Text>{name}</InputGroup.Text>
-        <EndpointDropdown endpoint={endpoint} fullpath={path}
+        <EndpointDropdown endpoint={endpoint} fullpath={path} event_type="select"
           title={param || "Unknown"}>
           {(metadata.allowed_values as JSON[]).map(
             (selection, index) => (
-              <Dropdown.Item eventKey={selection as string} key={index} active={selection == param}>
-                {selection as string}
+              <Dropdown.Item eventKey={selection as selectionType} key={index} active={selection == param}>
+                {selection as selectionType}
               </Dropdown.Item>
             )
           )}
@@ -157,7 +160,6 @@ const ParamController: React.FC<ParamControllerProps> = (
                   key={index}
                   endpoint={endpoint}
                   path={path ? [path, val].join("/") : val}
-                  title={val}
                 />
               ))}
             </div>
