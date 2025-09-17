@@ -25,6 +25,7 @@ interface ComponentProps {
     pre_args?:Array<unknown>;
     post_args?:Array<unknown>;
     dif_color?: CSSProperties["backgroundColor"];
+    ref?: React.RefObject<Element>;
 }
 
 interface metadata_t {
@@ -43,31 +44,29 @@ type selectEvent_t = {onSelect?: (eventKey: number | string, event: React.Synthe
 type InjectedProps = metadata_t & selectEvent_t & {
     style?: React.CSSProperties,
     value?: JSON,
-    disabled: boolean,
-    ref: React.RefObject<HTMLInputElement | null>
+    disabled: boolean
 
 }
 
-const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
-{
-    type WrapperComponentProps = React.PropsWithChildren<
-             Omit<P, keyof InjectedProps> & ComponentProps>;
-
-    const trimByChar = (string: string, character: string) => {
+const trimByChar = (string: string, character: string) => {
         const arr = Array.from(string);
         const first = arr.findIndex(char => char !==character);
         const last = arr.reverse().findIndex(char => char !== character);
         return (first === -1 && last === -1) ? '' : string.substring(first, string.length - last);
     }
 
+const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
+{
+    type WrapperComponentProps = React.PropsWithChildren<
+             Omit<P, keyof InjectedProps> & ComponentProps>;
+
+
     const WithEndpointComponent: React.FC<WrapperComponentProps> = (props) => {
         const {endpoint, fullpath, value, event_type, disabled,
                pre_method, pre_args, post_method, post_args, dif_color="var(--bs-highlight-bg)",
-               min, max, ...leftoverProps} = props;
-        
-        
+               min, max, ref, ...leftoverProps} = props;
 
-        const component = useRef<Element>(null);
+        const component = ref ?? useRef<Element>(null);
         const ErrCTX = useError();
 
         //initialised with an OnChange handler to avoid the 
@@ -466,3 +465,4 @@ export {EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox};
 
 
 export { WithEndpoint };
+

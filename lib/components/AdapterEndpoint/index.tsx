@@ -26,11 +26,13 @@ const isParamNode = (x: JSON): x is NodeJSON => {
  */
 function getValueFromPath<T>(data: JSON, path: string): T | undefined {
     const splitPath = path.split("/");
-    splitPath.forEach((pathPart) => {
-        if(isParamNode(data)){
-            data = data[pathPart];
-        }
-    });
+    if(splitPath[0]){
+        splitPath.forEach((pathPart) => {
+            if(isParamNode(data)){
+                data = data[pathPart];
+            }
+        });
+    }
     if(data != null){
         return data as T;
     }else{
@@ -195,6 +197,7 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         .then(result => {
             setMetadata(result);
             setStatusFlag("connected");
+            setUpdateFlag(Symbol(updateFlag_enum.FIRST))
         });
     }
 
