@@ -464,5 +464,5 @@ const EndpointCheckbox = WithEndpoint(Form.Check);
 export {EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox};
 
 
-export { WithEndpoint };
+export { WithEndpoint, trimByChar };
 
