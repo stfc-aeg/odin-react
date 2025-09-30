@@ -98,8 +98,6 @@ const OdinApp: React.FC<OdinAppProps> = (
     // const [key, setKey] = useState(navLinks ? navLinks[0] : "home");
     const [iconHover, changeIconHover] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
-
-    const [showInfo, setShowInfo] = useState(false);
     
     const handleHoverOn = () => changeIconHover(true);
     const handleHoverOff = () => changeIconHover(false);
@@ -178,11 +176,6 @@ const OdinApp: React.FC<OdinAppProps> = (
                 </Nav>
                 </Navbar.Collapse>
                 <Nav className={'d-none d-lg-block ' + styles.darkmodeToggle}>
-                    <Button className={styles.btn} variant="outline-secondary" onClick={()=> setShowInfo(true)}>
-                        <Info className={styles.svg} title="App Info" size={32}/>
-                    </Button>
-                </Nav>
-                <Nav className={'d-none d-lg-block ' + styles.darkmodeToggle}>
                     <Button className={styles.btn} variant="outline-secondary" onClick={toggleTheme}>
                         {darkMode ? <LightbulbFill className={styles.svg} title='Set Light Mode' size={24}/> 
                                 : <MoonFill className={styles.svg} title='Set Dark Mode' size={24}/>}
@@ -191,24 +184,6 @@ const OdinApp: React.FC<OdinAppProps> = (
             </Container>
             </Navbar>
             <OdinErrorOutlet />
-            {<Modal show={showInfo} onHide={() => setShowInfo(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Odin React Info</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p>Odin React was built with the following libraries:</p>
-                    <OdinTable columns={{lib: "Library", version: "Version"}} widths={{lib: "10%"}} size='sm'>
-                    <OdinTableRow row={{lib: "Vite", version: import.meta.env.VITE_VERSION_VITE}}/>
-                    <OdinTableRow row={{lib: "React", version: import.meta.env.VITE_VERSION_REACT}}/>
-                    <OdinTableRow row={{lib: "Node JS", version: import.meta.env.VITE_VERSION_NODEJS}}/>
-                    <OdinTableRow row={{lib: "Axios", version: import.meta.env.VITE_VERSION_AXIOS}}/>
-                    <OdinTableRow row={{lib: "Bootstrap", version: import.meta.env.VITE_VERSION_BOOTSTRAP}}/>
-                    </OdinTable>
-                </Modal.Body>
-                <Modal.Footer>
-                    {`Odin React: ${version}`}
-                </Modal.Footer>
-            </Modal>}
             <RouteApp routeLinks={navLinks} children={children}/>
         </BrowserRouter>
         {/* </OdinErrorContext> */}
