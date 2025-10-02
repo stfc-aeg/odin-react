@@ -1,0 +1,21 @@
+.errorAlert {
+  margin-bottom: 0;
+}
+
+
+.errorBadge {
+  margin-right: 1em;
+}
+
+.errorMessage {
+  margin-bottom: 0;
+}
+
+.scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* border: 1px solid;
+    border-color: var(--bs-dark-border-subtle);
+    border-radius: var(--bs-border-radius); */
+    scroll-snap-type: y mandatory;
+}

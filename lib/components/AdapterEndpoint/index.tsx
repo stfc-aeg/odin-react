@@ -213,16 +213,13 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     }, [statusFlag, interval]);
 
     useEffect(() => { // interval effect. refreshes data if the interval is set
-        let timer_id: NodeJS.Timeout | null = null;
+        let timer_id: NodeJS.Timeout;
         if(interval && statusFlag == "connected") {
             timer_id = setInterval(refreshData, interval);
         }
 
-        return () => {
-            if(timer_id){
-                clearInterval(timer_id);
-            }
-        }
+        return () => clearInterval(timer_id);
+
     }, [interval, statusFlag]);
 
     const refreshData = () => {

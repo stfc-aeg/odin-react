@@ -3,14 +3,15 @@ import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState,
 import { HashRouter, NavLink, Route, Routes } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
-import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack} from 'react-bootstrap';
-import { MoonFill, LightbulbFill } from 'react-bootstrap-icons';
+import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack, Col, Row, Badge} from 'react-bootstrap';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { MoonFill, LightbulbFill, ExclamationCircleFill } from 'react-bootstrap-icons';
 
 import odinImg from '../../assets/odin.png';
 import ProdinImg from '../../assets/prodin.png'
 
 import styles from './styles.module.css'
-import { OdinErrorOutlet } from '../OdinErrorContext';
+import { OdinErrorOutlet, SingleErrorOutlet, useError } from '../OdinErrorContext';
 
 type NavLink_t = string | Record<string, string[]>;
 
@@ -96,6 +97,7 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
     const handleHoverOff = () => changeIconHover(false);
 
     const icon_addr = custom_icon ?? (iconHover ? ProdinImg : odinImg);
+    const {errors, clearAllError} = useError();
 
     const toggleTheme = () => {
         const curDarkMode = document.querySelector("html")?.getAttribute(darkModeAttr);
@@ -127,9 +129,9 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                 }else{
                     const subLinkRoot = Object.keys(nav)[0];
                     Navs.push(
-                        <NavDropdown title={subLinkRoot}>
+                        <NavDropdown title={subLinkRoot} key={subLinkRoot}>
                             {nav[subLinkRoot].map((subNav) => (
-                                <NavDropdown.Item as={NavLink} to={`${subLinkRoot}/${subNav}`}>
+                                <NavDropdown.Item key={subNav} as={NavLink} to={`${subLinkRoot}/${subNav}`}>
                                     {subNav}
                                 </NavDropdown.Item>
                             ))}
@@ -142,6 +144,22 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
         }
     }, [navLinks]);
 
+
+    const ErrorPopover = (
+        <Popover className={styles.errorPopover}>
+            <Popover.Header>
+                <Row className={styles.errorHeader}>
+                <Col>Errors</Col>
+                <Col xs="auto">
+                    <Button onClick={() => clearAllError()}>Clear All</Button>
+                </Col>
+                </Row>
+                </Popover.Header>
+            <Popover.Body>
+                <OdinErrorOutlet/>
+            </Popover.Body>
+        </Popover>
+    )
 
     return (
     <ErrorBoundary FallbackComponent={Fallback}>
@@ -166,14 +184,26 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                     {createNavList}
                 </Nav>
                 </Navbar.Collapse>
-                <Nav className={'me-2 d-none d-lg-block ' + styles.darkmodeToggle}>
-                    <Button className={styles.btn} onClick={toggleTheme} variant='none'>
-                        <LightbulbFill className={`${styles.svg} ${styles.dark}`} title='Set Light Mode' size={24}/>
-                        <MoonFill className={`${styles.svg} ${styles.light}`} title='Set Dark Mode' size={24}/>
+                {errors.length > 0 && 
+                    <OverlayTrigger overlay={ErrorPopover} trigger="click" placement='bottom-end'>
+                        <Nav className={styles.navbarBtn}>
+                            <Button className={`${styles.btn}`} variant='outline-danger'>
+                                <ExclamationCircleFill className={styles.svg} title="See Errors" size={32}/>
+                            </Button>
+                            <Badge bg="none" className={styles.errorCountBadge} pill>
+                                {errors.reduce((a, b) => (a + b.count), 0)}
+                            </Badge>
+                        </Nav>
+                    </OverlayTrigger>
+                }
+                <Nav className={styles.navbarBtn}>
+                    <Button className={`${styles.btn} ${styles.darkmode}`} onClick={toggleTheme} variant='none'>
+                        <LightbulbFill className={`${styles.svg} ${styles.dark}`} title='Set Light Mode' size={32}/>
+                        <MoonFill className={`${styles.svg} ${styles.light}`} title='Set Dark Mode' size={32}/>
                     </Button>
                 </Nav>
             </Navbar>
-            <OdinErrorOutlet />
+            <SingleErrorOutlet/>
             <RouteApp routeLinks={navLinks} children={props.children}/>
         </HashRouter>
     </ErrorBoundary>

@@ -309,9 +309,6 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                                 }
                             }
                         })
-                        .catch((err) => {
-                            ErrCTX.setError(err);
-                        })
                 })
             }
             catch (err) {
