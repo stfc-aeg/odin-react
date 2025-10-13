@@ -2,6 +2,20 @@
   margin-bottom: 0;
 }
 
+.errorAlert.latest {
+  position: absolute;
+  right: .5rem;
+  margin-top: .5rem;
+  max-width: 50vw;
+  z-index: 5;
+  opacity: 50%;
+  transition: opacity .15s linear;
+}
+
+.errorAlert.latest:hover {
+  opacity: 100%
+}
+
 
 .errorBadge {
   margin-right: 1em;

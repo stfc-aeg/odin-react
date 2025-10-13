@@ -1,6 +1,6 @@
 import { useContext, createContext, useState, PropsWithChildren, CSSProperties, useMemo, useRef, useEffect, useReducer } from "react";
 
-import { Alert, Badge, Collapse } from "react-bootstrap";
+import { Alert, AlertProps, Badge } from "react-bootstrap";
 
 import Style from './styles.module.css';
 
@@ -41,7 +41,6 @@ const errorsReducer = (errors: OdinError[], action: ErrorAction) => {
     const err = action.error;
     switch(action.type){
         case ErrorActionType.ADD:
-            console.log("Setting new Error from Reducer");
             if(err === undefined){
                 console.error("Error not provided to setError method");
                 return errors;
@@ -52,7 +51,6 @@ const errorsReducer = (errors: OdinError[], action: ErrorAction) => {
                 if(index == 0){
                     if(newError.message == old_err.message){
                         //new error has same message as the lastest in the list, so we simply want to replace it with an updated Count and Timestamp
-                        console.log("SAME MESSAGE. Incrementing the count by", old_err.count);
                         newError.count += old_err.count;
                         return newError;
                     }
@@ -122,22 +120,23 @@ const OdinErrorContext = (props: PropsWithChildren) => {
     )
 }
 
-const ErrorAlert: React.FC<{error: OdinError}> = ({error}) => {
-    const {clearError} = useError();
-    return (
-        <Alert key={error.timestamp.getTime()} variant="danger" onClose={() => clearError(error)} dismissible className={Style.errorAlert}>
-            {/* <div className={Style.errorMessage}>
-                {error.message}
-            </div>
-            {error.count > 1 && <div className={Style.errorBadge}>
-                <Badge bg="danger">{error.count}</Badge>
-            </div>}
-            <div className={Style.errorTimestamp}>
-                <small>
-                    {error.timestamp.toLocaleTimeString()}
-                </small>
-            </div> */}
+type extendableAlertProps = Omit<AlertProps, "onClose" | "dismissible" | "variant" | "transition">;
+interface ErrorAlertProps extends extendableAlertProps {
+    error: OdinError;
+}
 
+
+
+const ErrorAlert: React.FC<ErrorAlertProps> = ({error, className, ...props}) => {
+    const {clearError} = useError();
+
+    const closeHandler = () => {
+        console.log("Closing Error:", error);
+        clearError(error);
+    }
+    return (
+        <Alert variant="danger" onClose={closeHandler}
+        dismissible className={`${Style.errorAlert} ${className}`} transition={false} {...props}>
         <small>
             <Badge bg="danger" className={Style.errorBadge}>{error.count}</Badge>
             {error.timestamp.toLocaleTimeString()}
@@ -152,12 +151,15 @@ const OdinErrorOutlet: React.FC<{height?: CSSProperties["height"]}> = ({height =
 
     const {errors} = useError();
 
+
     return (
         errors.length > 0 && (
             <div className={Style.scrollable} style={{maxHeight: height}}>
-            {errors.map((err) => (
-                <ErrorAlert error={err}/>
+            {errors.slice(0, 100).map((err, index) => (
+                <ErrorAlert error={err} key={index}/>
             ))}
+            {errors.length >=100 &&
+            <Alert key="culled_err_warn" variant="warning" transition={false}>Additional Errors not shown</Alert>}
             </div>
         )
     )
@@ -171,7 +173,7 @@ function usePrevious<T>(value: T): T {
     return ref.current;
 }
 
-const SingleErrorOutlet: React.FC = () => {
+const SingleErrorOutlet: React.FC<{delay?: number}> = ({delay=5000}) => {
     const {errors} = useError();
     const [show, setShow] = useState(true);
 
@@ -186,18 +188,14 @@ const SingleErrorOutlet: React.FC = () => {
 
     useEffect(() => {
         setShow(latestError != null);
-        const timer_id = setTimeout(() => setShow(false), 5000);
+        const timer_id = setTimeout(() => setShow(false), delay);
 
         return () => clearTimeout(timer_id);
     }, [latestError]);
 
     return (
         latestError && (
-            <Collapse in={show} unmountOnExit>
-                <div>
-                    <ErrorAlert error={latestError}/>
-                </div>
-            </Collapse>
+            <ErrorAlert error={latestError} className={Style.latest} show={show}/>
         )
     )
 
