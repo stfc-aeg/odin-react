@@ -192,12 +192,18 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         get("")
         .then(result => {
             data.current = result as T;
+        })
+        .catch(() => {
+            return // error already gets reported by the GET method
         });
         get("", {wants_metadata: true})
         .then(result => {
             setMetadata(result);
             setStatusFlag("connected");
             setUpdateFlag(Symbol(updateFlag_enum.FIRST))
+        })
+        .catch(() => {
+            return
         });
     }
 
@@ -213,16 +219,13 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     }, [statusFlag, interval]);
 
     useEffect(() => { // interval effect. refreshes data if the interval is set
-        let timer_id: NodeJS.Timeout | null = null;
+        let timer_id: NodeJS.Timeout;
         if(interval && statusFlag == "connected") {
             timer_id = setInterval(refreshData, interval);
         }
 
-        return () => {
-            if(timer_id){
-                clearInterval(timer_id);
-            }
-        }
+        return () => clearInterval(timer_id);
+
     }, [interval, statusFlag]);
 
     const refreshData = () => {
@@ -230,6 +233,9 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         .then(result => {
             data.current = result as T;
             setUpdateFlag(Symbol(updateFlag_enum.REFRESH));
+        })
+        .catch(() => {
+            return  // error already handled by GET, so we can catch it here to avoid needless console messaging.
         });
     }
     

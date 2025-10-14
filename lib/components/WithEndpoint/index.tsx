@@ -32,6 +32,8 @@ interface metadata_t {
     readOnly: boolean;
     min?: number;
     max?: number;
+    allowed_values?: JSON[];
+    type?: string;
 }
 
 type selectEvent_t = {onSelect?: (eventKey: number | string, event: React.SyntheticEvent) => void,
@@ -135,12 +137,17 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         }, [component.current, componentValue]);
 
         const validate = (value: ComponentProps['value']) => {
-            if(metadata && typeof value == "number"){
-                if(metadata.min && metadata.min > value){
-                    throw Error(`Value ${value} below minimum ${metadata.min}`);
+            if(metadata){
+                if(metadata.allowed_values && !(metadata.allowed_values.includes(value))){
+                    throw Error(`Value ${value} not in allowed_values list: [${metadata.allowed_values.join(", ")}]`);
                 }
-                if(metadata.max && metadata.max < value){
-                    throw Error(`Value ${value} above maximum ${metadata.max}`);
+                if(typeof value == "number"){
+                    if(metadata.min && metadata.min > value){
+                        throw Error(`Value ${value} below minimum ${metadata.min}`);
+                    }
+                    if(metadata.max && metadata.max < value){
+                        throw Error(`Value ${value} above maximum ${metadata.max}`);
+                    }
                 }
             }
         }
@@ -193,6 +200,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                     tmp_metadata.readOnly = !(data['writeable'] as boolean);
                     tmp_metadata.min = min ?? (data.min ? data.min as number : undefined);
                     tmp_metadata.max = max ?? (data.max ? data.max as number : undefined);
+                    tmp_metadata.allowed_values = data?.allowed_values as JSON[];
 
                     // setMetadata(tmp_metadata);
                     val = value ?? data.value as ComponentProps["value"];
@@ -309,9 +317,9 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                                 }
                             }
                         })
-                        .catch((err) => {
-                            ErrCTX.setError(err);
-                        })
+                        .catch((error) => {
+                            console.debug("Error in PUT occured in WithEndpoint component", error);
+                        });
                 })
             }
             catch (err) {
