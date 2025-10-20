@@ -131,7 +131,6 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({error, className, ...props}) => 
     const {clearError} = useError();
 
     const closeHandler = () => {
-        console.log("Closing Error:", error);
         clearError(error);
     }
     return (
