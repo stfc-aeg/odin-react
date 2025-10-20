@@ -1,6 +1,6 @@
-import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState, JSX, CSSProperties} from 'react';
+import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState, useRef, JSX, CSSProperties, useEffect} from 'react';
 
-import { HashRouter, NavLink, Route, Routes } from 'react-router';
+import { HashRouter, NavLink, Route, Routes, useParams } from 'react-router';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
 import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack, Col, Row, Badge} from 'react-bootstrap';
@@ -40,6 +40,17 @@ const Fallback: React.FC<FallbackProps> = (props) => {
     )
 }
 
+const PageNotFound: React.FC = () => {
+    const {"*": splat} = useParams();
+    return (
+        <div className={styles.notFound}>
+            <h2>404</h2>
+            <p>The page at <b>{splat}</b> does not exist</p>
+            <Button href="/#">Homepage</Button>
+        </div>
+    )
+}
+
 interface routeAppProps extends PropsWithChildren{
     routeLinks?: NavLink_t[];
 }
@@ -69,6 +80,7 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
         ) ?? [];
 
         childRoute.push(<Route index element={Children.toArray(props.children)[0]} key={"/"}/>)
+        childRoute.push(<Route path="*" element={<PageNotFound/>}/>)
 
 
     }
@@ -87,46 +99,103 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
     }
 }
 
-const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
-{
-    const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
-
-    const [iconHover, changeIconHover] = useState(false);
+interface ScrollableNavListProps {
+    navLinks?: NavLink_t[];
+}
+ 
+const ScrollableNavList: React.FC<ScrollableNavListProps> = ({navLinks}) => {
     
-    const handleHoverOn = () => changeIconHover(true);
-    const handleHoverOff = () => changeIconHover(false);
+    const navLinkRef = useRef<HTMLDivElement>(null);
+    const [navLinkOffset, setNavLinkOffset] = useState(0);
+    const [needsScroll, setNeedsScroll] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+    
 
-    const icon_addr = custom_icon ?? (iconHover ? ProdinImg : odinImg);
-    const {errors, clearAllError} = useError();
+    useEffect(() => {
+        if(navLinkRef.current){
+            const observer = new ResizeObserver((entries) => {
+                for (let entry of entries){
+                    
+                    const visibleWidth = Math.round(entry.contentRect.width);
+                    const maxWidth = entry.target.scrollWidth;
+                    const remainingScroll = maxWidth - (visibleWidth + navLinkOffset);
+                    setNeedsScroll(visibleWidth < maxWidth);
+                    if(remainingScroll < 0){
+                        //we've overscrolled due to size changes, reduce the offset by the overscroll
+                        setNavLinkOffset(offset => Math.round(offset + remainingScroll)) // its an addition cause remainingScroll is negative
+                    }
+                    setCanScrollRight(remainingScroll > 0);
 
-    const toggleTheme = () => {
-        const curDarkMode = document.querySelector("html")?.getAttribute(darkModeAttr);
-        document.querySelector("html")?.setAttribute(darkModeAttr,
-            curDarkMode == "dark" ? "light" : "dark");
+                }
+            });
+
+            observer.observe(navLinkRef.current);
+
+            return () => {
+                observer.disconnect();
+            }
+        }
+    }, [navLinkOffset]);
+
+    const scrollNavLinks = (direction: "left" | "right") => {
+        //method for the scroll buttons to allow the links to be scrolled left/right
+        const linkDiv = navLinkRef.current!;
+        
+        //get the size of the remaining hidden right side of the div
+        const remainingScroll = linkDiv.scrollWidth - (linkDiv.clientWidth + navLinkOffset);
+
+        //get the leftmost visible element, even if its slightly cut off
+        let childLink: HTMLElement;
+        const children = Array.from(linkDiv.children) as HTMLElement[];
+        childLink = children.findLast((element) => element.offsetLeft <= navLinkOffset) ?? children[children.length - 1];
+
+        let offset = 0;
+        if(direction == "left"){
+            //if the leftmost link is not currently cut off, get its previous sibling. otherwise, we want this specific link
+            if(childLink.offsetLeft == navLinkOffset){
+                //get the previous child, if it exists
+                childLink = (childLink.previousElementSibling ?? childLink) as HTMLElement;
+            }
+
+            offset = childLink.offsetLeft;
+        }else if(direction == "right"){
+            childLink = (childLink.nextElementSibling ?? childLink) as HTMLElement;
+            
+            //if we've enough remaining scroll space on the right to move the childLink element to the leftmost part
+            //of whats visible, do so. Otherwise, only move the offset by whatever remaining scrollspace we have
+            if(remainingScroll > (childLink.offsetLeft - navLinkOffset))
+            {
+                offset = childLink.offsetLeft;
+            }else{
+                offset = navLinkOffset + remainingScroll;
+            }
+        }
+        setNavLinkOffset(offset);
+        // setRemainingScroll(linkDiv.scrollWidth - (linkDiv.clientWidth + offset));
+
     }
+    
 
     const createNavList = useMemo(() => {
+        //if no links have been defined, set a default single link called "Home"
         if(navLinks === undefined || navLinks.length == 0){
             return (
-                <Nav.Item key="#">
-                    <Nav.Link as={NavLink} to="/">
-                        Home
-                    </Nav.Link>
-                </Nav.Item>
+                <Nav.Link as={NavLink} to="/" key="#">
+                    Home
+                </Nav.Link>
             )
         }else{
-
             const Navs: JSX.Element[] = [];
             navLinks.forEach((nav) => {
                 if(typeof nav == "string"){
+                    //link is a string, create a single link
                     Navs.push(
-                        <Nav.Item key={nav}>
-                            <Nav.Link as={NavLink} to={nav}>
-                                {nav}
-                            </Nav.Link>
-                        </Nav.Item>
+                        <Nav.Link as={NavLink} to={nav} key={nav}>
+                            {nav}
+                        </Nav.Link>
                     )
                 }else{
+                    //link is an object defining sublinks, create a dropdown
                     const subLinkRoot = Object.keys(nav)[0];
                     Navs.push(
                         <NavDropdown title={subLinkRoot} key={subLinkRoot}>
@@ -144,6 +213,43 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
         }
     }, [navLinks]);
 
+    return ( 
+        <Nav className={styles.navContainer}>
+            {needsScroll && 
+            <Button size='sm' variant='secondary' onClick={() => scrollNavLinks("left")}
+                disabled={navLinkOffset <=0}>
+                ◀
+            </Button>}
+            <Nav variant="underline" ref={navLinkRef} className={styles.navLink} style={{right: `${navLinkOffset}px`}}>
+                {createNavList}
+            </Nav>
+            {needsScroll && 
+            <Button size='sm' variant='secondary' onClick={() => scrollNavLinks("right")}
+                disabled={!canScrollRight}>
+                ▶
+            </Button>}
+        </Nav>
+     );
+}
+
+
+const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
+{
+    const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
+
+    const [iconHover, changeIconHover] = useState(false);
+    
+    const handleHoverOn = () => changeIconHover(true);
+    const handleHoverOff = () => changeIconHover(false);
+
+    const icon_addr = custom_icon ?? (iconHover ? ProdinImg : odinImg);
+    const {errors, clearAllError} = useError();
+
+    const toggleTheme = () => {
+        const curDarkMode = document.querySelector("html")?.getAttribute(darkModeAttr);
+        document.querySelector("html")?.setAttribute(darkModeAttr,
+            curDarkMode == "dark" ? "light" : "dark");
+    }
 
     const ErrorPopover = (
         <Popover className={styles.errorPopover}>
@@ -165,7 +271,7 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
     <ErrorBoundary FallbackComponent={Fallback}>
         {/* <OdinErrorContext> */}
         <HashRouter>
-            <Navbar expand="lg"className='bg-body-secondary'>
+            <Navbar className='bg-body-secondary'>
                 <Navbar.Brand href='/'>
                     <img
                     src={icon_addr}
@@ -178,25 +284,22 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                     />
                     {title}
                 </Navbar.Brand>
-                <Navbar.Toggle/>
-                <Navbar.Collapse id='responsive-navbar-nav'>
-                <Nav className='me-auto' navbarScroll style={{maxHeight: "100px"}}>
-                    {createNavList}
-                </Nav>
-                </Navbar.Collapse>
+                <ScrollableNavList navLinks={navLinks}/>
+                <div className='me-auto'/>
                 {errors.length > 0 && 
                     <OverlayTrigger overlay={ErrorPopover} trigger="click" placement='bottom-end'>
                         <Nav className={styles.navbarBtn}>
-                            <Button className={`${styles.btn}`} variant='outline-danger'>
+                            <Button className={`${styles.btn} ${styles.errorBtn}`} variant='outline-danger'>
                                 <ExclamationCircleFill className={styles.svg} title="See Errors" size={32}/>
+                                <Badge bg="none" className={styles.errorCountBadge} pill>
+                                    {errors.reduce((a, b) => (a + b.count), 0)}
+                                </Badge>
                             </Button>
-                            <Badge bg="none" className={styles.errorCountBadge} pill>
-                                {errors.reduce((a, b) => (a + b.count), 0)}
-                            </Badge>
+                            
                         </Nav>
                     </OverlayTrigger>
                 }
-                <Nav className={styles.navbarBtn}>
+                <Nav className={`${styles.navbarBtn} d-none d-md-block`}>
                     <Button className={`${styles.btn} ${styles.darkmode}`} onClick={toggleTheme} variant='none'>
                         <LightbulbFill className={`${styles.svg} ${styles.dark}`} title='Set Light Mode' size={32}/>
                         <MoonFill className={`${styles.svg} ${styles.light}`} title='Set Dark Mode' size={32}/>

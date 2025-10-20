@@ -1,13 +1,34 @@
 .navbarBtn {
-    height: 2.5rem;
-    width: 2.5rem;
+    padding: 0 .5rem;
+    background-color: var(--bs-secondary-bg);
+}
+
+.navContainer {
+    overflow-x: clip;
+    min-width: 50px;
+    margin-right: 0.5rem;
+    :global(.btn) {
+        z-index: 2;
+    }
+}
+
+.navLink {
     position: relative;
-    margin-right: 1rem;
+    transition: right .15s;
+    min-width: 50px;
+    :global(.nav-link) {
+        flex-shrink: 0;
+    }
+}
+
+.notFound {
+    text-align: center;
+    margin-top: 3rem;
 }
 
 .btn {
-    width: 100%;
-    height: 100%;
+    width: 2.5rem;
+    height: 2.5rem;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
@@ -16,10 +37,7 @@
 }
 
 .btn.errorBtn {
-    
-    --bs-btn-border-color: var(--bs-danger);
-    --bs-btn-color: var(--bs-danger);
-    --bs-btn-hover-color: var(--bs-danger-border-subtle);
+    position: relative;
 }
 
 :root .btn.darkmode, [data-bs-theme=light] .btn.darkmode {
@@ -89,9 +107,9 @@
 }
 
 .errorCountBadge {
-    position: absolute;
-    right: -25%;
-    bottom: -25%;
+    position: absolute !important;
+    right: -25% !important;
+    top: 65% !important;
     background-color: var(--bs-danger-bg-subtle);
     color: var(--bs-danger-text-emphasis);
 }
