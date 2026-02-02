@@ -32,7 +32,7 @@ const Fallback: React.FC<FallbackProps> = (props) => {
             <Card.Header>Error!</Card.Header>
             <Card.Body>
                 <Stack>
-                <Alert variant='danger'>{error.message}</Alert>
+                <Alert variant='danger'>{error?.message || "Unknown Rendering Error"}</Alert>
                 <Button onClick={resetErrorBoundary}>Reset</Button>
                 </Stack>
             </Card.Body>
