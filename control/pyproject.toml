@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "react"
+description = "Demo Odin Control adapter for React Testing and Demonstration"
+dynamic = ["version"]
+requires-python = ">=3.10"
+dependencies = [
+    "odin-control @ git+https://github.com/odin-detector/odin-control",
+    "odin-data @ git+https://git@github.com/odin-detector/odin-data.git#subdirectory=python",
+    "python-dateutil",
+    "opencv-python"
+]
+
+[[project.authors]]
+email = "ashley.neaves@stfc.ac.uk"
+name = "Ashley Neaves"
+
+[project.urls]
+github = "https://github.com/stfc-aeg/odin-react"
