@@ -1,7 +1,9 @@
 import {Children, PropsWithChildren, ReactElement, ReactNode, useMemo, useState, useRef, JSX, CSSProperties, useEffect} from 'react';
 
 import { HashRouter, NavLink, Route, Routes, useParams } from 'react-router';
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+// import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { ErrorBoundary, getErrorMessage, type FallbackProps } from "react-error-boundary";
+// import getErrorMess
 
 import {Navbar, Nav, NavDropdown, Card, Alert, Button, Stack, Col, Row, Badge} from 'react-bootstrap';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
@@ -27,12 +29,13 @@ interface OdinAppProps extends PropsWithChildren{
 
 const Fallback: React.FC<FallbackProps> = (props) => {
     const {error, resetErrorBoundary} = props;
+    const message = getErrorMessage(error) ?? "Unknown Rendering Error";
     return (
         <Card>
             <Card.Header>Error!</Card.Header>
             <Card.Body>
                 <Stack>
-                <Alert variant='danger'>{error.message}</Alert>
+                <Alert variant='danger'>{message}</Alert>
                 <Button onClick={resetErrorBoundary}>Reset</Button>
                 </Stack>
             </Card.Body>
