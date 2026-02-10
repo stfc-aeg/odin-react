@@ -59,6 +59,7 @@ interface routeAppProps extends PropsWithChildren{
 }
 
 const darkModeAttr = "data-bs-theme";
+const buttonSvgSize = "2em";
 
 const RouteApp: React.FC<routeAppProps> = (props) => {
     
@@ -254,6 +255,20 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
             curDarkMode == "dark" ? "light" : "dark");
     }
 
+    const [scrollPosition, setScrollPosition] = useState(0);
+    const handleScroll = () => {
+        const position = window.pageYOffset;
+        setScrollPosition(position);
+    }
+
+    useEffect(() => {
+        window.addEventListener("scroll", handleScroll, {passive: true});
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        }
+    }, []);
+
     const ErrorPopover = (
         <Popover className={styles.errorPopover}>
             <Popover.Header>
@@ -274,11 +289,11 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
     <ErrorBoundary FallbackComponent={Fallback}>
         {/* <OdinErrorContext> */}
         <HashRouter>
-            <Navbar className='bg-body-secondary'>
-                <Navbar.Brand href='/'>
+            <Navbar className='bg-body-secondary' sticky='top'
+                style={{boxShadow: `0px 0px ${Math.min(scrollPosition, 30)}px`}}>
+                <Navbar.Brand href='/' className={styles.navBrand}>
                     <img
                     src={icon_addr}
-                    height="30"
                     style={{marginLeft: icon_marginLeft, marginRight: icon_marginRight}}
                     className="d-inline-block align-top"
                     alt="Odin Control Logo"
@@ -293,7 +308,7 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                     <OverlayTrigger overlay={ErrorPopover} trigger="click" placement='bottom-end'>
                         <Nav className={styles.navbarBtn}>
                             <Button className={`${styles.btn} ${styles.errorBtn}`} variant='outline-danger'>
-                                <ExclamationCircleFill className={styles.svg} title="See Errors" size={32}/>
+                                <ExclamationCircleFill className={styles.svg} title="See Errors" size={buttonSvgSize}/>
                                 <Badge bg="none" className={styles.errorCountBadge} pill>
                                     {errors.reduce((a, b) => (a + b.count), 0)}
                                 </Badge>
@@ -304,8 +319,8 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                 }
                 <Nav className={`${styles.navbarBtn} d-none d-md-block`}>
                     <Button className={`${styles.btn} ${styles.darkmode}`} onClick={toggleTheme} variant='none'>
-                        <LightbulbFill className={`${styles.svg} ${styles.dark}`} title='Set Light Mode' size={32}/>
-                        <MoonFill className={`${styles.svg} ${styles.light}`} title='Set Dark Mode' size={32}/>
+                        <LightbulbFill className={`${styles.svg} ${styles.dark}`} title='Set Light Mode' size={buttonSvgSize}/>
+                        <MoonFill className={`${styles.svg} ${styles.light}`} title='Set Dark Mode' size={buttonSvgSize}/>
                     </Button>
                 </Nav>
             </Navbar>
