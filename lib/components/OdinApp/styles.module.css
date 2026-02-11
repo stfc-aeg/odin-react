@@ -1,17 +1,23 @@
 .navbarBtn {
-    padding: 0 .5rem;
+    padding: 0 .5em;
     background-color: var(--bs-secondary-bg);
 }
 
 .navContainer {
     overflow-x: clip;
     min-width: 50px;
-    margin-right: 0.5rem;
+    margin-right: 0.5em;
     :global(.btn) {
         z-index: 2;
     }
 }
+.navBrand {
+    font-size: 1.25em;
 
+    :global(img) {
+        height: 1.25em;
+    }
+}
 .navLink {
     position: relative;
     transition: right .15s;
@@ -23,12 +29,13 @@
 
 .notFound {
     text-align: center;
-    margin-top: 3rem;
+    margin-top: 3em;
 }
 
 .btn {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.5em;
+    height: 2.5em;
+    font-size: 1em;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
