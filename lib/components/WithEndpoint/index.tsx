@@ -115,6 +115,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
 
         const componentPassedValue = useMemo(() => {
             const curComponent = component.current;
+            const val = componentValue ?? "";
             if(curComponent){
                 // coded using switch case to future proof if there's other special case component types
                 switch(curComponent.nodeName){
@@ -124,16 +125,16 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                             switch(input_type){
                                 case "checkbox":
                                 case "radio":
-                                    return {checked: componentValue};
+                                    return {checked: Boolean(val)};
                                 default:
-                                    return {value: componentValue};
+                                    return {value: val};
                             }
                         }
                     default:
-                        return {value: componentValue};
+                        return {value: val};
                 }
             }
-            return {value: componentValue};
+            return {value: "", checked: false};
         }, [component.current, componentValue]);
 
         const validate = (value: ComponentProps['value']) => {
