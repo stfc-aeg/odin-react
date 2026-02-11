@@ -146,20 +146,28 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({error, className, ...props}) => 
 }
 
 
-const OdinErrorOutlet: React.FC<{height?: CSSProperties["height"]}> = ({height = "calc(100vh - 10rem)"}) => {
+const OdinErrorOutlet: React.FC<{height?: CSSProperties["height"]}> = ({height = "calc(100vh - 15rem)"}) => {
 
     const {errors} = useError();
 
+    const secondsSinceError = errors.length > 0 ? (new Date().getTime() - errors[0].timestamp.getTime())/1000 : -1;
+    const lastErrorMessage = (secondsSinceError > 3600) ? "over an Hour ago" :
+                             (secondsSinceError > 60) ? `${Math.floor(secondsSinceError/60)} minutes, ${Math.floor(secondsSinceError % 60)} seconds ago` :
+                             "just now";
 
     return (
         errors.length > 0 && (
-            <div className={Style.scrollable} style={{maxHeight: height}}>
-            {errors.slice(0, 100).map((err, index) => (
-                <ErrorAlert error={err} key={index}/>
-            ))}
-            {errors.length >=100 &&
-            <Alert key="culled_err_warn" variant="warning" transition={false}>Additional Errors not shown</Alert>}
-            </div>
+            <>
+                <div>{`Last Error occured ${lastErrorMessage}`}</div>
+                <hr/>
+                <div className={Style.scrollable} style={{maxHeight: height}}>
+                    {errors.slice(0, 100).map((err, index) => (
+                        <ErrorAlert error={err} key={index}/>
+                    ))}
+                    {errors.length >=100 &&
+                    <Alert key="culled_err_warn" variant="warning" transition={false}>Additional Errors not shown</Alert>}
+                </div>
+            </>
         )
     )
 }
