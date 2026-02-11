@@ -5,11 +5,11 @@ const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
 
-import { EndpointData_t } from "./EndpointPage";
+import { EndpointData } from "./EndpointPage";
 
 export const PeriodicEndpointPage: React.FC = () => {
 
-    const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL, 1000);
+    const endpoint = useAdapterEndpoint<EndpointData>("react", import.meta.env.VITE_ENDPOINT_URL, 1000);
 
     return (
         <Container>

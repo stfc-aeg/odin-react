@@ -1,5 +1,5 @@
 import { TitleCard } from "../TitleCard";
-import type {AdapterEndpoint_t, NodeJSON} from "../AdapterEndpoint";
+import type {AdapterEndpoint, NodeJSON} from "../AdapterEndpoint";
 import {Row, Col } from 'react-bootstrap';
 import { ToggleButtonGroup, ToggleButton, Form, InputGroup, Button, OverlayTrigger, Popover } from "react-bootstrap";
 
@@ -47,7 +47,7 @@ interface PropsWithMethod extends BasicProps {
 
 interface PropsWithEndpoint extends BasicProps {
     getLatestLogs?: never;
-    endpoint: AdapterEndpoint_t;
+    endpoint: AdapterEndpoint;
     path: string;
 }
 

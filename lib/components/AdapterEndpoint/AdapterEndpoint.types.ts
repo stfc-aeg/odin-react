@@ -2,7 +2,7 @@ import type { AxiosRequestConfig } from "axios";
 
 type status = "init" | "connected" | "error";
 
-interface AdapterEndpoint_t<T = NodeJSON> {
+interface AdapterEndpoint<T = NodeJSON> {
     /**
      *  Recursive Nested dictionary structure representing the adapter Param Tree. Should be read only
      * from this interface
@@ -96,4 +96,9 @@ interface getConfig {
     responseType?: AxiosRequestConfig['responseType'];
 }
 
-export type { AdapterEndpoint_t, JSON, NodeJSON, getConfig, status};
+export type { AdapterEndpoint, JSON, NodeJSON, getConfig, status};
+
+/**
+ * @deprecated This is the old name for this type and should be replaced with "AdapterEndpoint"
+ */
+export type AdapterEndpoint_t<T> = AdapterEndpoint<T>;
