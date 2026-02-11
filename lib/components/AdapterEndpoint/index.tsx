@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import type { AdapterEndpoint_t, JSON, NodeJSON, getConfig, status } from "./AdapterEndpoint.types";
+import type { AdapterEndpoint, JSON, NodeJSON, getConfig, status } from "./AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 
 const DEF_API_VERSION = '0.1';
@@ -43,7 +43,7 @@ function getValueFromPath<T>(data: JSON, path: string): T | undefined {
 
 function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number, api_version=DEF_API_VERSION
-): AdapterEndpoint_t<T> {
+): AdapterEndpoint<T> {
 
     const data = useRef<T>({} as T);
     const [metadata, setMetadata] = useState<NodeJSON>({});
@@ -261,4 +261,4 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
 }
 
 export { useAdapterEndpoint, isParamNode, getValueFromPath };
-export type { AdapterEndpoint_t, JSON, NodeJSON };
+export type { AdapterEndpoint, JSON, NodeJSON };

@@ -1,6 +1,6 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import type { AdapterEndpoint_t, JSON } from "../AdapterEndpoint";
+import type { AdapterEndpoint, JSON } from "../AdapterEndpoint";
 import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { useError } from "../OdinErrorContext";
 import { isEqual } from 'lodash';
@@ -12,7 +12,7 @@ type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 
 interface ComponentProps {
-    endpoint: AdapterEndpoint_t;
+    endpoint: AdapterEndpoint;
     fullpath: string;
     value?: JSON;
     // value_type?: value_t;

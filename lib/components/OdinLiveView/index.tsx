@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { AdapterEndpoint_t, NodeJSON} from '../AdapterEndpoint';
+import type { AdapterEndpoint as AdapterEndpoint, NodeJSON} from '../AdapterEndpoint';
 import { getValueFromPath } from '../AdapterEndpoint';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
@@ -17,7 +17,7 @@ import { OdinDoubleSlider } from '../OdinDoubleSlider';
 
 interface LiveViewProps {
     title?: ReactNode;
-    endpoint: AdapterEndpoint_t<LiveViewParam>;
+    endpoint: AdapterEndpoint<LiveViewParam>;
     img_path?: string;
     interval?: number;
     addrs?: Partial<LiveViewerAddrs>;

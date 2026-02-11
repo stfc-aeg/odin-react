@@ -1,4 +1,4 @@
-import { AdapterEndpoint_t, getValueFromPath, isParamNode } from "../AdapterEndpoint";
+import { AdapterEndpoint, getValueFromPath, isParamNode } from "../AdapterEndpoint";
 import type { NodeJSON, JSON } from "../AdapterEndpoint";
 import { trimByChar, WithEndpoint } from "../WithEndpoint";
 
@@ -39,7 +39,7 @@ const CollapseableCard: React.FC<CollapseableCardProps> = (
 
 
 interface ParamControllerProps {
-  endpoint: AdapterEndpoint_t;
+  endpoint: AdapterEndpoint;
   path?: string;
   title?: string;
 }

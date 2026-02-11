@@ -1,9 +1,9 @@
-import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownButton, Dropdown, FloatingLabel } from "react-bootstrap"
+import { Container, Row, Col, Stack, Form, InputGroup, Alert, Dropdown, FloatingLabel } from "react-bootstrap"
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "../"
 import { EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox } from "../";
 import type { ParamTree, Log} from "../";
 import { useState } from "react";
-import { AdapterEndpoint_t } from "../";
+import { AdapterEndpoint } from "../";
 
 import type { ReactNode } from "react";
 
@@ -20,7 +20,7 @@ interface FormData_T extends ParamTree{
     age: number;
 }
 
-export interface EndpointData_t extends ParamTree{
+export interface EndpointData extends ParamTree{
     string_val: string;
     num_val: number;
     rand_num: number;
@@ -55,9 +55,7 @@ export interface EndpointData_t extends ParamTree{
 
 
 
-export const EndpointPage: React.FC<{endpoint: AdapterEndpoint_t<EndpointData_t>}> = ({endpoint}) => {
-
-    // const endpoint = useAdapterEndpoint<EndpointData_t>("react", import.meta.env.VITE_ENDPOINT_URL, undefined, 1000);
+export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> = ({endpoint}) => {
 
     const [input, changeInput] = useState(0);
     const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});

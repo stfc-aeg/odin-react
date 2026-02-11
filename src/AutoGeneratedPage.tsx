@@ -2,11 +2,11 @@ import { ParamController } from "../";
 
 import { Container, Row, Col } from "react-bootstrap";
 
-import type { AdapterEndpoint_t } from "../";
+import type { AdapterEndpoint } from "../";
 
 
 interface AutoGenPageProps {
-    endpoint: AdapterEndpoint_t;
+    endpoint: AdapterEndpoint;
 }
  
 const AutoGenPage: React.FC<AutoGenPageProps> = (
