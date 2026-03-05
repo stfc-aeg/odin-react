@@ -9,7 +9,7 @@ dynamic = ["version"]
 requires-python = ">=3.10"
 dependencies = [
     "odin-control @ git+https://github.com/odin-detector/odin-control.git@dev_2.0",
-    "odin-data @ git+https://git@github.com/odin-detector/odin-data.git#subdirectory=python",
+    # "odin-data @ git+https://git@github.com/odin-detector/odin-data.git#subdirectory=python",
     "python-dateutil",
     "opencv-python"
 ]
@@ -20,3 +20,7 @@ name = "Ashley Neaves"
 
 [project.urls]
 github = "https://github.com/stfc-aeg/odin-react"
+
+[tool.setuptools_scm]
+root = ".."
+write_to = "control/src/react/_version.py"
