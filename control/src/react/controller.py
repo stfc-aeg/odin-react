@@ -35,6 +35,8 @@ class ReactController():
         self.last_name = ""
         self.age = 0
 
+        self.float_val = 1.5
+
         self.slow_put = 5
 
         self.param_tree = ParameterTree({
@@ -44,8 +46,8 @@ class ReactController():
                             "min": 15,
                             "max": 76
                         }),
+            "float_val": (lambda: self.float_val, lambda val: setattr(self, "float_val", val)),
             "rand_num": (lambda: self.random_num, None),
-            "select_list": (lambda: self.selection_list, None),
             "selected": (lambda: self.selected, self.set_selection,
                         {  # metadata
                             "allowed_values": self.selection_list

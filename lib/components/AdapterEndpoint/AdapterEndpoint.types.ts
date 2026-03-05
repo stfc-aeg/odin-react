@@ -2,7 +2,7 @@ import type { AxiosRequestConfig } from "axios";
 
 type status = "init" | "connected" | "error";
 
-interface AdapterEndpoint<T = NodeJSON> {
+interface AdapterEndpoint<T extends ParamNode = ParamNode> {
     /**
      *  Recursive Nested dictionary structure representing the adapter Param Tree. Should be read only
      * from this interface
@@ -12,7 +12,7 @@ interface AdapterEndpoint<T = NodeJSON> {
     /**
      * Dictionary structure containing the adapter Metadata, if its implimented by the adapter
      */
-    metadata: Readonly<NodeJSON>;
+    metadata: Readonly<Metadata<T>>;
     /**
      *  Any Errors that occur during http methods or otherwise will be accessible here
      */
@@ -39,24 +39,24 @@ interface AdapterEndpoint<T = NodeJSON> {
      * @param {boolean} [get_metadata] - set to true to request Metadata. Defaults to false
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    get: <T = NodeJSON>(param_path?: string, config?: getConfig) => Promise<T>;
+    get: <T = ParamNode>(param_path?: string, config?: getConfig) => Promise<T>;
     /**
      * Async http PUT method. Modify the data in the param tree at the provided path
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
-     * @param {NodeJSON} data - The data, with a key, that you wish to PUT to the Param Tree
+     * @param {ParamNode} data - The data, with a key, that you wish to PUT to the Param Tree
      * @param {string} param_path - the path you want to PUT to. Defaults to an empty string for a top level PUT
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    put: (data: NodeJSON, param_path?: string) => Promise<NodeJSON>;
+    put: (data: ParamNode, param_path?: string) => Promise<ParamNode>;
 
     /**
      * Async http POST method. Not often implemented by Adapters, but potentially used to post data
      * files or some other new data to the adapter
-     * @param {NodeJSON} data - The data, with a key, that you wish to POST to the adapter
+     * @param {ParamNode} data - The data, with a key, that you wish to POST to the adapter
      * @param param_path  - the path you want to POST to. defaults to an empty string, for a top level POST
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    post: (data: NodeJSON, param_path?: string) => Promise<NodeJSON>;
+    post: (data: ParamNode, param_path?: string) => Promise<ParamNode>;
 
     /**
      * Async http DELETE method. Renamed because 'delete' is a reserved word in javascript. Not often
@@ -64,7 +64,7 @@ interface AdapterEndpoint<T = NodeJSON> {
      * @param param_path the path to the data you want to DELETE. Defaults to an empty string
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    remove: (param_path?: string) => Promise<NodeJSON>;
+    remove: (param_path?: string) => Promise<ParamNode>;
     /**
      * A method to automatically perform a top level GET request and refresh the AdapterEndpoint's current view of the data
      * @returns 
@@ -73,32 +73,65 @@ interface AdapterEndpoint<T = NodeJSON> {
     /**
      * A method to merge one chunk of (potentially nested) data into the AdapterEndpoint's current view of the data,
      * to update the data without having to GET from the entire adapter
-     * @param {NodeJSON} newData - The new data to be merged in
+     * @param {ParamNode} newData - The new data to be merged in
      * @param {string} param_path - the location that data within the ParamTree to merge it
      * @returns 
      */
-    mergeData: (newData: NodeJSON, param_path: string) => void;
+    mergeData: (newData: ParamNode, param_path: string) => void;
 
 }
 
-/**
- * Defines allowed values for JSON dict.
- */
-type JSON = string | number | boolean | null | undefined | JSON[] | NodeJSON;
+/** Defines allowed values for paramater primatives. */
+type Parameter = string | number | boolean | null | undefined;
 
-/**
- * JSON Dict, defines key/value pairing.
- */
-type NodeJSON = {[key:string]: JSON};
+/** Dict structure for the Parameters. */
+type ParamNode = {[key:string]: ParamTree};
+
+/** Any possible value from the Param Tree (Basically any possible JSON value)
+ * This could be a primative value, a dict structure, or an array of any of these values.
+ * This flexibility allows for the recursive nested structure of the Parameter Tree
+*/
+type ParamTree = Parameter | ParamTree[] | ParamNode;
+
+
+type ParamNum = "int" | "float" | "complex" | "bool"
+type ParamList = "list" | "tuple" | "range"
+/**Possible Type values from Python */
+type ParamType = ParamNum | ParamList | "str" | "NoneType"
+
+/** Structure of the Metadata for a single Parameter */
+interface MetadataValue<T extends ParamTree = ParamTree> extends ParamNode {
+    value: T;
+    type: ParamType;
+    writeable: boolean;
+    min?: number;
+    max?: number;
+    allowed_values?: T[];
+    name?: string;
+    description?: string;
+    units?: string;
+    display_precision?: string;
+
+}
+
+/** Structure for the full Metadata Tree of an Adapter */
+type Metadata<T extends ParamNode = ParamNode> = {
+    [Property in keyof T]: 
+        T[Property] extends ParamNode ? 
+            Metadata<T[Property]> :
+            T[Property] extends Parameter ?
+                MetadataValue<T[Property]> :
+                T[Property] // ????
+}
 
 interface getConfig {
     wants_metadata?: boolean;
     responseType?: AxiosRequestConfig['responseType'];
 }
 
-export type { AdapterEndpoint, JSON, NodeJSON, getConfig, status};
+export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig, status};
 
 /**
  * @deprecated This is the old name for this type and should be replaced with "AdapterEndpoint"
  */
-export type AdapterEndpoint_t<T> = AdapterEndpoint<T>;
+export type AdapterEndpoint_t<T extends ParamNode> = AdapterEndpoint<T>;

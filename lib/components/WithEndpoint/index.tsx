@@ -1,6 +1,7 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import type { AdapterEndpoint, JSON } from "../AdapterEndpoint";
+import type { AdapterEndpoint, ParamNode, ParamTree } from "../AdapterEndpoint";
+import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { useError } from "../OdinErrorContext";
 import { isEqual } from 'lodash';
@@ -14,7 +15,7 @@ type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 interface ComponentProps {
     endpoint: AdapterEndpoint;
     fullpath: string;
-    value?: JSON;
+    value?: ParamNode[keyof ParamNode];
     // value_type?: value_t;
     min?: number;
     max?: number;
@@ -29,10 +30,10 @@ interface ComponentProps {
 }
 
 interface metadata_t {
-    readOnly: boolean;
+    readOnly: MetadataValue["writeable"];
     min?: number;
     max?: number;
-    allowed_values?: JSON[];
+    allowed_values?: MetadataValue["allowed_values"];
     type?: string;
 }
 
@@ -194,19 +195,19 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                 return false;
             }
             if(endpointLoaded() && endpoint.status != "error"){
-                let data = getValueFromPath<ComponentProps['value']>(endpoint.metadata, fullpath);
-                let val: JSON;
+                const metadata = getValueFromPath<MetadataValue>(endpoint.metadata, fullpath);
+                let val: ParamTree;
                 const tmp_metadata: metadata_t = {readOnly: false, min: min, max: max};
-                if(isParamNode(data) && "writeable" in data){ //metadata found
-                    tmp_metadata.readOnly = !(data['writeable'] as boolean);
-                    tmp_metadata.min = min ?? (data.min ? data.min as number : undefined);
-                    tmp_metadata.max = max ?? (data.max ? data.max as number : undefined);
-                    tmp_metadata.allowed_values = data?.allowed_values as JSON[];
+                if(isParamNode(metadata) && "writeable" in metadata){ //metadata found
+                    tmp_metadata.readOnly = !(metadata.writeable);
+                    tmp_metadata.min = min ?? (metadata.min ? metadata.min : undefined);
+                    tmp_metadata.max = max ?? (metadata.max ? metadata.max : undefined);
+                    tmp_metadata.allowed_values = metadata?.allowed_values;
 
                     // setMetadata(tmp_metadata);
-                    val = value ?? data.value as ComponentProps["value"];
+                    val = value ?? metadata.value;
 
-                    switch(data.type as string){
+                    switch(metadata.type as string){
                         case "int":
                         case "float":
                         case "complex":
@@ -227,11 +228,11 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                             setType("null");
                             break;
                         default:
-                            setType(data.type as value_t);
+                            setType(metadata.type as value_t);
                     }
 
                 }else{
-                    data = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
+                    const data = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
                     console.debug("Adapter has not implemented Metadata for", fullpath);
                     val = value ?? data as ComponentProps["value"];
                     const data_type = (value == null ? typeof data : typeof value);
