@@ -3,7 +3,9 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getConfig, status } from "./AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 
-const DEF_API_VERSION = '0.1';
+// odin control 2.0 no longer uses an API Version.
+// TODO: How to auto detect if we're using odin control 2.0 or not?
+// const DEF_API_VERSION = '';
 
 enum updateFlag_enum {
     INIT = "init",
@@ -42,7 +44,7 @@ function getValueFromPath<T = Parameter>(data: ParamTree, path: string): T | und
 
 
 function useAdapterEndpoint<T extends ParamNode = ParamNode>(
-    adapter: string, endpoint_url: string, interval?: number, timeout?: number, api_version=DEF_API_VERSION
+    adapter: string, endpoint_url: string, interval?: number, timeout?: number
 ): AdapterEndpoint<T> {
 
     const data = useRef<T>({} as T);
@@ -51,11 +53,16 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
     const [updateFlag, setUpdateFlag] = useState(Symbol(updateFlag_enum.INIT));
     const [statusFlag, setStatusFlag] = useState<status>("init");
 
+    const [apiVersion, setApiVersion] = useState<string>("");
+    const [base_url, setBaseUrl] = useState<string>([endpoint_url,
+                                                    "api",
+                                                    apiVersion,
+                                                    adapter
+                                                    ].filter(Boolean).join("/"));
+    
     const [awaiting, changeAwaiting] = useState(false);
 
     const ctx = useError();
-
-    const base_url = `${endpoint_url ? endpoint_url : ""}/api/${api_version}/${adapter}`;
     const axiosInstance: AxiosInstance = axios.create({
         baseURL: base_url,
         timeout: timeout,
@@ -72,6 +79,7 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
             if(err.response) {
                 const method = err.response.config.method ? err.response.config.method.toUpperCase() : "UNDEFINED";
                 const reason = err.response.data?.error || "";
+                // const address = err.response
                 errorMsg = `${method} request failed with status ${err.response.status} : ${reason}`;
             }
             else if (err.request) {
@@ -189,21 +197,41 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
     // some sort of looping attempt at first connection until we get a response? so if the adapter
     // isn't running at first for whatever reason, we keep trying until it is?
     const getInitialData = () => {
-        get("")
+        // discover Odin Control version (1.* or 2.*, changes what the full URL needs to be)
+        let url = [endpoint_url, "api"].filter(Boolean).join("/");
+        console.debug("Checking Odin Control Version");
+
+        //can't use the get function of the endpoint yet, because we don't know if the base_url is correct
+        // until we've worked out if we need the api "0.1" yet.
+        axios.get<{api?: number}>(url)
         .then(result => {
-            data.current = result as T;
+            const api_version = result.data?.api ? result.data.api.toString() : "";
+            
+            setApiVersion(api_version);
+            url = [url, api_version, adapter].filter(Boolean).join("/");
+            setBaseUrl(url);
+
+            axios.get(url)
+            .then(result => {
+                data.current = result.data as T;
+            })
+            .catch(err => {
+                throw handleError(err);
+            });
+
+            const request_config: AxiosRequestConfig = {headers: {Accept: "application/json;metadata=true"}};
+            axios.get<Metadata<T>>(url, request_config)
+            .then(result => {
+                setMetadata(result.data);
+                setStatusFlag("connected");
+                setUpdateFlag(Symbol(updateFlag_enum.FIRST));
+            })
+            .catch(err => {
+                throw handleError(err);
+            })
         })
-        .catch(() => {
-            return // error already gets reported by the GET method
-        });
-        get("", {wants_metadata: true})
-        .then(result => {
-            setMetadata(result as Metadata<T>);
-            setStatusFlag("connected");
-            setUpdateFlag(Symbol(updateFlag_enum.FIRST))
-        })
-        .catch(() => {
-            return
+        .catch(err => {
+            throw handleError(err);
         });
     }
 
