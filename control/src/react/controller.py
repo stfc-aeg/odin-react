@@ -1,15 +1,16 @@
 import logging
 import random
-from odin.adapters.parameter_tree import ParameterTree
+from odin_control.adapters.parameter_tree import ParameterTree
+from odin_control.adapters.base_controller import BaseController
 from tornado.ioloop import PeriodicCallback
 from react.event_logger import EventLogger
 
 import time
 
 
-class ReactController():
+class ReactController(BaseController):
 
-    def __init__(self) -> None:
+    def __init__(self, options=None) -> None:
 
         self.deep_dict_val = "secret deep value"
         self.deep_dict_num = 42
