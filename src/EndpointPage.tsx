@@ -1,7 +1,7 @@
 import { Container, Row, Col, Stack, Form, InputGroup, Alert, Dropdown, FloatingLabel } from "react-bootstrap"
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "../"
 import { EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox } from "../";
-import type { ParamTree, Log} from "../";
+import type { ParamNode, Log} from "../";
 import { useState } from "react";
 import { AdapterEndpoint } from "../";
 
@@ -14,17 +14,17 @@ const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 // const EndpointCheckbox = WithEndpoint(Form.Check);
 const EndpointSelect = WithEndpoint((props: React.HTMLAttributes<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
-interface FormData_T extends ParamTree{
+interface FormData_T extends ParamNode{
     first_name: string;
     last_name: string;
     age: number;
 }
 
-export interface EndpointData extends ParamTree{
+export interface EndpointData extends ParamNode{
     string_val: string;
     num_val: number;
+    float_val: number;
     rand_num: number;
-    select_list: string[];
     selected: string;
     toggle: boolean;
     trigger: null;
@@ -60,7 +60,6 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
     const [input, changeInput] = useState(0);
     const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
 
-
     return (
         <Container>
             <Row>
@@ -93,7 +92,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                         <Stack>
                         <EndpointDropdown endpoint={endpoint} fullpath="selected"
                             title={endpoint.data.selected || "Unknown"}>
-                                {endpoint.data.select_list ? endpoint.data.select_list.map(
+                                {endpoint.metadata?.selected?.allowed_values ? endpoint.metadata.selected.allowed_values.map(
                                     (selection, index) => (
                                         <Dropdown.Item eventKey={selection} key={index}>{selection}</Dropdown.Item>
                                     )): <></>
@@ -101,7 +100,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                         </EndpointDropdown>
                         <label>Choose Option:
                             <EndpointSelect endpoint={endpoint} fullpath="selected">
-                                {endpoint.data.select_list ? endpoint.data.select_list.map(
+                                {endpoint.metadata?.selected?.allowed_values ? endpoint.metadata.selected.allowed_values.map(
                                     (selection, index) => {
                                         return <option key={index} value={selection}>{selection}</option>;
                                 }) : <option value="">Unknown</option>

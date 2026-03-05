@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import type { AdapterEndpoint, JSON, NodeJSON, getConfig, status } from "./AdapterEndpoint.types";
+import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getConfig, status } from "./AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 
 const DEF_API_VERSION = '0.1';
@@ -13,7 +13,7 @@ enum updateFlag_enum {
     ERROR = "error"
 }
 
-const isParamNode = (x: JSON): x is NodeJSON => {
+const isParamNode = (x: ParamTree): x is ParamNode => {
     return x !== null && typeof x === "object" && !Array.isArray(x);
 }
 
@@ -24,7 +24,7 @@ const isParamNode = (x: JSON): x is NodeJSON => {
  * @returns the value at the specified path (which is either a single value, or a JSON Node with Key/Val pair(s))
  * or Undefined if the value was not found at that path
  */
-function getValueFromPath<T>(data: JSON, path: string): T | undefined {
+function getValueFromPath<T = Parameter>(data: ParamTree, path: string): T | undefined {
     const splitPath = path.split("/");
     if(splitPath[0]){
         splitPath.forEach((pathPart) => {
@@ -41,12 +41,12 @@ function getValueFromPath<T>(data: JSON, path: string): T | undefined {
 }
 
 
-function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
+function useAdapterEndpoint<T extends ParamNode = ParamNode>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number, api_version=DEF_API_VERSION
 ): AdapterEndpoint<T> {
 
     const data = useRef<T>({} as T);
-    const [metadata, setMetadata] = useState<NodeJSON>({});
+    const [metadata, setMetadata] = useState<Metadata<T>>({} as Metadata<T>);
     const [error, setError] = useState<Error | null>(null);
     const [updateFlag, setUpdateFlag] = useState(Symbol(updateFlag_enum.INIT));
     const [statusFlag, setStatusFlag] = useState<status>("init");
@@ -89,7 +89,7 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         return error;  // rethrow error so it doesn't dissapear
     };
 
-    const get = async <T = NodeJSON>(param_path='', config?: getConfig) => {
+    const get = async <T = ParamNode>(param_path='', config?: getConfig) => {
         console.debug(`GET: ${base_url}/${param_path}`);
 
         const {wants_metadata=false, responseType='json'} = config ?? {};
@@ -116,11 +116,11 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         }
     };
 
-    const put = async (data: NodeJSON, param_path='') => {
+    const put = async (data: ParamNode, param_path='') => {
         // const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
         console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
         
-        let result: NodeJSON = {};
+        let result: ParamNode = {};
         let response: AxiosResponse<typeof result>;
 
         try {
@@ -140,10 +140,10 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         }
     };
 
-    const post = async (data: NodeJSON, param_path="") => {
+    const post = async (data: ParamNode, param_path="") => {
         console.debug(`POST: ${base_url}/${param_path}, data: `, data);
 
-        let result: NodeJSON = {};
+        let result: ParamNode = {};
         let response: AxiosResponse<typeof result>;
 
         try {
@@ -166,7 +166,7 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
     const remove = async (param_path="") => {
         console.debug(`DELETE: ${base_url}/${param_path}`);
 
-        let result: NodeJSON = {};
+        let result: ParamNode = {};
         let response: AxiosResponse<typeof result>;
 
         try {
@@ -198,7 +198,7 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         });
         get("", {wants_metadata: true})
         .then(result => {
-            setMetadata(result);
+            setMetadata(result as Metadata<T>);
             setStatusFlag("connected");
             setUpdateFlag(Symbol(updateFlag_enum.FIRST))
         })
@@ -239,10 +239,10 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
         });
     }
     
-    const mergeData = (newData: NodeJSON, param_path: string) => {
+    const mergeData = (newData: ParamNode, param_path: string) => {
         const splitPath = param_path.split("/").slice(0, -1);
         const tmpData = data.current;  // use tmpData as a copy of the Data that we can modify
-        let pointer: JSON = tmpData;  // pointer that can traverse down the nested data
+        let pointer: ParamNode[keyof ParamNode] = tmpData;  // pointer that can traverse down the nested data
 
         if(splitPath[0]) {
             splitPath.forEach((part_path) => {
@@ -261,4 +261,14 @@ function useAdapterEndpoint<T extends NodeJSON = NodeJSON>(
 }
 
 export { useAdapterEndpoint, isParamNode, getValueFromPath };
-export type { AdapterEndpoint, JSON, NodeJSON };
+export type { AdapterEndpoint, Parameter, ParamNode, Metadata, ParamTree };
+
+/**
+ * @deprecated This is the old name for this type and should be replaced with "Parameter"
+ */
+export type JSON = ParamTree
+
+/**
+ * @deprecated This is the old name for this type, and should be replaced with "ParamNode"
+ */
+export type NodeJSON = ParamNode
