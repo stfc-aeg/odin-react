@@ -1,5 +1,5 @@
 import { TitleCard } from "../TitleCard";
-import type {AdapterEndpoint, NodeJSON} from "../AdapterEndpoint";
+import type {AdapterEndpoint, ParamNode} from "../AdapterEndpoint";
 import {Row, Col } from 'react-bootstrap';
 import { ToggleButtonGroup, ToggleButton, Form, InputGroup, Button, OverlayTrigger, Popover } from "react-bootstrap";
 
@@ -9,7 +9,7 @@ import { Filter, Clock, CalendarEvent, ArrowBarDown } from "react-bootstrap-icon
 import style from './styles.module.css';
 import React, { useEffect, useState, CSSProperties, useRef, useMemo, useCallback } from "react";
 
-interface Log extends NodeJSON {
+interface Log extends ParamNode {
     level?: "debug" | "info" | "warning" | "error" | "critical";
     timestamp: string;
     message: string;

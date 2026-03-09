@@ -32,6 +32,12 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
      * Connection status for the AdapterEndpoint.
      */
     status: status;
+
+    /**
+     * Api String. Used to differentiate between Odin Control versions.
+     * If blank, Odin Control is v2.*
+     */
+    apiVersion: string;
     /**
      * Async http GET method. Request the provided value(s) from the parameter tree.
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
@@ -47,7 +53,7 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
      * @param {string} param_path - the path you want to PUT to. Defaults to an empty string for a top level PUT
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    put: (data: ParamNode, param_path?: string) => Promise<ParamNode>;
+    put: <T = Parameter>(data: {[key: string]: T}, param_path?: string) => Promise<{[Property in keyof typeof data]: T}>;
 
     /**
      * Async http POST method. Not often implemented by Adapters, but potentially used to post data
@@ -102,14 +108,23 @@ type ParamType = ParamNum | ParamList | "str" | "NoneType"
 /** Structure of the Metadata for a single Parameter */
 interface MetadataValue<T extends ParamTree = ParamTree> extends ParamNode {
     value: T;
+    /**Python Type of the Parameter */
     type: ParamType;
+    /**Is the Parameter editable */
     writeable: boolean;
+    /**Minimum value for the Parameter (if a number type) */
     min?: number;
+    /**Maximum value for the Parameter (if a number type) */
     max?: number;
+    /**Array of permitted values for the Parameter*/
     allowed_values?: T[];
+    /**Human readable name of the Parameter*/
     name?: string;
+    /**Description of what the Parameter represents*/
     description?: string;
+    /**What units the Parameter is in (such as cm, degrees C, etc)*/
     units?: string;
+    /**Display precision for float/integer Parameters*/
     display_precision?: string;
 
 }

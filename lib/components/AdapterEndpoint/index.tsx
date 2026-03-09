@@ -124,11 +124,11 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
         }
     };
 
-    const put = async (data: ParamNode, param_path='') => {
+    const put = async <T = Parameter>(data: {[key: string]: T}, param_path='') => {
         // const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
         console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
         
-        let result: ParamNode = {};
+        let result: typeof data = {};
         let response: AxiosResponse<typeof result>;
 
         try {
@@ -267,10 +267,12 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
         });
     }
     
-    const mergeData = (newData: ParamNode, param_path: string) => {
-        const splitPath = param_path.split("/").slice(0, -1);
+    const mergeData = (newData: ParamTree, param_path: string) => {
+        const splitPath = param_path.replace(/\/$/, "").split("/");
+        const paramName = splitPath.pop()!;
+
         const tmpData = data.current;  // use tmpData as a copy of the Data that we can modify
-        let pointer: ParamNode[keyof ParamNode] = tmpData;  // pointer that can traverse down the nested data
+        let pointer: ParamTree = tmpData;  // pointer that can traverse down the nested data
 
         if(splitPath[0]) {
             splitPath.forEach((part_path) => {
@@ -280,12 +282,21 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
             });
         }
         // becasue pointer was a copy of tmpData, changes made to it will also be made to tmpData
+        if(isParamNode(newData)){
+            // const keys = Object.keys(newData);
+
+            if("value" in newData && Object.keys(newData).length == 1){
+                // test if merge data has only one key of "value". This likely means we're
+                // using Odin Control 2.0 and need to adjust to merge it into the larger tree
+                newData = {[paramName]: newData["value"]}
+            }
+        }
         Object.assign(pointer, newData);
         data.current = tmpData;
         setUpdateFlag(Symbol(updateFlag_enum.MERGED));
     }
     
-    return { data: data.current, metadata, error, loading: awaiting, updateFlag, status: statusFlag, get, put, post, remove, refreshData, mergeData}
+    return { data: data.current, metadata, error, loading: awaiting, updateFlag, status: statusFlag, apiVersion, get, put, post, remove, refreshData, mergeData}
 }
 
 export { useAdapterEndpoint, isParamNode, getValueFromPath };

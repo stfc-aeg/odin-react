@@ -3,11 +3,12 @@ import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransiti
 import type { AdapterEndpoint, ParamNode, ParamTree } from "../AdapterEndpoint";
 import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
+import { EndpointButton } from "./EndpointButton";
 import { useError } from "../OdinErrorContext";
 import { isEqual } from 'lodash';
 
 // imported for defaults at the bottom
-import { Form, Button, DropdownButton } from "react-bootstrap";
+import { Form, DropdownButton } from "react-bootstrap";
 
 type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
@@ -464,9 +465,8 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
     )
 };
 
-
 const EndpointInput = WithEndpoint(Form.Control);
-const EndpointButton = WithEndpoint(Button);
+// const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
 const EndpointCheckbox = WithEndpoint(Form.Check);
 

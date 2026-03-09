@@ -60,14 +60,24 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
     const [input, changeInput] = useState(0);
     const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
 
+    const testFunc = (comment: string) => {
+        console.log(comment);
+    }
+
+    const secondTestFunc = () => {
+        console.log("Second Test Funciton");
+    }
+
     return (
         <Container>
             <Row>
                 <Col>
                     <TitleCard title="Click Button">
                         <Stack>
-                            <EndpointButton endpoint={endpoint} fullpath="trigger" value={42}>
-                                Trigger
+                            <EndpointButton endpoint={endpoint} fullpath="trigger" value={42}
+                                pre_method={testFunc} pre_args={["Hello World"]}
+                                post_method={secondTestFunc}>
+                                Trigger New Button
                             </EndpointButton>
                             <EndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
                             <EndpointCheckbox type="switch" endpoint={endpoint} fullpath="toggle"/>
@@ -165,6 +175,9 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                     <EndpointButton endpoint={endpoint} fullpath="submit" value={formData}>
                     Submit Form Data 
                     </EndpointButton>
+                    <NewEndpointButton endpoint={endpoint} fullpath="submit" value={formData}>
+                        Submit Form New Button
+                    </NewEndpointButton>
                 </TitleCard>
                 </Col>
                 <Col>

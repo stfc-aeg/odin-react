@@ -113,7 +113,7 @@ class ReactController(BaseController):
         self.toggle = val
 
     def trigger_event(self, val):
-        self.logger.info("Event Triggered by API with value: %s", val)
+        logging.info("Event Triggered by API with value: %s", val)
 
     def set_slow_response_val(self, val):
         time.sleep(2.5)  # simulating complex get request or slow network
@@ -135,6 +135,7 @@ class ReactController(BaseController):
         return val
 
     def set(self, path, data):
+        logging.info("PUT: %s to path %s", data, path)
         self.param_tree.set(path, data)
         return self.param_tree.get(path)
     
