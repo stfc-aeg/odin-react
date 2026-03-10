@@ -4,6 +4,8 @@ import type { AdapterEndpoint, ParamNode, ParamTree } from "../AdapterEndpoint";
 import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { EndpointButton } from "./EndpointButton";
+import { EndpointInput } from "./EndpointInput";
+import { sendRequest } from "./util";
 import { useError } from "../OdinErrorContext";
 import { isEqual } from 'lodash';
 
@@ -104,16 +106,6 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
             return isPending || endpoint.loading;
 
         }, [isPending, endpoint.loading, disabled, metadata?.readOnly]);
-
-        const {path, valueName} = useMemo(() => {
-            let path = "";
-            let valueName = trimByChar(fullpath, "/");
-            if(valueName.includes("/"))
-            {
-                [path, valueName] = valueName.split(/\/(?!.*\/)(.*)/, 2); // finds the last "/" in the string, and splits on that
-            }
-            return {path, valueName};
-        }, [fullpath]);
 
         const componentPassedValue = useMemo(() => {
             const curComponent = component.current;
@@ -290,39 +282,19 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
             }
         }, [endpoint.updateFlag, endpointValue]);
 
-        const sendRequest = (val: ComponentProps['value']) => {
+        const handleRequest = (val: ComponentProps['value']) => {
             try {
                 val = getTypedValue(val);
                 validate(val);
 
                 startTransition(async () => {
+                    pre_method?.(...(pre_args ?? []));
 
-                    if(pre_method)
-                    {
-                        if(pre_args)
-                        {
-                            pre_method(...pre_args);
-                        }else{
-                            pre_method();
-                        }
-                    }
-                    const sendVal = {[valueName]: val};
-
-                    endpoint.put(sendVal, path)
-                        .then((response) => {
-                            endpoint.mergeData(response, path);
-                            if(post_method)
-                            {
-                                if(post_args){
-                                    post_method(...post_args);
-                                }else{
-                                    post_method();
-                                }
-                            }
-                        })
-                        .catch((error) => {
-                            console.debug("Error in PUT occured in WithEndpoint component", error);
-                        });
+                    
+                    sendRequest(val, endpoint, fullpath)
+                    .then(() => {
+                        post_method?.(...(post_args ?? []));
+                    });
                 })
             }
             catch (err) {
@@ -339,7 +311,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
             console.debug(fullpath, "event: ", event);
             console.debug(fullpath, "EventKey: ", eventKey);
             
-            sendRequest(eventKey);
+            handleRequest(eventKey);
         }
 
         const onClickHandler = (event: React.MouseEvent) => {
@@ -357,7 +329,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                     val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
                 }
             }
-            sendRequest(val);
+            handleRequest(val);
         };
 
         const onChangeHandler = (event: React.ChangeEvent) => {
@@ -377,13 +349,13 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
             // without needing the onEnterHandler
             const compType = component.current?.nodeName;
             if(compType === "SELECT"){
-                sendRequest(val);
+                handleRequest(val);
             }
         };
 
         const onEnterHandler = (event: React.KeyboardEvent) => {
             if (event.key === "Enter" && !event.shiftKey) {
-                sendRequest(componentValue);
+                handleRequest(componentValue);
             }
         };
 
@@ -465,8 +437,6 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
     )
 };
 
-const EndpointInput = WithEndpoint(Form.Control);
-// const EndpointButton = WithEndpoint(Button);
 const EndpointDropdown = WithEndpoint(DropdownButton);
 const EndpointCheckbox = WithEndpoint(Form.Check);
 

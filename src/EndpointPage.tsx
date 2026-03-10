@@ -79,7 +79,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                                 post_method={secondTestFunc}>
                                 Trigger New Button
                             </EndpointButton>
-                            <EndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
+                            <EndpointInput endpoint={endpoint} fullpath="num_val"/>
                             <EndpointCheckbox type="switch" endpoint={endpoint} fullpath="toggle"/>
                         </Stack>
                     </TitleCard>
@@ -94,6 +94,9 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                         <Alert>Is Even: {endpoint.data.data?.dict?.is_even?.toString()}</Alert>
                         <EndpointButton endpoint={endpoint} fullpath="trigger" value={10} disabled={endpoint.data.data?.dict.is_even}>
                                     Disabled on Even
+                        </EndpointButton>
+                        <EndpointButton endpoint={endpoint} fullpath="num_val">
+                            Click For Num Val
                         </EndpointButton>
                     </TitleCard>
                 </Col>
@@ -175,9 +178,6 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                     <EndpointButton endpoint={endpoint} fullpath="submit" value={formData}>
                     Submit Form Data 
                     </EndpointButton>
-                    <NewEndpointButton endpoint={endpoint} fullpath="submit" value={formData}>
-                        Submit Form New Button
-                    </NewEndpointButton>
                 </TitleCard>
                 </Col>
                 <Col>
