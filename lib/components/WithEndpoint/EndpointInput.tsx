@@ -1,10 +1,10 @@
 
 import { Form } from 'react-bootstrap';
 import type { FormControlProps } from 'react-bootstrap';
-import { sendRequest, type EndpointProps } from './util';
+import { useRequestHandler, type EndpointProps } from './util';
 import type { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
 import { getValueFromPath } from '../AdapterEndpoint';
-import { CSSProperties, useEffect, useRef, useState, useTransition } from 'react';
+import { CSSProperties, useEffect, useRef, useState } from 'react';
 
 
 type EndpointInputProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
@@ -18,11 +18,17 @@ const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
         ...rest }: EndpointInputProps<PreArgs, PostArgs>
 ) => {
 
-    const endVal = value ?? getValueFromPath(endpoint.data, fullpath);
+    const {requestHandler, data: endVal, disable} = useRequestHandler({
+        endpoint, fullpath, value, disabled,
+        pre_method, pre_args,
+        post_method, post_args
+    });
+
     const metaData: MetadataValue = getValueFromPath<MetadataValue>(endpoint.metadata, fullpath)
                                         ?? {value: endVal, type: "str", writeable: true};
     const [compVal, changeCompVal] = useState<FormControlProps['value']>("");
     const [editing, setEditing] = useState<boolean>(false);
+    
     const compMin = min ?? metaData.min;
     const compMax = max ?? metaData.max;
 
@@ -31,10 +37,6 @@ const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
     const type: FormControlProps["type"] = rest.type ??
         ["int", "float", "complex"].includes(metaData.type) ? "number"
             : typeof endVal === "number" ? "number" : "";
-
-    const [isPending, startPendingTransition] = useTransition();
-
-    const disable = disabled || isPending || endpoint.loading || !(metaData.writeable ?? true);
 
     const style: CSSProperties = editing ? {backgroundColor: "var(--bs-highlight-bg)"} : {};
 
@@ -49,31 +51,17 @@ const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
     const onEnterHandler: FormControlProps["onKeyUp"] = (event) => {
         if(event.key === "Enter" && !event.shiftKey) {
             console.debug(fullpath, event);
-            requestHandler();
+            requestHandler(compVal);
             setEditing(false);
         }
     }
-
-    const requestHandler = () => {
-        startPendingTransition(async () => {
-
-            pre_method?.(...(pre_args ?? []) as PreArgs);
-
-            sendRequest(compVal, endpoint, fullpath)
-            .then(() => {
-
-                post_method?.(...(post_args ?? []) as PostArgs);
-            });
-        });
-    }
-
 
     useEffect(() => {
         //Endpoint Value changed, update component value if need be.
         const newVal = getValueFromPath<FormControlProps["value"]>(endpoint.data, fullpath);
 
         // check if the component is not currently active
-        if(document.activeElement !== component.current && !editing){
+        if(document.activeElement !== component.current && !editing && typeof newVal !== "undefined"){
             changeCompVal(newVal);
         }
 

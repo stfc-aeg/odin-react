@@ -1,28 +1,26 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import type { AdapterEndpoint, ParamNode, ParamTree } from "../AdapterEndpoint";
+import type { AdapterEndpoint, ParamTree } from "../AdapterEndpoint";
 import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { EndpointButton } from "./EndpointButton";
 import { EndpointInput } from "./EndpointInput";
+import { EndpointDropdown } from "./EndpointDropdown";
 import { sendRequest } from "./util";
 import { useError } from "../OdinErrorContext";
 import { isEqual } from 'lodash';
 
 // imported for defaults at the bottom
-import { Form, DropdownButton } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 
-type event_t = "select" | "click" | "enter"
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 
 interface ComponentProps {
     endpoint: AdapterEndpoint;
     fullpath: string;
-    value?: ParamNode[keyof ParamNode];
-    // value_type?: value_t;
+    value?: ParamTree;
     min?: number;
     max?: number;
-    event_type?: event_t;
     disabled?: boolean;
     pre_method?: (...args: unknown[]) => void;
     post_method?: (...args: unknown[]) => void;
@@ -68,7 +66,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
 
 
     const WithEndpointComponent: React.FC<WrapperComponentProps> = (props) => {
-        const {endpoint, fullpath, value, event_type, disabled,
+        const {endpoint, fullpath, value, disabled,
                pre_method, pre_args, post_method, post_args, dif_color="var(--bs-highlight-bg)",
                min, max, ref, ...leftoverProps} = props;
 
@@ -361,62 +359,48 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
 
         useEffect(() => {
             let events: selectEvent_t = {onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)};
-            if(event_type){
-                switch(event_type){
-                    case "select":
-                        events = {onSelect: (eventKey, event) => onSelectHandler(event, eventKey)};
-                        break;
-                    case "click":
+                const curComponent = component.current;
+            if(curComponent){
+                switch(curComponent.nodeName){
+                    case "BUTTON":
+                        //default buttons to using the onClick event handler
                         events = {onClick: (event) => onClickHandler(event)};
                         break;
-                    case "enter":
-                    default:
-                        break;
-                }
-            }else{
-                const curComponent = component.current;
-                if(curComponent){
-                    switch(curComponent.nodeName){
-                        case "BUTTON":
-                            //default buttons to using the onClick event handler
-                            events = {onClick: (event) => onClickHandler(event)};
-                            break;
 
-                        case "INPUT": 
-                        {
-                            const input_type = (curComponent as HTMLInputElement).type;
-                            switch(input_type){
-                                case "checkbox":
-                                case "radio":
-                                    //default checkboxes and radios to using the onClick event handler
-                                    events = {onClick: (event) => onClickHandler(event)};
-                                    break;
-                                case "text":
-                                case "number":
-                                default:
-                                    break;
-                            }
-                            break;
+                    case "INPUT": 
+                    {
+                        const input_type = (curComponent as HTMLInputElement).type;
+                        switch(input_type){
+                            case "checkbox":
+                            case "radio":
+                                //default checkboxes and radios to using the onClick event handler
+                                events = {onClick: (event) => onClickHandler(event)};
+                                break;
+                            case "text":
+                            case "number":
+                            default:
+                                break;
                         }
-                        case "DIV":
-                        {
-                            const divClass = (curComponent as HTMLDivElement).className;
-                            if(divClass === "dropdown"){
-                                //bootstrap dropdowns are contained in a div with a classname of "dropdown"
-                                events = {onSelect: (eventKey, event) => onSelectHandler(event, eventKey)};
-                            }
-                            break;
-                        }
-                        case "SELECT":
-                            // the onSelect event handler is a specially created one for bootstrap dropdowns
-                            // standard html dropdowns (<select> tags) use the onChange event handler by default
-                           events = {onChange: (event) => onChangeHandler(event)};
-                            break;
+                        break;
                     }
+                    case "DIV":
+                    {
+                        const divClass = (curComponent as HTMLDivElement).className;
+                        if(divClass === "dropdown"){
+                            //bootstrap dropdowns are contained in a div with a classname of "dropdown"
+                            events = {onSelect: (eventKey, event) => onSelectHandler(event, eventKey)};
+                        }
+                        break;
+                    }
+                    case "SELECT":
+                        // the onSelect event handler is a specially created one for bootstrap dropdowns
+                        // standard html dropdowns (<select> tags) use the onChange event handler by default
+                        events = {onChange: (event) => onChangeHandler(event)};
+                        break;
                 }
             }
             setEventProp(events);
-        }, [event_type, value, componentValue, component.current, type]);
+        }, [value, componentValue, component.current, type]);
 
         return (<WrappedComponent
                     {...leftoverProps as P}
@@ -437,7 +421,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
     )
 };
 
-const EndpointDropdown = WithEndpoint(DropdownButton);
+// const EndpointDropdown = WithEndpoint(DropdownButton);
 const EndpointCheckbox = WithEndpoint(Form.Check);
 
 

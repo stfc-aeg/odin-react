@@ -1,18 +1,25 @@
+import { useTransition } from "react";
 import type { AdapterEndpoint, ParamTree } from "../AdapterEndpoint";
-import { isParamNode } from "../AdapterEndpoint";
+import { getValueFromPath, isParamNode } from "../AdapterEndpoint";
+import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 
 
 export interface EndpointProps<PreArgs extends unknown[], PostArgs extends unknown[]> {
     endpoint: AdapterEndpoint;
     fullpath: string;
     value?: ParamTree;
-    min?: number;
-    max?: number;
     disabled?: boolean;
     pre_method?: (...args: PreArgs) => void;
     post_method?: (...args: PostArgs) => void;
     pre_args?: PreArgs;
     post_args?: PostArgs;
+}
+
+interface RequestHandler {
+    requestHandler: (val?: ParamTree) => void;
+    data: ParamTree;
+    disable: boolean;
+
 }
 
 const getLastPathPart = (path: string): [string, string] => {
@@ -51,5 +58,37 @@ export async function sendRequest<T extends ParamTree>(val: T, endpoint: Adapter
     }catch (err){
         console.debug("Error in PUT occured in WithEndpoint component", err);
     }
+}
+
+export function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]>(
+    { endpoint, fullpath, value, disabled,
+        pre_method, pre_args,
+        post_method, post_args } : EndpointProps<PreArgs, PostArgs>
+): RequestHandler {
+
+    const [isPending, startTransition] = useTransition();
+
+    const data: ParamTree = value ?? getValueFromPath(endpoint.data, fullpath);
+    const metadata: MetadataValue = getValueFromPath<MetadataValue>(endpoint.metadata, fullpath)
+                                        ?? {value: data,
+                                            type: typeof data == "number" ? "int" : "str",
+                                            writeable: true};
+
+    const disable = disabled || isPending || endpoint.loading || !(metadata.writeable);
+
+    const requestHandler: RequestHandler["requestHandler"] = (val) => {
+        startTransition(async () => {
+
+            pre_method?.(...(pre_args ?? []) as PreArgs);
+
+            sendRequest(val ?? data, endpoint, fullpath)
+            .then(() => {
+                post_method?.(...(post_args ?? []) as PostArgs);
+            });
+        })
+    }
+
+    return {requestHandler, data, disable}
+
 }
 
