@@ -19,7 +19,7 @@ class ReactController(BaseController):
         self.clip_data = [-10, 5]
 
         self.string_val = "String Value Test"
-        self.num_val = 10
+        self.num_val = 15
         self.random_num = random.randint(0, 100)
 
         self.selection_list = ["item 1", "item 2", "item 3"]
@@ -120,7 +120,7 @@ class ReactController(BaseController):
         self.slow_put = val
 
     def get(self, path, metadata=False, kwargs=None):
-        # self.logger.debug("GETTING PATH: %s", path)
+        logging.info("GETTING PATH: %s%s", path, " with METADATA" if metadata else "")
 
         # special Log Filtering with the query Args!
         if path == "logging" and kwargs:

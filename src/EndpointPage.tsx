@@ -7,11 +7,8 @@ import { AdapterEndpoint } from "../";
 
 import type { ReactNode } from "react";
 
-// const EndpointInput = WithEndpoint(Form.Control);
-// const EndpointButton = WithEndpoint(Button);
-// const EndpointDropdown = WithEndpoint(DropdownButton);
+const OldEndpointInput = WithEndpoint(Form.Control);
 const EndpointSlider = WithEndpoint(OdinDoubleSlider);
-// const EndpointCheckbox = WithEndpoint(Form.Check);
 const EndpointSelect = WithEndpoint((props: React.HTMLAttributes<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
 interface FormData_T extends ParamNode{
@@ -80,7 +77,9 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                                 Trigger New Button
                             </EndpointButton>
                             <EndpointInput endpoint={endpoint} fullpath="num_val"/>
-                            <EndpointCheckbox type="switch" endpoint={endpoint} fullpath="toggle"/>
+                            <OldEndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
+                            <EndpointCheckbox type="switch" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
+                            <EndpointCheckbox type="checkbox" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
                         </Stack>
                     </TitleCard>
                 </Col>
@@ -121,7 +120,15 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                             </EndpointSelect>
                         </label>
 
-                        <EndpointInput endpoint={endpoint} fullpath="deep/long/nested/dict/path/val" />
+                        <Form>
+                            <EndpointCheckbox endpoint={endpoint} fullpath={"selected"}
+                                type="radio" name="radio-group" value="item 1" label="Item One"/>
+                            <EndpointCheckbox endpoint={endpoint} fullpath={"selected"}
+                                type="radio" name="radio-group" value="item 2" label="Item Two"/>
+                            <EndpointCheckbox endpoint={endpoint} fullpath={"selected"}
+                                type="radio" name="radio-group" value="item 3" label="Item Three"/>
+                        </Form>
+
                         </Stack>
                     </TitleCard>
                 </Col>

@@ -8,21 +8,19 @@ type EndpointButtonProps<PreArgs extends unknown[], PostArgs extends unknown[]> 
     EndpointProps<PreArgs, PostArgs> & Omit<ButtonProps, keyof EndpointProps<PreArgs, PostArgs>>;
 
 const EndpointButton = <PreArgs extends unknown[], PostArgs extends unknown[]>(
-    props: EndpointButtonProps<PreArgs, PostArgs>
-) => {
-    const { endpoint, fullpath, value, disabled,
+    { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args,
-        ...rest } = props;
-
-
+        ...rest }: EndpointButtonProps<PreArgs, PostArgs>
+) => {
+    
     const { requestHandler, disable } = useRequestHandler({
         endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args
     });
 
-    const onClickHandler = (event: React.MouseEvent) => {
+    const onClickHandler: ButtonProps["onClick"] = (event) => {
         console.debug(fullpath, event);
 
         requestHandler(value);

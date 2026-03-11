@@ -74,7 +74,7 @@ export function useRequestHandler<PreArgs extends unknown[], PostArgs extends un
                                             type: typeof data == "number" ? "int" : "str",
                                             writeable: true};
 
-    const disable = disabled || isPending || endpoint.loading || !(metadata.writeable);
+    const disable = disabled || isPending || endpoint.loading || !(metadata.writeable ?? true);
 
     const requestHandler: RequestHandler["requestHandler"] = (val) => {
         startTransition(async () => {

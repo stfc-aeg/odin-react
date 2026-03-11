@@ -27,7 +27,7 @@ const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
     const metaData: MetadataValue = getValueFromPath<MetadataValue>(endpoint.metadata, fullpath)
                                         ?? {value: endVal, type: "str", writeable: true};
     const [compVal, changeCompVal] = useState<FormControlProps['value']>("");
-    const [editing, setEditing] = useState<boolean>(false);
+    const [editing, setEditing] = useState(false);
     
     const compMin = min ?? metaData.min;
     const compMax = max ?? metaData.max;

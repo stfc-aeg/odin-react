@@ -210,10 +210,10 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
             setApiVersion(api_version);
             url = [url, api_version, adapter].filter(Boolean).join("/");
             setBaseUrl(url);
-
-            axios.get(url)
+            
+            axios.get<T>(url)
             .then(result => {
-                data.current = result.data as T;
+                data.current = result.data;
             })
             .catch(err => {
                 throw handleError(err);

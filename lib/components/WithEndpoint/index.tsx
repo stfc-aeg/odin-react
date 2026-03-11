@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AdapterEndpoint, ParamTree } from "../AdapterEndpoint";
 import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
@@ -6,12 +6,10 @@ import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
 import { EndpointButton } from "./EndpointButton";
 import { EndpointInput } from "./EndpointInput";
 import { EndpointDropdown } from "./EndpointDropdown";
-import { sendRequest } from "./util";
+import { EndpointCheckbox } from "./EndpointCheckbox";
+import { useRequestHandler } from "./util";
 import { useError } from "../OdinErrorContext";
-import { isEqual } from 'lodash';
-
-// imported for defaults at the bottom
-import { Form } from "react-bootstrap";
+// import { isEqual } from 'lodash';
 
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 
@@ -73,37 +71,29 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         const component = ref ?? useRef<Element>(null);
         const ErrCTX = useError();
 
+        const {requestHandler, data: endpointValue, disable} = useRequestHandler({
+            endpoint, fullpath, value, disabled,
+            pre_method, pre_args,
+            post_method, post_args
+        })
+
         //initialised with an OnChange handler to avoid the 
         // "You provided a `value` prop to a form field without an `onChange` handler" error, since
         // we will be assigning event handlers after component initialisation
         const [eventProp, setEventProp] = useState<selectEvent_t>({onChange: (event) => onChangeHandler(event)});
 
         const [componentValue, setComponentValue] = useState<typeof value>(value ?? undefined);
-        const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? undefined);
+        // const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? undefined);
         const [metadata, setMetadata] = useState<metadata_t | null>(null);
 
         const [type, setType] = useState<value_t>("string");
 
-        const [isPending, startTransition] = useTransition();
+        const [editing, setEditing] = useState(false);
 
         const changedStyle: CSSProperties = {
-            backgroundColor: dif_color,
-            color: "var(--bs-body-color)"
+            backgroundColor: dif_color
         }
-        const style: CSSProperties = ["null", "list", "dict"].includes(type) ? 
-                isEqual(endpointValue, componentValue) ? {} : changedStyle :
-                componentValue == endpointValue ? {} : changedStyle;
-
-        const disable = useMemo(() => {
-            if(disabled !== undefined){
-                return (disabled || isPending || endpoint.loading)
-            }
-            if(metadata){
-                return isPending || endpoint.loading || metadata.readOnly
-            }
-            return isPending || endpoint.loading;
-
-        }, [isPending, endpoint.loading, disabled, metadata?.readOnly]);
+        const style: CSSProperties = editing ? changedStyle : {};
 
         const componentPassedValue = useMemo(() => {
             const curComponent = component.current;
@@ -258,7 +248,6 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                             setType(data_type);
                     }
                 }
-                setEndpointValue(val);
                 setComponentValue(val);
                 setMetadata(tmp_metadata);
             }
@@ -268,13 +257,9 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
             // update flag got changed, check if we need to change anything
             if(value == null){  // if value is defined, we dont wanna overwrite anything
                 const newVal = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
-                if(newVal != endpointValue){
-                    setEndpointValue(newVal);
-                }
                 // check if component value has been modified, or if the input is active. If so,
-                // dont mess with the value. Otherwise, set the component val?
-                // seems weird to be checking if the two values are the same specifically to change them
-                if(document.activeElement !== component.current && value == null && endpointValue == componentValue){
+                // dont mess with the value. Otherwise, set the component val
+                if(document.activeElement !== component.current && !editing && typeof newVal !== "undefined"){
                     setComponentValue(newVal);
                 }
             }
@@ -284,16 +269,8 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
             try {
                 val = getTypedValue(val);
                 validate(val);
-
-                startTransition(async () => {
-                    pre_method?.(...(pre_args ?? []));
-
-                    
-                    sendRequest(val, endpoint, fullpath)
-                    .then(() => {
-                        post_method?.(...(post_args ?? []));
-                    });
-                })
+                requestHandler(val);
+                setEditing(false);
             }
             catch (err) {
                 if(err instanceof Error){
@@ -342,6 +319,7 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                 val = component.current.value as ComponentProps['value'];
             }
             setComponentValue(val);
+            setEditing(!(val == endpointValue));
 
             // special case. If the underlying component is a html <select> tag, send the request
             // without needing the onEnterHandler
@@ -421,8 +399,6 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
     )
 };
 
-// const EndpointDropdown = WithEndpoint(DropdownButton);
-const EndpointCheckbox = WithEndpoint(Form.Check);
 
 
 export {EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox};
