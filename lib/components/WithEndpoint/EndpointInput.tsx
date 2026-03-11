@@ -24,7 +24,7 @@ const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
         post_method, post_args
     });
 
-    const metaData: MetadataValue = getValueFromPath<MetadataValue>(endpoint.metadata, fullpath)
+    const metaData: MetadataValue = getValueFromPath(endpoint.metadata, fullpath)
                                         ?? {value: endVal, type: "str", writeable: true};
     const [compVal, changeCompVal] = useState<FormControlProps['value']>("");
     const [editing, setEditing] = useState(false);

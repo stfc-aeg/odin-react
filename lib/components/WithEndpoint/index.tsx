@@ -1,155 +1,183 @@
-import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
-import type { AdapterEndpoint, ParamTree } from "../AdapterEndpoint";
+import { getValueFromPath, isParamNode } from "../AdapterEndpoint";
 import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
-import { isParamNode, getValueFromPath } from "../AdapterEndpoint";
-import { EndpointButton } from "./EndpointButton";
-import { EndpointInput } from "./EndpointInput";
-import { EndpointDropdown } from "./EndpointDropdown";
-import { EndpointCheckbox } from "./EndpointCheckbox";
-import { useRequestHandler } from "./util";
 import { useError } from "../OdinErrorContext";
+import { EndpointButton } from "./EndpointButton";
+import { EndpointCheckbox } from "./EndpointCheckbox";
+import { EndpointDropdown } from "./EndpointDropdown";
+import { EndpointInput } from "./EndpointInput";
+import type { EndpointProps } from "./util";
+import { useRequestHandler } from "./util";
 // import { isEqual } from 'lodash';
 
 type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 
-interface ComponentProps {
-    endpoint: AdapterEndpoint;
-    fullpath: string;
-    value?: ParamTree;
-    min?: number;
-    max?: number;
-    disabled?: boolean;
-    pre_method?: (...args: unknown[]) => void;
-    post_method?: (...args: unknown[]) => void;
-    pre_args?:Array<unknown>;
-    post_args?:Array<unknown>;
-    dif_color?: CSSProperties["backgroundColor"];
-    ref?: React.RefObject<Element>;
-}
 
-interface metadata_t {
-    readOnly: MetadataValue["writeable"];
-    min?: number;
-    max?: number;
-    allowed_values?: MetadataValue["allowed_values"];
-    type?: string;
-}
-
-type selectEvent_t = {onSelect?: (eventKey: number | string, event: React.SyntheticEvent) => void,
-                      onClick?: (event: React.MouseEvent) => void,
-                      onKeyPress?: (event: React.KeyboardEvent) => void,
-                      onChange?: (event: React.ChangeEvent) => void
+type selectEvent_t = {
+    onSelect?: (eventKey: number | string, event: React.SyntheticEvent) => void,
+    onClick?: (event: React.MouseEvent) => void,
+    onKeyPress?: (event: React.KeyboardEvent) => void,
+    onChange?: (event: React.ChangeEvent) => void
 
 };
 
-type InjectedProps = metadata_t & selectEvent_t & {
-    style?: React.CSSProperties,
-    value?: JSON,
-    disabled: boolean
-
-}
-
-const trimByChar = (string: string, character: string) => {
-        const arr = Array.from(string);
-        const first = arr.findIndex(char => char !==character);
-        const last = arr.reverse().findIndex(char => char !== character);
-        return (first === -1 && last === -1) ? '' : string.substring(first, string.length - last);
-    }
-
-const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) => 
-{
-    type WrapperComponentProps = React.PropsWithChildren<
-             Omit<P, keyof InjectedProps> & ComponentProps>;
+const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
+    /**
+     * Combined Props for resulting WithEndpoint Component.
+     * Combines {@link EndpointProps} with the props of whatever component is being wrapped.*/
+    type WrappedComponentProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+        EndpointProps<PreArgs, PostArgs> & P;
 
 
-    const WithEndpointComponent: React.FC<WrapperComponentProps> = (props) => {
-        const {endpoint, fullpath, value, disabled,
-               pre_method, pre_args, post_method, post_args, dif_color="var(--bs-highlight-bg)",
-               min, max, ref, ...leftoverProps} = props;
+    const WithEndpointComponent = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+        props: WrappedComponentProps<PreArgs, PostArgs>) => {
+        
+        const { endpoint, fullpath, value, disabled,
+            pre_method, pre_args, post_method, post_args,
+            ...leftoverProps } = props;
 
-        const component = ref ?? useRef<Element>(null);
+        const component = useRef<Element>(null);
         const ErrCTX = useError();
 
-        const {requestHandler, data: endpointValue, disable} = useRequestHandler({
+        const { requestHandler, data: endpointValue, disable } = useRequestHandler({
             endpoint, fullpath, value, disabled,
             pre_method, pre_args,
             post_method, post_args
         })
 
-        //initialised with an OnChange handler to avoid the 
-        // "You provided a `value` prop to a form field without an `onChange` handler" error, since
-        // we will be assigning event handlers after component initialisation
-        const [eventProp, setEventProp] = useState<selectEvent_t>({onChange: (event) => onChangeHandler(event)});
+        const metadata: MetadataValue = getValueFromPath(endpoint.metadata, fullpath)
+            ?? {
+            value: endpointValue,
+            type: typeof endpointValue == "number" ? "int" : "str",
+            writeable: true
+        };
+        if ("min" in leftoverProps && leftoverProps.min !== undefined) {
+            metadata["min"] = leftoverProps["min"] as number;
+        }
+        if ("max" in leftoverProps && leftoverProps.max !== undefined) {
+            metadata["max"] = leftoverProps["max"] as number;
+        }
 
+
+        const [eventProp, setEventProp] = useState<selectEvent_t>({ onChange: (event) => onChangeHandler(event) });
         const [componentValue, setComponentValue] = useState<typeof value>(value ?? undefined);
-        // const [endpointValue, setEndpointValue] = useState<typeof value>(value ?? undefined);
-        const [metadata, setMetadata] = useState<metadata_t | null>(null);
+        // const [metadata, setMetadata] = useState<metadata_t | null>(null);
 
-        const [type, setType] = useState<value_t>("string");
+        const type: value_t = useMemo(() => {
+            if (isParamNode(metadata) && "writeable" in metadata) {
+                switch (metadata.type) {
+                    case "int":
+                    case "float":
+                    case "complex":
+                        return "number";
+                    case "list":
+                    case "tuple":
+                    case "range":
+                        return "list"
+                    case "bool":
+                        return "boolean"
+                    case "str":
+                        return "string"
+                    case "NoneType":
+                        return "null"
+                    default:
+                        return metadata.type as value_t;
+                }
+            } else {
+                const data_type = (value == null ? typeof endpointValue : typeof value);
+                switch (data_type) {
+                    case "bigint":
+                    case "number":
+                        return "number"
+                        break;
+                    case "object":
+                        // gotta check type of object
+                        switch (true) {
+                            case value ?? endpointValue instanceof Array:
+                                return "list"
+                            case value ?? endpointValue == null:
+                                return "null"
+                            default:
+                                return "dict"
+                        }
+                    case "function":
+                    case "symbol":
+                    case "undefined": {
+                        console.error("Something went wrong getting the typeof Data: ", value ?? endpointValue, data_type);
+                        const error = new Error(`Invalid Data type ${data_type} for path ${fullpath}. If Undefined, check fullPath is correct`);
+                        ErrCTX.setError(error);
+                        return "null";
+                    }
+                    case "boolean":
+                    case "string":
+                        return data_type;
+                }
+            }
+        }, [metadata]);
 
         const [editing, setEditing] = useState(false);
 
         const changedStyle: CSSProperties = {
-            backgroundColor: dif_color
+            backgroundColor: "var(--bs-highlight-bg)"
         }
         const style: CSSProperties = editing ? changedStyle : {};
 
         const componentPassedValue = useMemo(() => {
             const curComponent = component.current;
             const val = componentValue ?? "";
-            if(curComponent){
+            if (curComponent) {
                 // coded using switch case to future proof if there's other special case component types
-                switch(curComponent.nodeName){
+                switch (curComponent.nodeName) {
                     case "INPUT":
                         {
                             const input_type = (curComponent as HTMLInputElement).type;
-                            switch(input_type){
+                            switch (input_type) {
                                 case "checkbox":
                                 case "radio":
-                                    return {checked: Boolean(val)};
+                                    return { checked: Boolean(val) };
                                 default:
-                                    return {value: val};
+                                    return { value: val };
                             }
                         }
                     default:
-                        return {value: val};
+                        return { value: val };
                 }
             }
-            return {value: "", checked: false};
+            return { value: "", checked: false };
         }, [component.current, componentValue]);
 
-        const validate = (value: ComponentProps['value']) => {
-            if(metadata){
-                if(metadata.allowed_values && !(metadata.allowed_values.includes(value))){
-                    throw Error(`Value ${value} not in allowed_values list: [${metadata.allowed_values.join(", ")}]`);
+        const validate = (val: typeof value) => {
+            if (metadata) {
+                if (metadata.allowed_values && !(metadata.allowed_values.includes(val))) {
+                    throw Error(`Value ${val} not in allowed_values list: [${metadata.allowed_values.join(", ")}]`);
                 }
-                if(typeof value == "number"){
-                    if(metadata.min && metadata.min > value){
-                        throw Error(`Value ${value} below minimum ${metadata.min}`);
+                if (typeof val == "number") {
+                    if (metadata.min && metadata.min > val) {
+                        throw Error(`Value ${val} below minimum ${metadata.min}`);
                     }
-                    if(metadata.max && metadata.max < value){
-                        throw Error(`Value ${value} above maximum ${metadata.max}`);
+                    if (metadata.max && metadata.max < val) {
+                        throw Error(`Value ${val} above maximum ${metadata.max}`);
                     }
                 }
             }
         }
 
-        const getTypedValue = (val: ComponentProps['value']): ComponentProps['value'] => {
-            switch(type){
+        const getTypedValue = (val: typeof value): typeof endpointValue => {
+            switch (type) {
                 case "number":
-                    val =  Number(val);
+                    val = Number(val);
                     break;
                 case "boolean":
-                    if(typeof val === "string" && val.toLowerCase() === "false"){
+                    if (typeof val === "string" && val.toLowerCase() === "false") {
                         val = false;
-                    }else{val = Boolean(val);}
+                    } else { val = Boolean(val); }
                     break;
                 case "list":
-                    if(Array.isArray(val)){
+                    if (Array.isArray(val)) {
                         val = Array.from(val);
-                    }else{
-                        if(typeof val == "string"){
+                    } else {
+                        if (typeof val == "string") {
                             val = val.split(",");
                         }
                     }
@@ -167,105 +195,18 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         };
 
         useEffect(() => {
-            //this effect is designed to run only when the component is first mounted, to get the data
-            //and metadata of the part of the param tree we are interacting with, apply the metadata
-            //validation to the component (writable, min, max) and sync the component value with the
-            //value from the param tree
-            const endpointLoaded = () => {
-                for(const _ in endpoint.metadata) return true;
-                return false;
-            }
-            if(endpointLoaded() && endpoint.status != "error"){
-                const metadata = getValueFromPath<MetadataValue>(endpoint.metadata, fullpath);
-                let val: ParamTree;
-                const tmp_metadata: metadata_t = {readOnly: false, min: min, max: max};
-                if(isParamNode(metadata) && "writeable" in metadata){ //metadata found
-                    tmp_metadata.readOnly = !(metadata.writeable);
-                    tmp_metadata.min = min ?? (metadata.min ? metadata.min : undefined);
-                    tmp_metadata.max = max ?? (metadata.max ? metadata.max : undefined);
-                    tmp_metadata.allowed_values = metadata?.allowed_values;
-
-                    // setMetadata(tmp_metadata);
-                    val = value ?? metadata.value;
-
-                    switch(metadata.type as string){
-                        case "int":
-                        case "float":
-                        case "complex":
-                            setType("number");
-                            break;
-                        case "list":
-                        case "tuple":
-                        case "range":
-                            setType("list");
-                            break;
-                        case "bool":
-                            setType("boolean");
-                            break;
-                        case "str":
-                            setType("string");
-                            break;
-                        case "NoneType":
-                            setType("null");
-                            break;
-                        default:
-                            setType(metadata.type as value_t);
-                    }
-
-                }else{
-                    const data = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
-                    console.debug("Adapter has not implemented Metadata for", fullpath);
-                    val = value ?? data as ComponentProps["value"];
-                    const data_type = (value == null ? typeof data : typeof value);
-                    switch(data_type){
-                        case "bigint":
-                        case "number":
-                            setType("number");
-                            break;
-                        case "object":
-                            // gotta check type of object
-                            switch(true){
-                                case data instanceof Array:
-                                    setType("list");
-                                    break;
-                                case data == null:
-                                    setType("null");
-                                    break;
-                                default:
-                                    setType("dict");
-                            }
-                            break;
-                        case "function":
-                        case "symbol":
-                        case "undefined": {
-                            console.error("Something went wrong getting the typeof Data: ", data, typeof data);
-                            const error = new Error(`Invalid Data type ${data_type} for path ${fullpath}. If Undefined, check fullPath is correct`);
-                            ErrCTX.setError(error);
-                            break;
-                        }
-                        case "boolean":
-                        case "string":
-                            setType(data_type);
-                    }
-                }
-                setComponentValue(val);
-                setMetadata(tmp_metadata);
-            }
-        }, [endpoint.metadata]);
-
-        useEffect(() => {
             // update flag got changed, check if we need to change anything
-            if(value == null){  // if value is defined, we dont wanna overwrite anything
-                const newVal = getValueFromPath<ComponentProps['value']>(endpoint.data, fullpath);
+            if (value == null) {  // if value is defined, we dont wanna overwrite anything
+                const newVal = getValueFromPath<typeof value>(endpoint.data, fullpath);
                 // check if component value has been modified, or if the input is active. If so,
                 // dont mess with the value. Otherwise, set the component val
-                if(document.activeElement !== component.current && !editing && typeof newVal !== "undefined"){
+                if (document.activeElement !== component.current && !editing && typeof newVal !== "undefined") {
                     setComponentValue(newVal);
                 }
             }
         }, [endpoint.updateFlag, endpointValue]);
 
-        const handleRequest = (val: ComponentProps['value']) => {
+        const handleRequest = (val: typeof value) => {
             try {
                 val = getTypedValue(val);
                 validate(val);
@@ -273,9 +214,9 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
                 setEditing(false);
             }
             catch (err) {
-                if(err instanceof Error){
+                if (err instanceof Error) {
                     ErrCTX.setError(err);
-                }else{
+                } else {
                     ErrCTX.setError(Error("UNKNOWN ERROR OCCURRED"));
                 }
             }
@@ -285,23 +226,23 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
             console.debug(fullpath, "On Select Handler");
             console.debug(fullpath, "event: ", event);
             console.debug(fullpath, "EventKey: ", eventKey);
-            
+
             handleRequest(eventKey);
         }
 
         const onClickHandler = (event: React.MouseEvent) => {
             console.debug(fullpath, event);
             const curComponent = component.current!;
-            let val: ComponentProps['value'];
-            if(value != null){
+            let val: typeof value;
+            if (value != null) {
                 val = value;
-            }else{
+            } else {
                 const compType = component.current!.nodeName;
                 // if the type of component is a checkbox or a radio button, get the value from the "checked" prop
-                if(compType === "INPUT" && ["checkbox", "radio"].includes((component.current! as HTMLInputElement).type)){
-                        val = (component.current! as HTMLInputElement).checked;
-                }else{
-                    val = "value" in curComponent ? curComponent.value as ComponentProps['value'] : value;
+                if (compType === "INPUT" && ["checkbox", "radio"].includes((component.current! as HTMLInputElement).type)) {
+                    val = (component.current! as HTMLInputElement).checked;
+                } else {
+                    val = "value" in curComponent ? curComponent.value as typeof value : value;
                 }
             }
             handleRequest(val);
@@ -310,21 +251,21 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         const onChangeHandler = (event: React.ChangeEvent) => {
             //this onChange handler sets the ComponentValue State, to manage the component and monitor its value
             const target = event.target;
-            let val: ComponentProps['value'] = "";
-        
-            if("value" in target && target.value != null){
-                val = target.value as ComponentProps['value'];
-            }else
-            if("value" in component.current!){
-                val = component.current.value as ComponentProps['value'];
-            }
+            let val: typeof value = "";
+
+            if ("value" in target && target.value != null) {
+                val = target.value as typeof value;
+            } else
+                if ("value" in component.current!) {
+                    val = component.current.value as typeof value;
+                }
             setComponentValue(val);
             setEditing(!(val == endpointValue));
 
             // special case. If the underlying component is a html <select> tag, send the request
             // without needing the onEnterHandler
             const compType = component.current?.nodeName;
-            if(compType === "SELECT"){
+            if (compType === "SELECT") {
                 handleRequest(val);
             }
         };
@@ -336,44 +277,44 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         };
 
         useEffect(() => {
-            let events: selectEvent_t = {onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event)};
-                const curComponent = component.current;
-            if(curComponent){
-                switch(curComponent.nodeName){
+            let events: selectEvent_t = { onKeyPress: (event) => onEnterHandler(event), onChange: (event) => onChangeHandler(event) };
+            const curComponent = component.current;
+            if (curComponent) {
+                switch (curComponent.nodeName) {
                     case "BUTTON":
                         //default buttons to using the onClick event handler
-                        events = {onClick: (event) => onClickHandler(event)};
+                        events = { onClick: (event) => onClickHandler(event) };
                         break;
 
-                    case "INPUT": 
-                    {
-                        const input_type = (curComponent as HTMLInputElement).type;
-                        switch(input_type){
-                            case "checkbox":
-                            case "radio":
-                                //default checkboxes and radios to using the onClick event handler
-                                events = {onClick: (event) => onClickHandler(event)};
-                                break;
-                            case "text":
-                            case "number":
-                            default:
-                                break;
+                    case "INPUT":
+                        {
+                            const input_type = (curComponent as HTMLInputElement).type;
+                            switch (input_type) {
+                                case "checkbox":
+                                case "radio":
+                                    //default checkboxes and radios to using the onClick event handler
+                                    events = { onClick: (event) => onClickHandler(event) };
+                                    break;
+                                case "text":
+                                case "number":
+                                default:
+                                    break;
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case "DIV":
-                    {
-                        const divClass = (curComponent as HTMLDivElement).className;
-                        if(divClass === "dropdown"){
-                            //bootstrap dropdowns are contained in a div with a classname of "dropdown"
-                            events = {onSelect: (eventKey, event) => onSelectHandler(event, eventKey)};
+                        {
+                            const divClass = (curComponent as HTMLDivElement).className;
+                            if (divClass === "dropdown") {
+                                //bootstrap dropdowns are contained in a div with a classname of "dropdown"
+                                events = { onSelect: (eventKey, event) => onSelectHandler(event, eventKey) };
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case "SELECT":
                         // the onSelect event handler is a specially created one for bootstrap dropdowns
                         // standard html dropdowns (<select> tags) use the onChange event handler by default
-                        events = {onChange: (event) => onChangeHandler(event)};
+                        events = { onChange: (event) => onChangeHandler(event) };
                         break;
                 }
             }
@@ -381,16 +322,15 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
         }, [value, componentValue, component.current, type]);
 
         return (<WrappedComponent
-                    {...leftoverProps as P}
-                    style={style}
-                    {...eventProp}
-                    readOnly={metadata?.readOnly}
-                    min={metadata?.min}
-                    max={metadata?.max}
-                    {...componentPassedValue}
-                    disabled={disable}
-                    ref={component}
-                />)
+            {...leftoverProps as P}
+            style={style}
+            {...eventProp}
+            min={metadata?.min}
+            max={metadata?.max}
+            {...componentPassedValue}
+            disabled={disable}
+            ref={component}
+        />)
 
     }
 
@@ -401,8 +341,5 @@ const WithEndpoint = <P extends object>(WrappedComponent : React.FC<P>) =>
 
 
 
-export {EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox};
-
-
-export { WithEndpoint, trimByChar };
+export { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput, WithEndpoint };
 
