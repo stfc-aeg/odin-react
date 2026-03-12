@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getConfig, status } from "./AdapterEndpoint.types";
+import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getConfig, status, MetadataValue } from "./AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 
-const DEF_API_VERSION = '0.1';
+// odin control 2.0 no longer uses an API Version.
+// TODO: How to auto detect if we're using odin control 2.0 or not?
+// const DEF_API_VERSION = '';
 
 enum updateFlag_enum {
     INIT = "init",
@@ -15,6 +17,10 @@ enum updateFlag_enum {
 
 const isParamNode = (x: ParamTree): x is ParamNode => {
     return x !== null && typeof x === "object" && !Array.isArray(x);
+}
+
+const isMetadataValue = (x: Metadata): x is MetadataValue => {
+    return isParamNode(x) && "writeable" in x
 }
 
 /**
@@ -42,7 +48,7 @@ function getValueFromPath<T = Parameter>(data: ParamTree, path: string): T | und
 
 
 function useAdapterEndpoint<T extends ParamNode = ParamNode>(
-    adapter: string, endpoint_url: string, interval?: number, timeout?: number, api_version=DEF_API_VERSION
+    adapter: string, endpoint_url: string, interval?: number, timeout?: number
 ): AdapterEndpoint<T> {
 
     const data = useRef<T>({} as T);
@@ -51,11 +57,16 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
     const [updateFlag, setUpdateFlag] = useState(Symbol(updateFlag_enum.INIT));
     const [statusFlag, setStatusFlag] = useState<status>("init");
 
+    const [apiVersion, setApiVersion] = useState<string>("");
+    const [base_url, setBaseUrl] = useState<string>([endpoint_url,
+                                                    "api",
+                                                    apiVersion,
+                                                    adapter
+                                                    ].filter(Boolean).join("/"));
+    
     const [awaiting, changeAwaiting] = useState(false);
 
     const ctx = useError();
-
-    const base_url = `${endpoint_url ? endpoint_url : ""}/api/${api_version}/${adapter}`;
     const axiosInstance: AxiosInstance = axios.create({
         baseURL: base_url,
         timeout: timeout,
@@ -72,6 +83,7 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
             if(err.response) {
                 const method = err.response.config.method ? err.response.config.method.toUpperCase() : "UNDEFINED";
                 const reason = err.response.data?.error || "";
+                // const address = err.response
                 errorMsg = `${method} request failed with status ${err.response.status} : ${reason}`;
             }
             else if (err.request) {
@@ -116,11 +128,11 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
         }
     };
 
-    const put = async (data: ParamNode, param_path='') => {
+    const put = async <T = Parameter>(data: {[key: string]: T}, param_path='') => {
         // const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
         console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
         
-        let result: ParamNode = {};
+        let result: typeof data = {};
         let response: AxiosResponse<typeof result>;
 
         try {
@@ -189,21 +201,44 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
     // some sort of looping attempt at first connection until we get a response? so if the adapter
     // isn't running at first for whatever reason, we keep trying until it is?
     const getInitialData = () => {
-        get("")
+        // discover Odin Control version (1.* or 2.*, changes what the full URL needs to be)
+        let url = [endpoint_url, "api"].filter(Boolean).join("/");
+        console.debug("Checking Odin Control Version");
+        let api_version = "";
+        //can't use the get function of the endpoint yet, because we don't know if the base_url is correct
+        // until we've worked out if we need the api "0.1" yet.
+        axios.get<{api?: number}>(url)
         .then(result => {
-            data.current = result as T;
+            api_version = result.data?.api ? result.data.api.toString() : "";
         })
         .catch(() => {
-            return // error already gets reported by the GET method
-        });
-        get("", {wants_metadata: true})
-        .then(result => {
-            setMetadata(result as Metadata<T>);
-            setStatusFlag("connected");
-            setUpdateFlag(Symbol(updateFlag_enum.FIRST))
+            // might just be CORS error from previous Odin Control version
+            //try and do the get stuff with the api_version 0.1?
+            // throw handleError(err);
+            console.debug("No response from checking version. Assuming <2.0.0");
+            api_version = "0.1";
         })
-        .catch(() => {
-            return
+        .finally(() => {
+            setApiVersion(api_version);
+            url = [url, api_version, adapter].filter(Boolean).join("/");
+            setBaseUrl(url);
+
+            const request_config: AxiosRequestConfig = {headers: {Accept: "application/json;metadata=true"}};
+            // using Promise.all to ensure we set the trees and flags only when
+            // both requests have returned
+            Promise.all([
+                axios.get<T>(url),
+                axios.get<Metadata<T>>(url, request_config)
+            ]).then(([dataResult, metadataResult]) => {
+                data.current = dataResult.data;
+                setMetadata(metadataResult.data);
+                setStatusFlag("connected");
+                setUpdateFlag(Symbol(updateFlag_enum.FIRST));
+            })
+            .catch(err => {
+                throw handleError(err);
+            });
+
         });
     }
 
@@ -239,10 +274,12 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
         });
     }
     
-    const mergeData = (newData: ParamNode, param_path: string) => {
-        const splitPath = param_path.split("/").slice(0, -1);
+    const mergeData = (newData: ParamTree, param_path: string) => {
+        const splitPath = param_path.replace(/\/$/, "").split("/");
+        const paramName = splitPath.pop()!;
+
         const tmpData = data.current;  // use tmpData as a copy of the Data that we can modify
-        let pointer: ParamNode[keyof ParamNode] = tmpData;  // pointer that can traverse down the nested data
+        let pointer: ParamTree = tmpData;  // pointer that can traverse down the nested data
 
         if(splitPath[0]) {
             splitPath.forEach((part_path) => {
@@ -252,23 +289,32 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
             });
         }
         // becasue pointer was a copy of tmpData, changes made to it will also be made to tmpData
+        if(isParamNode(newData)){
+            // const keys = Object.keys(newData);
+
+            if("value" in newData && Object.keys(newData).length == 1){
+                // test if merge data has only one key of "value". This likely means we're
+                // using Odin Control 2.0 and need to adjust to merge it into the larger tree
+                newData = {[paramName]: newData["value"]}
+            }
+        }
         Object.assign(pointer, newData);
         data.current = tmpData;
         setUpdateFlag(Symbol(updateFlag_enum.MERGED));
     }
     
-    return { data: data.current, metadata, error, loading: awaiting, updateFlag, status: statusFlag, get, put, post, remove, refreshData, mergeData}
+    return { data: data.current, metadata, error, loading: awaiting, updateFlag, status: statusFlag, apiVersion, get, put, post, remove, refreshData, mergeData}
 }
 
-export { useAdapterEndpoint, isParamNode, getValueFromPath };
+export { useAdapterEndpoint, isParamNode, isMetadataValue, getValueFromPath };
 export type { AdapterEndpoint, Parameter, ParamNode, Metadata, ParamTree };
 
 /**
- * @deprecated This is the old name for this type and should be replaced with "Parameter"
+ * @deprecated This is the old name for this type and should be replaced with {@link ParamTree}
  */
 export type JSON = ParamTree
 
 /**
- * @deprecated This is the old name for this type, and should be replaced with "ParamNode"
+ * @deprecated This is the old name for this type, and should be replaced with {@link ParamNode}
  */
 export type NodeJSON = ParamNode

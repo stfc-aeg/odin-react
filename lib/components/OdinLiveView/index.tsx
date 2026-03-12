@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { AdapterEndpoint as AdapterEndpoint, NodeJSON} from '../AdapterEndpoint';
+import type { AdapterEndpoint as AdapterEndpoint, ParamNode} from '../AdapterEndpoint';
 import { getValueFromPath } from '../AdapterEndpoint';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
@@ -31,7 +31,7 @@ interface ZoomableImageProps {
 
 }
 
-interface LiveViewParam extends NodeJSON {
+interface LiveViewParam extends ParamNode {
     frame: {
         frame_num: number;
     }

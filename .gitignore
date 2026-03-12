@@ -30,3 +30,4 @@ package-lock.json
 *.egg-info
 __pycache__
 */build
+*_version.py

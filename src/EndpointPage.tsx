@@ -1,17 +1,13 @@
 import { Container, Row, Col, Stack, Form, InputGroup, Alert, Dropdown, FloatingLabel } from "react-bootstrap"
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "../"
-import { EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox } from "../";
+import { EndpointInput, EndpointSlider, EndpointDoubleSlider, EndpointButton, EndpointDropdown, EndpointCheckbox } from "../";
 import type { ParamNode, Log} from "../";
 import { useState } from "react";
 import { AdapterEndpoint } from "../";
 
 import type { ReactNode } from "react";
 
-// const EndpointInput = WithEndpoint(Form.Control);
-// const EndpointButton = WithEndpoint(Button);
-// const EndpointDropdown = WithEndpoint(DropdownButton);
-const EndpointSlider = WithEndpoint(OdinDoubleSlider);
-// const EndpointCheckbox = WithEndpoint(Form.Check);
+const OldEndpointInput = WithEndpoint(Form.Control);
 const EndpointSelect = WithEndpoint((props: React.HTMLAttributes<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
 interface FormData_T extends ParamNode{
@@ -60,17 +56,31 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
     const [input, changeInput] = useState(0);
     const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
 
+    const testFunc = (comment: string) => {
+        console.log(comment);
+    }
+
+    const secondTestFunc = () => {
+        console.log("Second Test Funciton");
+    }
+
     return (
         <Container>
             <Row>
                 <Col>
                     <TitleCard title="Click Button">
                         <Stack>
-                            <EndpointButton endpoint={endpoint} fullpath="trigger" value={42}>
-                                Trigger
+                            <EndpointButton endpoint={endpoint} fullpath="trigger" value={42}
+                                pre_method={testFunc} pre_args={["Hello World"]}
+                                post_method={secondTestFunc}>
+                                Trigger New Button
                             </EndpointButton>
-                            <EndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
-                            <EndpointCheckbox type="switch" endpoint={endpoint} fullpath="toggle"/>
+                            <EndpointInput endpoint={endpoint} fullpath="num_val"/>
+                            <Form.Label>{`Slider Val: ${endpoint.data.num_val ?? "Unknown"}`}</Form.Label>
+                            <EndpointSlider endpoint={endpoint} fullpath="num_val"/>
+                            <OldEndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
+                            <EndpointCheckbox type="switch" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
+                            <EndpointCheckbox type="checkbox" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
                         </Stack>
                     </TitleCard>
                 </Col>
@@ -84,6 +94,9 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                         <Alert>Is Even: {endpoint.data.data?.dict?.is_even?.toString()}</Alert>
                         <EndpointButton endpoint={endpoint} fullpath="trigger" value={10} disabled={endpoint.data.data?.dict.is_even}>
                                     Disabled on Even
+                        </EndpointButton>
+                        <EndpointButton endpoint={endpoint} fullpath="num_val">
+                            Click For Num Val
                         </EndpointButton>
                     </TitleCard>
                 </Col>
@@ -108,7 +121,15 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                             </EndpointSelect>
                         </label>
 
-                        <EndpointInput endpoint={endpoint} fullpath="deep/long/nested/dict/path/val" />
+                        <Form>
+                            <EndpointCheckbox endpoint={endpoint} fullpath={"selected"}
+                                type="radio" name="radio-group" value="item 1" label="Item One"/>
+                            <EndpointCheckbox endpoint={endpoint} fullpath={"selected"}
+                                type="radio" name="radio-group" value="item 2" label="Item Two"/>
+                            <EndpointCheckbox endpoint={endpoint} fullpath={"selected"}
+                                type="radio" name="radio-group" value="item 3" label="Item Three"/>
+                        </Form>
+
                         </Stack>
                     </TitleCard>
                 </Col>
@@ -180,7 +201,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                 <Col>
                 <TitleCard title="Slider">
                     <OdinDoubleSlider title="Test" showMinMaxValues={false}/>
-                    <EndpointSlider title="Endpoint Slider" endpoint={endpoint} fullpath="data/clip_data" min={-20} max={20} step={0.5}/>
+                    <EndpointDoubleSlider title="Endpoint Slider" endpoint={endpoint} fullpath="data/clip_data" min={-20} max={20} step={0.5}/>
                     <OdinDoubleSlider showTooltip={false} showMinMaxValues={true}/>
                     <OdinDoubleSlider showMinMaxValues={false}/>
                     <OdinDoubleSlider/>

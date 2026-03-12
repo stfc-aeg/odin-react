@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import type { CSSProperties } from "react";
 import { Table } from "react-bootstrap";
-import { JSON, NodeJSON } from "../AdapterEndpoint";
+import { ParamTree, ParamNode } from "../AdapterEndpoint";
 
 interface OdinTableProps extends React.ComponentProps<typeof Table> {
     columns: {[key: string]: string};
@@ -10,15 +10,15 @@ interface OdinTableProps extends React.ComponentProps<typeof Table> {
 }
 
 interface OdinTableRowProps {
-    row: {[key: string] : Exclude<JSON, NodeJSON | JSON[]>};
+    row: {[key: string] : Exclude<ParamTree, ParamNode | ParamTree[]>};
 }
 
-interface OdinTableContext_t {
+interface OdinTableContext {
     column_keys: string[];
     widths: {[key: string]: CSSProperties["width"]};
 }
 
-const OdinTableContext = createContext<OdinTableContext_t>({column_keys: [], widths: {}});
+const OdinTableContext = createContext<OdinTableContext>({column_keys: [], widths: {}});
 
 const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
     const ctx = useContext(OdinTableContext);

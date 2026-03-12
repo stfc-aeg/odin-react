@@ -1,15 +1,16 @@
 import logging
 import random
-from odin.adapters.parameter_tree import ParameterTree
+from odin_control.adapters.parameter_tree import ParameterTree
+from odin_control.adapters.base_controller import BaseController
 from tornado.ioloop import PeriodicCallback
 from react.event_logger import EventLogger
 
 import time
 
 
-class ReactController():
+class ReactController(BaseController):
 
-    def __init__(self) -> None:
+    def __init__(self, options=None) -> None:
 
         self.deep_dict_val = "secret deep value"
         self.deep_dict_num = 42
@@ -18,7 +19,7 @@ class ReactController():
         self.clip_data = [-10, 5]
 
         self.string_val = "String Value Test"
-        self.num_val = 10
+        self.num_val = 15
         self.random_num = random.randint(0, 100)
 
         self.selection_list = ["item 1", "item 2", "item 3"]
@@ -112,14 +113,14 @@ class ReactController():
         self.toggle = val
 
     def trigger_event(self, val):
-        self.logger.info("Event Triggered by API with value: %s", val)
+        logging.info("Event Triggered by API with value: %s", val)
 
     def set_slow_response_val(self, val):
         time.sleep(2.5)  # simulating complex get request or slow network
         self.slow_put = val
 
     def get(self, path, metadata=False, kwargs=None):
-        # self.logger.debug("GETTING PATH: %s", path)
+        logging.info("GETTING PATH: %s%s", path, " with METADATA" if metadata else "")
 
         # special Log Filtering with the query Args!
         if path == "logging" and kwargs:
@@ -134,6 +135,7 @@ class ReactController():
         return val
 
     def set(self, path, data):
+        logging.info("PUT: %s to path %s", data, path)
         self.param_tree.set(path, data)
         return self.param_tree.get(path)
     

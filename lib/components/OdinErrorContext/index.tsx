@@ -41,7 +41,7 @@ const errorsReducer = (errors: OdinError[], action: ErrorAction) => {
     const err = action.error;
     switch(action.type){
         case ErrorActionType.ADD:
-            if(err === undefined){
+            { if(err === undefined){
                 console.error("Error not provided to setError method");
                 return errors;
             }
@@ -58,7 +58,7 @@ const errorsReducer = (errors: OdinError[], action: ErrorAction) => {
                 }
                 return old_err;
             }) : [newError];
-            return newErrorList;
+            return newErrorList; }
         case ErrorActionType.REMOVE:
             if(err === undefined){
                 console.error("Error not provided to clearError method");
