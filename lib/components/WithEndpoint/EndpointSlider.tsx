@@ -30,12 +30,12 @@ const EndpointSlider = <PreArgs extends unknown[], PostArgs extends unknown[]>(
 
     const onChange: FormRangeProps["onChange"] = (event) => {
         const target = event.target;
-        changeCompVal(Number(target.value))
+        changeCompVal(target.valueAsNumber);
     }
     const onMouseUp: FormRangeProps["onMouseUp"] = (event) => {
         const target = event.target as HTMLInputElement;
-        changeCompVal(Number(target.value));
-        requestHandler(target.value);
+        changeCompVal(target.valueAsNumber);
+        requestHandler(target.valueAsNumber);
     }
 
     useEffect(() => {

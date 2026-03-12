@@ -4,6 +4,7 @@ import { getValueFromPath } from "../AdapterEndpoint";
 import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { EndpointButton } from "./EndpointButton";
 import { EndpointCheckbox } from "./EndpointCheckbox";
+import { EndpointDoubleSlider } from "./EndpointDoubleSlider";
 import { EndpointDropdown } from "./EndpointDropdown";
 import { EndpointInput } from "./EndpointInput";
 import { EndpointSlider } from "./EndpointSlider";
@@ -219,7 +220,7 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
         }, [value, componentValue, component.current]);
 
         return (<WrappedComponent
-            {...Object.assign(leftoverProps, {min: metadata?.min, max: metadata?.max}) as P}
+            {...Object.assign(leftoverProps, { min: metadata?.min, max: metadata?.max }) as P}
             style={style}
             {...eventProp}
             min={metadata?.min}
@@ -238,7 +239,14 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
 
 
 
-export { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointSlider };
+export {
+    EndpointButton,
+    EndpointCheckbox,
+    EndpointDoubleSlider,
+    EndpointDropdown,
+    EndpointInput,
+    EndpointSlider
+};
 
-export {WithEndpoint};
+export { WithEndpoint };
 
