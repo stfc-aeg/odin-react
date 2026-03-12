@@ -204,38 +204,41 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
         // discover Odin Control version (1.* or 2.*, changes what the full URL needs to be)
         let url = [endpoint_url, "api"].filter(Boolean).join("/");
         console.debug("Checking Odin Control Version");
-
+        let api_version = "";
         //can't use the get function of the endpoint yet, because we don't know if the base_url is correct
         // until we've worked out if we need the api "0.1" yet.
         axios.get<{api?: number}>(url)
         .then(result => {
-            const api_version = result.data?.api ? result.data.api.toString() : "";
-            
+            api_version = result.data?.api ? result.data.api.toString() : "";
+        })
+        .catch(() => {
+            // might just be CORS error from previous Odin Control version
+            //try and do the get stuff with the api_version 0.1?
+            // throw handleError(err);
+            console.debug("No response from checking version. Assuming <2.0.0");
+            api_version = "0.1";
+        })
+        .finally(() => {
             setApiVersion(api_version);
             url = [url, api_version, adapter].filter(Boolean).join("/");
             setBaseUrl(url);
-            
-            axios.get<T>(url)
-            .then(result => {
-                data.current = result.data;
-            })
-            .catch(err => {
-                throw handleError(err);
-            });
 
             const request_config: AxiosRequestConfig = {headers: {Accept: "application/json;metadata=true"}};
-            axios.get<Metadata<T>>(url, request_config)
-            .then(result => {
-                setMetadata(result.data);
+            // using Promise.all to ensure we set the trees and flags only when
+            // both requests have returned
+            Promise.all([
+                axios.get<T>(url),
+                axios.get<Metadata<T>>(url, request_config)
+            ]).then(([dataResult, metadataResult]) => {
+                data.current = dataResult.data;
+                setMetadata(metadataResult.data);
                 setStatusFlag("connected");
                 setUpdateFlag(Symbol(updateFlag_enum.FIRST));
             })
             .catch(err => {
                 throw handleError(err);
-            })
-        })
-        .catch(err => {
-            throw handleError(err);
+            });
+
         });
     }
 

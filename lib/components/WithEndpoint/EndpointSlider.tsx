@@ -3,7 +3,7 @@ import type { FormRangeProps } from "react-bootstrap/FormRange";
 import { EndpointProps, useRequestHandler } from "./util";
 import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { getValueFromPath } from "../AdapterEndpoint";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 type EndpointRangeProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
     EndpointProps<PreArgs, PostArgs> & FormRangeProps;
@@ -16,7 +16,7 @@ const EndpointSlider = <PreArgs extends unknown[], PostArgs extends unknown[]>(
         ...rest}: EndpointRangeProps<PreArgs, PostArgs>
 ) => {
 
-    const {requestHandler, disable}  = useRequestHandler({
+    const {requestHandler, data, disable}  = useRequestHandler({
         endpoint, fullpath, value, disabled,
         pre_method, pre_args, post_method, post_args
     });
@@ -26,17 +26,27 @@ const EndpointSlider = <PreArgs extends unknown[], PostArgs extends unknown[]>(
     const compMin = min ?? metadata?.min;
     const compMax = max ?? metadata?.max;
 
+    const component = useRef<HTMLInputElement>(null);
+
     const onChange: FormRangeProps["onChange"] = (event) => {
         const target = event.target;
         changeCompVal(Number(target.value))
     }
     const onMouseUp: FormRangeProps["onMouseUp"] = (event) => {
         const target = event.target as HTMLInputElement;
+        changeCompVal(Number(target.value));
         requestHandler(target.value);
     }
 
+    useEffect(() => {
+        const newVal = getValueFromPath<number>(endpoint.data, fullpath);
+        if(document.activeElement !== component.current && typeof newVal !== "undefined"){
+            changeCompVal(newVal);
+        }
+    }, [endpoint.updateFlag, data]);
+
     return (
-        <FormRange min={compMin} max={compMax} disabled={disable}
+        <FormRange ref={component} min={compMin} max={compMax} disabled={disable}
             onMouseUp={onMouseUp} onChange={onChange} value={compVal} {...rest}/>
     )
 }

@@ -77,6 +77,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                                 Trigger New Button
                             </EndpointButton>
                             <EndpointInput endpoint={endpoint} fullpath="num_val"/>
+                            <Form.Label>{`Slider Val: ${endpoint.data.num_val ?? "Unknown"}`}</Form.Label>
                             <EndpointSlider endpoint={endpoint} fullpath="num_val"/>
                             <OldEndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
                             <EndpointCheckbox type="switch" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
