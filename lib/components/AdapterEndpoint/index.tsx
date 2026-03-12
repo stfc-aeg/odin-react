@@ -310,11 +310,11 @@ export { useAdapterEndpoint, isParamNode, isMetadataValue, getValueFromPath };
 export type { AdapterEndpoint, Parameter, ParamNode, Metadata, ParamTree };
 
 /**
- * @deprecated This is the old name for this type and should be replaced with "Parameter"
+ * @deprecated This is the old name for this type and should be replaced with {@link ParamTree}
  */
 export type JSON = ParamTree
 
 /**
- * @deprecated This is the old name for this type, and should be replaced with "ParamNode"
+ * @deprecated This is the old name for this type, and should be replaced with {@link ParamNode}
  */
 export type NodeJSON = ParamNode
