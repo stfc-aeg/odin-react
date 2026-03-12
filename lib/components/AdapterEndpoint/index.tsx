@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getConfig, status } from "./AdapterEndpoint.types";
+import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getConfig, status, MetadataValue } from "./AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 
 // odin control 2.0 no longer uses an API Version.
@@ -17,6 +17,10 @@ enum updateFlag_enum {
 
 const isParamNode = (x: ParamTree): x is ParamNode => {
     return x !== null && typeof x === "object" && !Array.isArray(x);
+}
+
+const isMetadataValue = (x: Metadata): x is MetadataValue => {
+    return isParamNode(x) && "writeable" in x
 }
 
 /**
@@ -299,7 +303,7 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
     return { data: data.current, metadata, error, loading: awaiting, updateFlag, status: statusFlag, apiVersion, get, put, post, remove, refreshData, mergeData}
 }
 
-export { useAdapterEndpoint, isParamNode, getValueFromPath };
+export { useAdapterEndpoint, isParamNode, isMetadataValue, getValueFromPath };
 export type { AdapterEndpoint, Parameter, ParamNode, Metadata, ParamTree };
 
 /**

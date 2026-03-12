@@ -1,6 +1,6 @@
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
-import { getValueFromPath, isParamNode } from "../AdapterEndpoint";
+import { getValueFromPath, isMetadataValue } from "../AdapterEndpoint";
 import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 import { EndpointButton } from "./EndpointButton";
@@ -65,7 +65,7 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
         // const [metadata, setMetadata] = useState<metadata_t | null>(null);
 
         const type: value_t = useMemo(() => {
-            if (isParamNode(metadata) && "writeable" in metadata) {
+            if (isMetadataValue(metadata)) {
                 switch (metadata.type) {
                     case "int":
                     case "float":
