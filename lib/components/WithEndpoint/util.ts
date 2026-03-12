@@ -1,7 +1,8 @@
-import { useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import type { AdapterEndpoint, ParamTree } from "../AdapterEndpoint";
-import { getValueFromPath, isParamNode } from "../AdapterEndpoint";
+import { getValueFromPath, isMetadataValue, isParamNode } from "../AdapterEndpoint";
 import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
+import { useError } from "../OdinErrorContext";
 
 
 export interface EndpointProps<PreArgs extends unknown[], PostArgs extends unknown[]> {
@@ -22,6 +23,8 @@ interface RequestHandler {
 
 }
 
+type dataTypes = "string" | "number" | "boolean" | "null" | "list" | "dict"
+
 const getLastPathPart = (path: string): [string, string] => {
     const splitPath = path.replace(/\/$/, "").split("/");
     const name = splitPath.pop() ?? "";
@@ -38,57 +41,151 @@ const getLastPathPart = (path: string): [string, string] => {
  * @param endpoint AdapterEndpoint to handle the PUT request
  * @param path Path to the parameter
  */
-export async function sendRequest<T extends ParamTree>(val: T, endpoint: AdapterEndpoint, path: string): Promise<void> {
+async function sendRequest<T extends ParamTree>(val: T, endpoint: AdapterEndpoint, path: string): Promise<void> {
 
-    const [sendVal, sendPath] = (function() {
-        if(isParamNode(val)){
+    const [sendVal, sendPath] = (function () {
+        if (isParamNode(val)) {
             return [val, path]
         }
-        else if(endpoint.apiVersion){
+        else if (endpoint.apiVersion) {
             const [name, splitPath] = getLastPathPart(path);
-            return [{[name]: val}, splitPath];
+            return [{ [name]: val }, splitPath];
         }
         else {
-            return [{value: val}, path];
+            return [{ value: val }, path];
         }
     })();
-    try{
+    try {
         const response = await endpoint.put(sendVal, sendPath);
         endpoint.mergeData(response, sendPath);
-    }catch (err){
+    } catch (err) {
         console.debug("Error in PUT occured in WithEndpoint component", err);
     }
 }
 
-export function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]>(
+function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
-        post_method, post_args } : EndpointProps<PreArgs, PostArgs>
+        post_method, post_args }: EndpointProps<PreArgs, PostArgs>
 ): RequestHandler {
 
     const [isPending, startTransition] = useTransition();
-
+    const {setError} = useError();
     const data: ParamTree = value ?? getValueFromPath(endpoint.data, fullpath);
-    const metadata: MetadataValue = getValueFromPath<MetadataValue>(endpoint.metadata, fullpath)
-                                        ?? {value: data,
-                                            type: typeof data == "number" ? "int" : "str",
-                                            writeable: true};
+    const metadata: MetadataValue = getValueFromPath(endpoint.metadata, fullpath)
+        ?? {
+            value: data,
+        type: typeof data == "number" ? "int" : "str",
+        writeable: true
+    };
 
     const disable = disabled || isPending || endpoint.loading || !(metadata.writeable ?? true);
 
-    const requestHandler: RequestHandler["requestHandler"] = (val) => {
-        startTransition(async () => {
+    const type: dataTypes = useMemo(() => {
+        if (isMetadataValue(metadata)) {
+            switch (metadata.type) {
+                case "int":
+                case "float":
+                case "complex":
+                    return "number";
+                case "list":
+                case "tuple":
+                case "range":
+                    return "list"
+                case "bool":
+                    return "boolean"
+                case "str":
+                    return "string"
+                case "NoneType":
+                    return "null"
+                default:
+                    return metadata.type as dataTypes;
+            }
+        } else {
+            const dataType = typeof data;
+            switch (dataType) {
+                case "bigint":
+                case "number":
+                    return "number";
+                case "object":
+                    switch (true) {
+                        case data instanceof Array:
+                            return "list";
+                        case data == null:
+                            return "null";
+                        default:
+                            return "dict";
+                    }
+                case "boolean":
+                case "string":
+                    return dataType;
+                case "undefined":
+                default:
+                    console.warn(`Invalid Data type ${typeof data} for path ${fullpath}`)
+                    return "null";
+            }
+        }
 
-            pre_method?.(...(pre_args ?? []) as PreArgs);
+    }, [metadata, data]);
 
-            sendRequest(val ?? data, endpoint, fullpath)
-            .then(() => {
-                post_method?.(...(post_args ?? []) as PostArgs);
-            });
-        })
+    const validate = (val: typeof data) => {
+        switch (type) {
+            case "number":
+                val = Number(val);
+                break;
+            case "boolean":
+                if (typeof val === "string" && val.toLowerCase() === "false") {
+                    val = false;
+                } else {
+                    val = Boolean(val);
+                }
+                break;
+            case "list":
+                if (typeof val === "string") {
+                    val = val.split(",");
+                }
+                break;
+            case "string":
+                val = String(val);
+                break;
+        }
+
+        if (isMetadataValue(metadata)) {
+            if (metadata.allowed_values && !(metadata.allowed_values.includes(val))) {
+                throw Error(`Value ${val} not in allowed_values list: [${metadata.allowed_values.join(", ")}]`);
+            }
+            if (typeof val === "number") {
+                if (metadata.min != undefined && metadata.min > val) {
+                    throw Error(`Value ${val} below minimum ${metadata.min}`);
+                }
+                if (metadata.max != undefined && metadata.max < val) {
+                    throw Error(`Value ${val} above maximum ${metadata.max}`);
+                }
+            }
+        }
+
+        return val;
     }
 
-    return {requestHandler, data, disable}
+    const requestHandler: RequestHandler["requestHandler"] = (val) => {
+        try {
+            val = validate(val);
+            startTransition(async () => {
+
+                pre_method?.(...(pre_args ?? []) as PreArgs);
+
+                sendRequest(val ?? data, endpoint, fullpath)
+                    .then(() => {
+                        post_method?.(...(post_args ?? []) as PostArgs);
+                    });
+            })
+        } catch (err) {
+            setError(err instanceof Error ? err : Error("Unknown Error Occurred"));
+        }
+    }
+
+    return { requestHandler, data, disable }
 
 }
 
+export { sendRequest, useRequestHandler };

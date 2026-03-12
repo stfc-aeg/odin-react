@@ -1,17 +1,16 @@
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
-import { getValueFromPath, isMetadataValue } from "../AdapterEndpoint";
+import { getValueFromPath } from "../AdapterEndpoint";
 import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
-import { useError } from "../OdinErrorContext";
 import { EndpointButton } from "./EndpointButton";
 import { EndpointCheckbox } from "./EndpointCheckbox";
 import { EndpointDropdown } from "./EndpointDropdown";
 import { EndpointInput } from "./EndpointInput";
+import { EndpointSlider } from "./EndpointSlider";
 import type { EndpointProps } from "./util";
 import { useRequestHandler } from "./util";
 // import { isEqual } from 'lodash';
 
-type value_t = "string" | "number" | "boolean" | "null" | "list" | "dict"
 
 
 type selectEvent_t = {
@@ -22,6 +21,25 @@ type selectEvent_t = {
 
 };
 
+/**
+ * A Generic Higher Order Compoennt that provides parameter read/write to the provided component
+ * This allows near any component that has some user interactivity (buttons, text boxes, etc)
+ * to automatically and directly control a parameter on an Adapter.
+ * 
+ * For the most part, the specific components already created should be used,
+ * as they cover the most commonly used options:
+ * {@link EndpointButton}
+ * {@link EndpointInput}
+ * {@link EndpointDropdown}
+ * {@link EndpointCheckbox}
+ * 
+ * @example
+ * //Created a Button that connects to a parameter
+ * const CustomEndpointButton = WithEndpoint(Button)
+ * @param WrappedComponent the component to add Endpoint access to
+ * @returns a new component with additional props, that automatically provides read/write access
+ * to a defined Parameter on the Adapter's Tree.
+ */
 const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
     /**
      * Combined Props for resulting WithEndpoint Component.
@@ -32,13 +50,12 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
 
     const WithEndpointComponent = <PreArgs extends unknown[], PostArgs extends unknown[]>(
         props: WrappedComponentProps<PreArgs, PostArgs>) => {
-        
+
         const { endpoint, fullpath, value, disabled,
             pre_method, pre_args, post_method, post_args,
             ...leftoverProps } = props;
 
         const component = useRef<Element>(null);
-        const ErrCTX = useError();
 
         const { requestHandler, data: endpointValue, disable } = useRequestHandler({
             endpoint, fullpath, value, disabled,
@@ -46,75 +63,12 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
             post_method, post_args
         })
 
-        const metadata: MetadataValue = getValueFromPath(endpoint.metadata, fullpath)
-            ?? {
-            value: endpointValue,
-            type: typeof endpointValue == "number" ? "int" : "str",
-            writeable: true
-        };
-        if ("min" in leftoverProps && leftoverProps.min !== undefined) {
-            metadata["min"] = leftoverProps["min"] as number;
-        }
-        if ("max" in leftoverProps && leftoverProps.max !== undefined) {
-            metadata["max"] = leftoverProps["max"] as number;
-        }
+        const metadata: MetadataValue | undefined = getValueFromPath(endpoint.metadata, fullpath);
 
 
         const [eventProp, setEventProp] = useState<selectEvent_t>({ onChange: (event) => onChangeHandler(event) });
         const [componentValue, setComponentValue] = useState<typeof value>(value ?? undefined);
         // const [metadata, setMetadata] = useState<metadata_t | null>(null);
-
-        const type: value_t = useMemo(() => {
-            if (isMetadataValue(metadata)) {
-                switch (metadata.type) {
-                    case "int":
-                    case "float":
-                    case "complex":
-                        return "number";
-                    case "list":
-                    case "tuple":
-                    case "range":
-                        return "list"
-                    case "bool":
-                        return "boolean"
-                    case "str":
-                        return "string"
-                    case "NoneType":
-                        return "null"
-                    default:
-                        return metadata.type as value_t;
-                }
-            } else {
-                const data_type = (value == null ? typeof endpointValue : typeof value);
-                switch (data_type) {
-                    case "bigint":
-                    case "number":
-                        return "number"
-                        break;
-                    case "object":
-                        // gotta check type of object
-                        switch (true) {
-                            case value ?? endpointValue instanceof Array:
-                                return "list"
-                            case value ?? endpointValue == null:
-                                return "null"
-                            default:
-                                return "dict"
-                        }
-                    case "function":
-                    case "symbol":
-                    case "undefined": {
-                        console.error("Something went wrong getting the typeof Data: ", value ?? endpointValue, data_type);
-                        const error = new Error(`Invalid Data type ${data_type} for path ${fullpath}. If Undefined, check fullPath is correct`);
-                        ErrCTX.setError(error);
-                        return "null";
-                    }
-                    case "boolean":
-                    case "string":
-                        return data_type;
-                }
-            }
-        }, [metadata]);
 
         const [editing, setEditing] = useState(false);
 
@@ -147,53 +101,6 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
             return { value: "", checked: false };
         }, [component.current, componentValue]);
 
-        const validate = (val: typeof value) => {
-            if (metadata) {
-                if (metadata.allowed_values && !(metadata.allowed_values.includes(val))) {
-                    throw Error(`Value ${val} not in allowed_values list: [${metadata.allowed_values.join(", ")}]`);
-                }
-                if (typeof val == "number") {
-                    if (metadata.min && metadata.min > val) {
-                        throw Error(`Value ${val} below minimum ${metadata.min}`);
-                    }
-                    if (metadata.max && metadata.max < val) {
-                        throw Error(`Value ${val} above maximum ${metadata.max}`);
-                    }
-                }
-            }
-        }
-
-        const getTypedValue = (val: typeof value): typeof endpointValue => {
-            switch (type) {
-                case "number":
-                    val = Number(val);
-                    break;
-                case "boolean":
-                    if (typeof val === "string" && val.toLowerCase() === "false") {
-                        val = false;
-                    } else { val = Boolean(val); }
-                    break;
-                case "list":
-                    if (Array.isArray(val)) {
-                        val = Array.from(val);
-                    } else {
-                        if (typeof val == "string") {
-                            val = val.split(",");
-                        }
-                    }
-                    break;
-                case "string":
-                    val = String(val);
-                    break;
-                case "dict":
-                case "null":
-                    break;
-
-            }
-
-            return val;
-        };
-
         useEffect(() => {
             // update flag got changed, check if we need to change anything
             if (value == null) {  // if value is defined, we dont wanna overwrite anything
@@ -207,19 +114,9 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
         }, [endpoint.updateFlag, endpointValue]);
 
         const handleRequest = (val: typeof value) => {
-            try {
-                val = getTypedValue(val);
-                validate(val);
-                requestHandler(val);
-                setEditing(false);
-            }
-            catch (err) {
-                if (err instanceof Error) {
-                    ErrCTX.setError(err);
-                } else {
-                    ErrCTX.setError(Error("UNKNOWN ERROR OCCURRED"));
-                }
-            }
+
+            requestHandler(val);
+            setEditing(false);
         };
 
         const onSelectHandler = (event: React.SyntheticEvent, eventKey: number | string) => {
@@ -319,10 +216,10 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
                 }
             }
             setEventProp(events);
-        }, [value, componentValue, component.current, type]);
+        }, [value, componentValue, component.current]);
 
         return (<WrappedComponent
-            {...leftoverProps as P}
+            {...Object.assign(leftoverProps, {min: metadata?.min, max: metadata?.max}) as P}
             style={style}
             {...eventProp}
             min={metadata?.min}
@@ -341,5 +238,7 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
 
 
 
-export { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput, WithEndpoint };
+export { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointSlider };
+
+export {WithEndpoint};
 

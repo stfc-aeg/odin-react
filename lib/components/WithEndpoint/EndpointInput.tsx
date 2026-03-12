@@ -24,18 +24,17 @@ const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
         post_method, post_args
     });
 
-    const metaData: MetadataValue = getValueFromPath(endpoint.metadata, fullpath)
-                                        ?? {value: endVal, type: "str", writeable: true};
+    const metaData: MetadataValue | undefined = getValueFromPath(endpoint.metadata, fullpath);
     const [compVal, changeCompVal] = useState<FormControlProps['value']>("");
     const [editing, setEditing] = useState(false);
     
-    const compMin = min ?? metaData.min;
-    const compMax = max ?? metaData.max;
+    const compMin = min ?? metaData?.min;
+    const compMax = max ?? metaData?.max;
 
     const component = useRef<HTMLInputElement>(null);
 
     const type: FormControlProps["type"] = rest.type ??
-        ["int", "float", "complex"].includes(metaData.type) ? "number"
+        ["int", "float", "complex"].includes(metaData?.type ?? "") ? "number"
             : typeof endVal === "number" ? "number" : "";
 
     const style: CSSProperties = editing ? {backgroundColor: "var(--bs-highlight-bg)"} : {};

@@ -1,6 +1,6 @@
 import { Container, Row, Col, Stack, Form, InputGroup, Alert, Dropdown, FloatingLabel } from "react-bootstrap"
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "../"
-import { EndpointInput, EndpointButton, EndpointDropdown, EndpointCheckbox } from "../";
+import { EndpointInput, EndpointSlider, EndpointButton, EndpointDropdown, EndpointCheckbox } from "../";
 import type { ParamNode, Log} from "../";
 import { useState } from "react";
 import { AdapterEndpoint } from "../";
@@ -8,7 +8,7 @@ import { AdapterEndpoint } from "../";
 import type { ReactNode } from "react";
 
 const OldEndpointInput = WithEndpoint(Form.Control);
-const EndpointSlider = WithEndpoint(OdinDoubleSlider);
+const EndpointDoubleSlider = WithEndpoint(OdinDoubleSlider);
 const EndpointSelect = WithEndpoint((props: React.HTMLAttributes<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
 interface FormData_T extends ParamNode{
@@ -77,6 +77,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                                 Trigger New Button
                             </EndpointButton>
                             <EndpointInput endpoint={endpoint} fullpath="num_val"/>
+                            <EndpointSlider endpoint={endpoint} fullpath="num_val"/>
                             <OldEndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
                             <EndpointCheckbox type="switch" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
                             <EndpointCheckbox type="checkbox" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
@@ -200,7 +201,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                 <Col>
                 <TitleCard title="Slider">
                     <OdinDoubleSlider title="Test" showMinMaxValues={false}/>
-                    <EndpointSlider title="Endpoint Slider" endpoint={endpoint} fullpath="data/clip_data" min={-20} max={20} step={0.5}/>
+                    <EndpointDoubleSlider title="Endpoint Slider" endpoint={endpoint} fullpath="data/clip_data" min={-20} max={20} step={0.5}/>
                     <OdinDoubleSlider showTooltip={false} showMinMaxValues={true}/>
                     <OdinDoubleSlider showMinMaxValues={false}/>
                     <OdinDoubleSlider/>
