@@ -1,0 +1,96 @@
+import type { Preview } from '@storybook/react-vite'
+
+import { withThemeByDataAttribute } from '@storybook/addon-themes';
+
+import { initialize, mswLoader } from 'msw-storybook-addon';
+import { http, passthrough} from 'msw';
+import { OdinErrorContext } from '../lib/components/OdinErrorContext';
+import { getHandler, putHandler, apiVersionHandler, getHandlerUpdate, putHandlerUpdate } from './stories.mock';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { ParamNode } from '../lib/components/AdapterEndpoint';
+
+/*
+ * Initializes MSW
+ * See https://github.com/mswjs/msw-storybook-addon#configuring-msw
+ * to learn how to customize it
+ */
+initialize({quiet: true});
+
+const preview: Preview = {
+  parameters: {
+    controls: {
+      matchers: {
+       color: /(background|color)$/i,
+       date: /Date$/i,
+      },
+    },
+    msw: {
+      handlers: [
+        http.get("/lib/assets/*", passthrough),
+        http.get("/lib/components/*", passthrough),
+        http.all("/index.json", passthrough),
+        http.all("*/storybook-stories.js*", passthrough),
+        // API version checking
+        http.get<{port: string}>("http://localhost\\::port/api", apiVersionHandler),
+        // pre Odin 2.0 GET/PUT requests
+        http.get<{adapter: string}>("http://localhost:1337/api/0.1/:adapter", getHandler),
+        http.get<{adapter: string, path: string[]}>("http://localhost:1337/api/0.1/:adapter/:path+", getHandler),
+        http.put<{adapter: string}, ParamNode>("http://localhost:1337/api/0.1/:adapter", putHandler),
+        http.put<{adapter: string, path: string[]}, ParamNode>("http://localhost:1337/api/0.1/:adapter/:path+", putHandler),
+
+        // Odin 2.0 GET/PUT requests. Note differnt path (no API version)
+        http.get<{adapter: string}>("http://localhost:1338/api/:adapter", getHandlerUpdate),
+        http.get<{adapter: string, path: string[]}>("http://localhost:1338/api/:adapter/:path+", getHandlerUpdate),
+        http.put<{adapter: string}, ParamNode>("http://localhost:1338/api/:adapter", putHandlerUpdate),
+        http.put<{adapter: string, path: string[]}, ParamNode>("http://localhost:1338/api/:adapter/:path+", putHandlerUpdate),
+
+      ]
+    },
+  },
+  globalTypes: {
+    margin: {
+      description: "Add Margins to the side of the Component",
+      toolbar: {
+        title: "Margin",
+        items: ["0", "5", "10", "20"],
+        dynamicTitle: true
+      }
+    }
+  },
+  initialGlobals: {
+    margin: "5"
+  },
+  decorators: [
+    (Story, context) => (
+      <OdinErrorContext>
+        <div style={{margin: `1rem ${context.globals.margin || "0"}rem`}}>
+          <Story />
+        </div>
+      </OdinErrorContext>
+    ),
+    withThemeByDataAttribute({
+      themes: {
+        light: "light",
+        dark: "dark"
+      },
+      defaultTheme: "light",
+      attributeName: "data-bs-theme"
+    })
+  ],
+  tags: ['autodocs'],
+  loaders: [mswLoader]
+};
+
+export const decorators = [
+  withThemeByDataAttribute({
+    themes: {
+      light: 'light',
+      dark: 'dark',
+    },
+    defaultTheme: 'light',
+    attributeName: 'data-bs-theme',
+  }),
+];
+
+export default preview;

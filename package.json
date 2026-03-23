@@ -18,7 +18,7 @@
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepare": "npm run build",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6006 --host localhost",
     "build-storybook": "storybook build"
   },
   "peerDependencies": {
@@ -41,7 +41,6 @@
     "@microsoft/api-extractor": "^7.52.8",
     "@storybook/addon-a11y": "^10.2.17",
     "@storybook/addon-docs": "^10.2.17",
-    "@storybook/addon-onboarding": "^10.2.17",
     "@storybook/addon-themes": "^10.2.17",
     "@storybook/addon-vitest": "^10.2.17",
     "@storybook/react-vite": "^10.2.17",
