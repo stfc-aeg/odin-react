@@ -91,7 +91,6 @@ class BaseMockAdapter<T extends ParamNode> implements BaseAdapter {
      * @param path path to the parameter(s) in the tree
      */
     put(data: ParamNode, path?: string[]) {
-        console.group("BASE PUT");
         console.log(data, path);
 
         const tmpData = this.data;
@@ -99,8 +98,10 @@ class BaseMockAdapter<T extends ParamNode> implements BaseAdapter {
 
         path?.forEach((pathPart) => {
             if (isParamNode(pointer)) {
-                pointer = (pointer)[pathPart] as ParamNode;
-                if (pointer == undefined) {
+                if(pathPart in pointer){
+                    pointer = (pointer)[pathPart] as ParamNode;
+                }else {
+                    console.debug("Path not in Pointer", pathPart, pointer);
                     throw new TypeError("Invalid Path");
                 }
             }
@@ -270,6 +271,7 @@ class NewAdapter<T extends ParamNode> extends BaseMockAdapter<T> implements Http
 
     put_response(data: ParamNode, path?: string[]): HttpResponse<JsonBodyType> {
         console.group("PUT");
+        console.debug(data, path);
         const pathCopy = path?.slice();
         let dataCopy: ParamTree;
         try {

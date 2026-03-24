@@ -8,9 +8,15 @@ const config: StorybookConfig = {
     "@chromatic-com/storybook",
     "@storybook/addon-vitest",
     "@storybook/addon-a11y",
-    "@storybook/addon-docs"
+    "@storybook/addon-docs",
+    "@storybook/addon-themes"
   ],
-  framework: "@storybook/react-vite",
+  framework: {
+    name: "@storybook/react-vite",
+    options: {
+      strictMode: false
+    }
+  },
   staticDirs: ["../public"],
   core: {
     disableTelemetry: true

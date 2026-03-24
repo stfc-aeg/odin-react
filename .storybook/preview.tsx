@@ -82,15 +82,4 @@ const preview: Preview = {
   loaders: [mswLoader]
 };
 
-export const decorators = [
-  withThemeByDataAttribute({
-    themes: {
-      light: 'light',
-      dark: 'dark',
-    },
-    defaultTheme: 'light',
-    attributeName: 'data-bs-theme',
-  }),
-];
-
 export default preview;

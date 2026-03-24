@@ -148,6 +148,8 @@ function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]
             case "string":
                 val = String(val);
                 break;
+            case "null":
+                val = val ?? true;
         }
 
         if (isMetadataValue(metadata)) {
