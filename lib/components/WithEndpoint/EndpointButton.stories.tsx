@@ -1,21 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { EndpointButton } from './EndpointButton';
-import { useAdapterEndpoint } from '../AdapterEndpoint';
-import { fn } from 'storybook/test';
 
+import { fn, expect, spyOn, mocked, sb, userEvent } from 'storybook/test';
+
+// Mocked Endpoint
+import { useAdapterEndpoint } from '../AdapterEndpoint/index.mock';
 
 const meta = {
   component: EndpointButton,
   args: {
     endpoint: undefined,
-    fullpath: "trigger",
-    children: "Test Button"
+    fullpath: "trigger"
   },
   argTypes: {
     endpoint: {
-      table: {
-        readonly: true
+      control: {
+        disable: true
       }
     },
     value: {
@@ -28,9 +29,8 @@ const meta = {
     }
   },
   render: (args) => {
-    const endpoint_use = useAdapterEndpoint("test", "http://localhost:1338");
-    const { endpoint, ...rest } = args;
-    return <EndpointButton endpoint={endpoint_use} {...rest} />
+    args.endpoint = useAdapterEndpoint("test", "http://localhost:1338");
+    return <EndpointButton {...args}>Test Button: {args.fullpath}</EndpointButton>
   }
 } satisfies Meta<typeof EndpointButton>;
 
@@ -40,18 +40,50 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    
+    value: true
   },
+  play: async ({canvas, args, userEvent}) => {
+
+    const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
+    await userEvent.click(canvas.getByRole("button"));
+
+    await expect(put).toHaveBeenCalled();
+    await expect(put).toHaveBeenCalledWith({value: true}, "trigger");
+    await expect(put).toHaveReturnedWith({value: null});
+  }
 };
 
 export const Disabled: Story = {
   args: {
     disabled: true
+  },
+  play: async ({canvas, args, userEvent}) => {
+    const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
+    const button = canvas.getByRole("button");
+    await expect(button).toBeDisabled();
+
+    await expect(put).not.toHaveBeenCalled();
+  }
+}
+
+export const DisabledBecasueParam: Story = {
+  args: {
+    fullpath: "rand_num"
+  },
+  play: async ({canvas, args, userEvent}) => { 
+    await expect(canvas.getByRole("button")).toBeDisabled();
   }
 }
 
 export const PreTrigger: Story = {
   args: {
     pre_method: fn()
+  },
+  play: async ({canvas, args, userEvent}) => {
+    const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
+    await userEvent.click(canvas.getByRole("button"));
+
+    await expect(args.pre_method).toHaveBeenCalled();
+    await expect(put).toHaveBeenCalled();
   }
 }

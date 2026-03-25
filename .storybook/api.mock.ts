@@ -1,8 +1,8 @@
 import { HttpResponse, JsonBodyType } from "msw";
-import { action } from 'storybook/actions';
-import { isMetadataValue, isParamNode, type Metadata, type ParamNode, type ParamTree } from "../lib/components/AdapterEndpoint";
+import { isParamNode, type Metadata, type ParamNode, type ParamTree } from "../lib/components/AdapterEndpoint";
 import { MetadataValue } from "../lib/components/AdapterEndpoint/AdapterEndpoint.types";
 
+import { GetRequest, PutRequest } from "./actions.mock";
 // import { createMetadata } from "./stories.mock";
 
 const getMetaType = (param: ParamTree): MetadataValue["type"] => {
@@ -214,11 +214,11 @@ class OldAdapter<T extends ParamNode> extends BaseMockAdapter<T> implements Http
             const paramName = path?.slice().pop();
             const data = this.get(path, wantsMetadata);
             const response_body = paramName ? {[paramName]: data} : (data as ParamNode);
-            action(`Get Request ${wantsMetadata ? "With Metadata" : ""}`)(this.name, path?.join("/") ?? "");
+            GetRequest("Success", wantsMetadata, this.name, path?.join("/") ?? "");
             return HttpResponse.json(response_body);
 
         } catch (error) {
-            action("Get Request: Invalid Path")(this.name, path?.join("/"));
+            GetRequest("Invalid Path", this.name, path?.join("/") ?? "");
             return HttpResponse.json(
                 { error: `Invalid Path: ${path?.join("/")}` },
                 { status: 400 }
@@ -234,15 +234,15 @@ class OldAdapter<T extends ParamNode> extends BaseMockAdapter<T> implements Http
             const newData = this.put(data, pathCopy);
             const response = this.get(path);
             const response_body = paramName ? {[paramName]: response} : response as ParamNode;
-            action("Put Request")(this.name, path?.join("/"), newData);
+            PutRequest("Success", this.name, path?.join("/") ?? "", data);
             return HttpResponse.json(response_body);
 
         } catch (error) {
             if (error instanceof AdapterError) {
-                action("Put Request: Validation Error")(data);
+                PutRequest("Validation Error", this.name, path?.join("/") ?? "", data);
                 return HttpResponse.json({ "error": error.message }, { status: 400 });
             } else {
-                action("Put Request: Invalid Path")(this.name, path?.join("/"));
+                PutRequest("Invalid Path", this.name, path?.join("/") ?? "");
                 return HttpResponse.json({ "error": `Invalid Path: ${path?.join("/")}` }, { status: 400 });
             }
         }
@@ -256,12 +256,12 @@ class NewAdapter<T extends ParamNode> extends BaseMockAdapter<T> implements Http
         try {
             const data = this.get(path, wantsMetadata);
             const response_body = isParamNode(data) ? data : {value: data};
-            action(`Get Request ${wantsMetadata ? "With Metadata" : ""}`)(this.name, path?.join("/") ?? "");
+            GetRequest("Success", wantsMetadata, this.name, path?.join("/") ?? "");
             return HttpResponse.json(response_body);
 
 
         } catch (error) {
-            action("Get Request: Invalid Path")(this.name, path?.join("/"));
+            GetRequest("Invalid Path", this.name, path?.join("/") ?? "");
             return HttpResponse.json(
                 { error: `Invalid Path: ${path?.join("/")}` },
                 { status: 400 }
@@ -283,15 +283,15 @@ class NewAdapter<T extends ParamNode> extends BaseMockAdapter<T> implements Http
             this.put(dataCopy, pathCopy);
             const response = this.get(path);
             const response_body = isParamNode(response) ? response : {value: response};
-            action("Put Request")(this.name, path?.join("/"), data);
+            PutRequest("Success", this.name, path?.join("/") ?? "", data);
             return HttpResponse.json(response_body);
 
         } catch (error) {
             if (error instanceof AdapterError) {
-                action("Put Request: Validation Error")(data);
+                PutRequest("Validation Error", this.name, path?.join("/") ?? "", data);
                 return HttpResponse.json({ "error": error.message }, { status: 400 });
             } else {
-                action("Put Request: Invalid Path")(this.name, path?.join("/"));
+                PutRequest("Invalid Path", this.name, path?.join("/") ?? "");
                 return HttpResponse.json({ "error": `Invalid Path: ${path?.join("/")}` }, {status: 400});
             }
         } finally {
@@ -301,4 +301,5 @@ class NewAdapter<T extends ParamNode> extends BaseMockAdapter<T> implements Http
 }
 
 
-export { OldAdapter, NewAdapter, HttpAdapter };
+export { OldAdapter, NewAdapter, type HttpAdapter };
+export {createMetadata};

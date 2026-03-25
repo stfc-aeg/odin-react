@@ -42,3 +42,9 @@ export const Number: Story = {
     fullpath: "num_val"
   }
 }
+
+export const ReadOnly: Story = {
+  args: {
+    fullpath: "rand_num"
+  }
+}

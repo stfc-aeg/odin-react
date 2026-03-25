@@ -3,7 +3,7 @@ import type { Preview } from '@storybook/react-vite'
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
 
 import { initialize, mswLoader } from 'msw-storybook-addon';
-import { http, passthrough} from 'msw';
+import { http, passthrough } from 'msw';
 import { OdinErrorContext } from '../lib/components/OdinErrorContext';
 import { getHandler, putHandler, apiVersionHandler, getHandlerUpdate, putHandlerUpdate } from './stories.mock';
 
@@ -15,14 +15,14 @@ import { ParamNode } from '../lib/components/AdapterEndpoint';
  * See https://github.com/mswjs/msw-storybook-addon#configuring-msw
  * to learn how to customize it
  */
-initialize({quiet: true});
+initialize({ quiet: true });
 
 const preview: Preview = {
   parameters: {
     controls: {
       matchers: {
-       color: /(background|color)$/i,
-       date: /Date$/i,
+        color: /(background|color)$/i,
+        date: /Date$/i,
       },
     },
     msw: {
@@ -32,18 +32,18 @@ const preview: Preview = {
         http.all("/index.json", passthrough),
         http.all("*/storybook-stories.js*", passthrough),
         // API version checking
-        http.get<{port: string}>("http://localhost\\::port/api", apiVersionHandler),
+        http.get<{ port: string }>("http://localhost\\::port/api", apiVersionHandler),
         // pre Odin 2.0 GET/PUT requests
-        http.get<{adapter: string}>("http://localhost:1337/api/0.1/:adapter", getHandler),
-        http.get<{adapter: string, path: string[]}>("http://localhost:1337/api/0.1/:adapter/:path+", getHandler),
-        http.put<{adapter: string}, ParamNode>("http://localhost:1337/api/0.1/:adapter", putHandler),
-        http.put<{adapter: string, path: string[]}, ParamNode>("http://localhost:1337/api/0.1/:adapter/:path+", putHandler),
+        http.get<{ adapter: string }>("http://localhost:1337/api/0.1/:adapter", getHandler),
+        http.get<{ adapter: string, path: string[] }>("http://localhost:1337/api/0.1/:adapter/:path+", getHandler),
+        http.put<{ adapter: string }, ParamNode>("http://localhost:1337/api/0.1/:adapter", putHandler),
+        http.put<{ adapter: string, path: string[] }, ParamNode>("http://localhost:1337/api/0.1/:adapter/:path+", putHandler),
 
         // Odin 2.0 GET/PUT requests. Note differnt path (no API version)
-        http.get<{adapter: string}>("http://localhost:1338/api/:adapter", getHandlerUpdate),
-        http.get<{adapter: string, path: string[]}>("http://localhost:1338/api/:adapter/:path+", getHandlerUpdate),
-        http.put<{adapter: string}, ParamNode>("http://localhost:1338/api/:adapter", putHandlerUpdate),
-        http.put<{adapter: string, path: string[]}, ParamNode>("http://localhost:1338/api/:adapter/:path+", putHandlerUpdate),
+        http.get<{ adapter: string }>("http://localhost:1338/api/:adapter", getHandlerUpdate),
+        http.get<{ adapter: string, path: string[] }>("http://localhost:1338/api/:adapter/:path+", getHandlerUpdate),
+        http.put<{ adapter: string }, ParamNode>("http://localhost:1338/api/:adapter", putHandlerUpdate),
+        http.put<{ adapter: string, path: string[] }, ParamNode>("http://localhost:1338/api/:adapter/:path+", putHandlerUpdate),
 
       ]
     },
@@ -64,7 +64,7 @@ const preview: Preview = {
   decorators: [
     (Story, context) => (
       <OdinErrorContext>
-        <div style={{margin: `1rem ${context.globals.margin || "0"}rem`}}>
+        <div style={{ margin: `1rem ${context.globals.margin || "0"}rem` }}>
           <Story />
         </div>
       </OdinErrorContext>

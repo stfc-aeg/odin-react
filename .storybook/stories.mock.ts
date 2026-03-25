@@ -1,5 +1,5 @@
 import { http, HttpResponse, delay, HttpResponseResolver, DefaultBodyType, JsonBodyType } from 'msw';
-import { action } from 'storybook/actions';
+import { GetRequest, PutRequest } from './actions.mock';
 
 
 import type { ParamNode, ParamTree, Metadata } from '../lib/components/AdapterEndpoint';
@@ -95,7 +95,7 @@ const apiVersionHandler: HttpResponseResolver<{ port: string }, DefaultBodyType,
   //   return HttpResponse.json({"version": null})
   // }
   console.log("GETTING API VERSION");
-  action("Get Request: Api Version")(params.port);
+  GetRequest("Api Verison", params.port);
   return params.port == "1337" ? HttpResponse.error() : HttpResponse.json({ "version": null });
 }
 
@@ -104,7 +104,7 @@ const get_from_adapter = (adapter: string, adapter_list: { [key: string]: HttpAd
   if (adapter in adapter_list) {
     return adapter_list[adapter].get_response(path, wantsMetadata);
   } else {
-    action("Get Request: Invalid Adapter Name")(adapter);
+    GetRequest("Invalid Adapter name", adapter);
     return new HttpResponse(`No API adapter registered for subsystem ${adapter}`, { status: 400 });
   }
 }
@@ -114,7 +114,7 @@ const put_to_adapter = (adapter: string, adapter_list: { [key: string]: HttpAdap
     if(adapter in adapter_list) {
       return adapter_list[adapter].put_response(data, path);
     } else {
-      action("Put Request: Invalid Adapter Name")(adapter);
+      PutRequest("Invalid Adapter Name", adapter);
     return new HttpResponse(`No API adapter registered for subsystem ${adapter}`, { status: 400 });
     }
 }
@@ -143,3 +143,4 @@ const putHandlerUpdate: HttpResponseResolver<{ adapter: string, path?: string[] 
 }
 
 export { getHandler, putHandler, getHandlerUpdate, putHandlerUpdate, apiVersionHandler }
+// export {update_adapters, type EndpointData, testAdapterData};
