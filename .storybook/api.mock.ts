@@ -231,7 +231,7 @@ class OldAdapter<T extends ParamNode> extends BaseMockAdapter<T> implements Http
             const paramName = path?.slice().pop();
             let pathCopy = path?.slice();
             
-            const newData = this.put(data, pathCopy);
+            this.put(data, pathCopy);
             const response = this.get(path);
             const response_body = paramName ? {[paramName]: response} : response as ParamNode;
             PutRequest("Success", this.name, path?.join("/") ?? "", data);

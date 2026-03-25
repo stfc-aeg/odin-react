@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { EndpointButton } from './EndpointButton';
 
-import { fn, expect, spyOn, mocked, sb, userEvent } from 'storybook/test';
+import { fn, expect, spyOn } from 'storybook/test';
 
 // Mocked Endpoint
 import { useAdapterEndpoint } from '../AdapterEndpoint/index.mock';
@@ -57,12 +57,9 @@ export const Disabled: Story = {
   args: {
     disabled: true
   },
-  play: async ({canvas, args, userEvent}) => {
-    const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
-    const button = canvas.getByRole("button");
-    await expect(button).toBeDisabled();
+  play: async ({canvas}) => {
 
-    await expect(put).not.toHaveBeenCalled();
+    await expect(canvas.getByRole("button")).toBeDisabled();
   }
 }
 
@@ -70,7 +67,7 @@ export const DisabledBecasueParam: Story = {
   args: {
     fullpath: "rand_num"
   },
-  play: async ({canvas, args, userEvent}) => { 
+  play: async ({canvas}) => { 
     await expect(canvas.getByRole("button")).toBeDisabled();
   }
 }

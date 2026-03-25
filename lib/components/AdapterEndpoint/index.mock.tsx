@@ -139,7 +139,7 @@ const MockedEndpoint: AdapterEndpoint<EndpointData> = {
 }
 
 const useAdapterEndpoint = fn(
-    (...any: any[]) => { return MockedEndpoint }
+    (..._: any[]) => { return MockedEndpoint }
 ).mockName('useAdapterEndpoint');
 
 export { useAdapterEndpoint };

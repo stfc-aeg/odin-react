@@ -5,7 +5,7 @@ import { useAdapterEndpoint } from './index';
 import { ComponentProps, useMemo, useState } from 'react';
 import type { ParamNode } from './index';
 
-import { FloatingLabel, InputGroup, Form, Card, ButtonGroup, Button, ToggleButton, Row, Col } from 'react-bootstrap';
+import { FloatingLabel, InputGroup, Form, Card, ButtonGroup, Button, Row, Col } from 'react-bootstrap';
 
 interface Endpoint {
   adapter: string;
@@ -25,7 +25,7 @@ const EndpointDispaly: React.FC<Endpoint> = (
   const [responseData, setResponseData] = useState<ParamNode>({});
   const [wantsMetadata, setWantsMetadata] = useState(false);
 
-  const triggerGet: ComponentProps<typeof Button>["onClick"] = (event) => {
+  const triggerGet: ComponentProps<typeof Button>["onClick"] = () => {
     endpoint.get(path, {wants_metadata: wantsMetadata})
       .then((response) => {
         console.log(response);
@@ -37,7 +37,7 @@ const EndpointDispaly: React.FC<Endpoint> = (
       
   }
 
-  const triggerPut: ComponentProps<typeof Button>["onClick"] = (event) => {
+  const triggerPut: ComponentProps<typeof Button>["onClick"] = () => {
     endpoint.put(putData, path)
       .then((response) => {
         console.log("RESPONSE", response);
