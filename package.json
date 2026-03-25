@@ -19,7 +19,8 @@
     "preview": "vite preview",
     "prepare": "npm run build",
     "storybook": "storybook dev -p 6006 --host localhost",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test-storybook": "vitest --project=storybook"
   },
   "peerDependencies": {
     "bootstrap": "^5.3.5",
