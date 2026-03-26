@@ -7,7 +7,7 @@ import { MetadataValue } from '../lib/components/AdapterEndpoint/AdapterEndpoint
 
 import { HttpAdapter, NewAdapter, OldAdapter } from './api.mock';
 
-import defaultImg from '../lib/assets/testImage.png';
+// import defaultImg from '../lib/assets/testImage.png';
 
 
 interface EndpointData extends ParamNode {
