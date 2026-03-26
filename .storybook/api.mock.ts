@@ -26,7 +26,7 @@ const createMetadata = <T extends ParamNode>(data: T, overrides?: { [key: string
 
     for (const [key, val] of Object.entries(data)) {
         if ((overrides && key in overrides) || !isParamNode(val)) {
-            const meta = overrides?.[key] ?? {};
+            const meta = Object.create(overrides?.[key] ?? {});
 
             const metadata: MetadataValue = Object.assign(meta, {
                 value: val,
@@ -65,13 +65,15 @@ class AdapterError extends Error {
 class BaseMockAdapter<T extends ParamNode> implements BaseAdapter {
     name: string;
     data: T;
+    private origData: T;
     metadata: Metadata<T>;
 
 
     constructor(name: string, data: T,
         metadataOverrides?: { [key: string]: Partial<MetadataValue> }) {
         this.name = name;
-        this.data = data;
+        this.data = structuredClone(data);
+        this.origData = structuredClone(data);
         this.metadata = createMetadata(data, metadataOverrides);
     }
 
@@ -110,7 +112,6 @@ class BaseMockAdapter<T extends ParamNode> implements BaseAdapter {
         // //pointer now represents the tree one node above the target parameter
         //and should have a key that matches ParamName.
         //unless no path provided (root of tree), in which case pointer is entire tree
-        console.log("POINTER", pointer);
 
         Object.keys(data).forEach((key) => {
             const val = data[key];
@@ -121,6 +122,10 @@ class BaseMockAdapter<T extends ParamNode> implements BaseAdapter {
 
         this.data = tmpData;
 
+    }
+
+    reset() {
+        this.data = structuredClone(this.origData);
     }
 
     protected getValue(path?: string[], tree: ParamNode = this.data) {

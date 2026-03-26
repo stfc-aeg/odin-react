@@ -4,8 +4,6 @@ import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getCon
 import { useError } from "../OdinErrorContext";
 
 // odin control 2.0 no longer uses an API Version.
-// TODO: How to auto detect if we're using odin control 2.0 or not?
-// const DEF_API_VERSION = '';
 
 enum updateFlag_enum {
     INIT = "init",
@@ -46,7 +44,17 @@ function getValueFromPath<T = Parameter>(data: ParamTree, path: string): T | und
     }
 }
 
-
+/**
+ * Custom hook that returns functions and access to data from an
+ * Odin Control Adapter. Provides access to a local copy of the data and 
+ * metadata from the specified adapter.
+ * @param adapter Name of the Adapter on the Odin Control instance to communicate with
+ * @param endpoint_url The URL of the Odin Control instance. If the GUI is served
+ * statically by Odin Control, this can be an empty string.
+ * @param interval An optional polling loop interval, in ms
+ * @param timeout An option Timeout for API requests, in ms.
+ * @returns 
+ */
 function useAdapterEndpoint<T extends ParamNode = ParamNode>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number
 ): AdapterEndpoint<T> {

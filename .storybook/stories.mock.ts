@@ -143,4 +143,4 @@ const putHandlerUpdate: HttpResponseResolver<{ adapter: string, path?: string[] 
 }
 
 export { getHandler, putHandler, getHandlerUpdate, putHandlerUpdate, apiVersionHandler }
-// export {update_adapters, type EndpointData, testAdapterData};
+export {adapters, update_adapters};
