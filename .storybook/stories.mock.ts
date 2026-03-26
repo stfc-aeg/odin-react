@@ -1,11 +1,11 @@
-import { http, HttpResponse, delay, HttpResponseResolver, DefaultBodyType, JsonBodyType } from 'msw';
+import { DefaultBodyType, HttpResponse, HttpResponseResolver } from 'msw';
 import { GetRequest, PutRequest } from './actions.mock';
 
 
-import type { ParamNode, ParamTree, Metadata } from '../lib/components/AdapterEndpoint';
+import type { ParamNode } from '../lib/components/AdapterEndpoint';
 import { MetadataValue } from '../lib/components/AdapterEndpoint/AdapterEndpoint.types';
 
-import { OldAdapter, NewAdapter, HttpAdapter } from './api.mock';
+import { HttpAdapter, NewAdapter, OldAdapter } from './api.mock';
 
 import defaultImg from '../lib/assets/testImage.png';
 
@@ -38,7 +38,7 @@ interface EndpointData extends ParamNode {
   };
 }
 
-const imgBlob = await fetch(defaultImg).then(response => { return response.blob() })
+// const imgBlob = await fetch(defaultImg).then(response => { return response.blob() })
 
 const data_val = 10
 const rand_num = 32
@@ -90,7 +90,7 @@ const update_adapters = {
 }
 
 
-const apiVersionHandler: HttpResponseResolver<{ port: string }, DefaultBodyType, undefined> = ({ params, request }) => {
+const apiVersionHandler: HttpResponseResolver<{ port: string }, DefaultBodyType, undefined> = ({ params }) => {
   // if(params.port == "1337"){
   //   return HttpResponse.json({"version": null})
   // }
@@ -111,12 +111,12 @@ const get_from_adapter = (adapter: string, adapter_list: { [key: string]: HttpAd
 
 const put_to_adapter = (adapter: string, adapter_list: { [key: string]: HttpAdapter },
   data: ParamNode, path?: string[]) => {
-    if(adapter in adapter_list) {
-      return adapter_list[adapter].put_response(data, path);
-    } else {
-      PutRequest("Invalid Adapter Name", adapter);
+  if (adapter in adapter_list) {
+    return adapter_list[adapter].put_response(data, path);
+  } else {
+    PutRequest("Invalid Adapter Name", adapter);
     return new HttpResponse(`No API adapter registered for subsystem ${adapter}`, { status: 400 });
-    }
+  }
 }
 const getHandler: HttpResponseResolver<{ adapter: string, path?: string[] }, DefaultBodyType, undefined> = ({ params, request }) => {
   console.log("MOCKED GET REQUEST", params.adapter);
@@ -142,5 +142,4 @@ const putHandlerUpdate: HttpResponseResolver<{ adapter: string, path?: string[] 
   return put_to_adapter(params.adapter, update_adapters, requestBody, params.path);
 }
 
-export { getHandler, putHandler, getHandlerUpdate, putHandlerUpdate, apiVersionHandler }
-export {adapters, update_adapters};
+export { adapters, apiVersionHandler, getHandler, getHandlerUpdate, putHandler, putHandlerUpdate, update_adapters };
