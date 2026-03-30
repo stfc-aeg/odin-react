@@ -62,8 +62,10 @@ const testAdapterData: EndpointData = {
     trigger: null
 }
 
+const originalData = structuredClone(testAdapterData);
+
 const metadataPaths: { [key: string]: Partial<MetadataValue> } = {
-    "select": { allowed_values: ["item 1", "item 2", "item 3"] },
+    "selected": { allowed_values: ["item 1", "item 2", "item 3"] },
     "num_val": { min: 15, max: 76 },
     "rand_num": { writeable: false },
     "dict": { writeable: false, type: "dict" }
@@ -119,6 +121,10 @@ function mockPut<T = Parameter>(data: { [key: string]: T }, param_path = '') {
 
 }
 
+const resetMockData = () => {
+    Object.assign(testAdapterData, originalData);
+}
+
 
 const MockedEndpoint: AdapterEndpoint<EndpointData> = {
     // @ts-ignore
@@ -142,6 +148,6 @@ const useAdapterEndpoint = fn(
     (..._: any[]) => { return MockedEndpoint }
 ).mockName('useAdapterEndpoint');
 
-export { useAdapterEndpoint };
+export { useAdapterEndpoint, resetMockData };
 // export {testAdapterData};
 

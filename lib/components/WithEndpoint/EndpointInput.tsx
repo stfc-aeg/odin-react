@@ -1,10 +1,10 @@
 
-import { Form } from 'react-bootstrap';
-import type { FormControlProps } from 'react-bootstrap';
-import { useRequestHandler, type EndpointProps } from './util';
-import type { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
-import { getValueFromPath } from '../AdapterEndpoint';
 import { CSSProperties, useEffect, useRef, useState } from 'react';
+import type { FormControlProps } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
+import { getValueFromPath } from '../AdapterEndpoint';
+import type { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
+import { useRequestHandler, type EndpointProps } from './util';
 
 
 type EndpointInputProps<PreArgs extends unknown[], PostArgs extends unknown[]> =

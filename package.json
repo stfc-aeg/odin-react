@@ -36,7 +36,6 @@
     }
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "^5.0.1",
     "@eslint/js": "^9.19.0",
     "@laynezh/vite-plugin-lib-assets": "^2.1.0",
     "@microsoft/api-extractor": "^7.52.8",

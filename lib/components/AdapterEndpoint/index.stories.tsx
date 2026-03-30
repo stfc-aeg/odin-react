@@ -167,11 +167,11 @@ export const Default: Story = {
   play: async ({ args, canvas, step, userEvent }) => {
 
     // //horrid little timeout to let the adapter initialise
-    const pathTextbox = await canvas.findByLabelText("Param Path");
-    const putDataTextBox = await canvas.findByLabelText("PUT data");
-    const getButton = await canvas.findByText("GET");
-    const putButton = await canvas.findByText("PUT");
-    const metadataButton = await canvas.findByLabelText("get Metadata");
+    const pathTextbox = canvas.getByLabelText("Param Path");
+    const putDataTextBox = canvas.getByLabelText("PUT data");
+    const getButton = canvas.getByText("GET");
+    const putButton = canvas.getByText("PUT");
+    const metadataButton = canvas.getByLabelText("get Metadata");
 
     await step("Initialisation", async () => {
       await new Promise(res => setTimeout(res, 2000));
