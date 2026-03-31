@@ -21,7 +21,8 @@
         "storybook": "storybook dev -p 6006 --host localhost",
         "storybook-build": "storybook build",
         "storybook-test": "vitest --project=storybook",
-        "storybook-docs": "storybook dev --docs"
+        "storybook-docs": "storybook dev --docs",
+        "storybook-docs-build": "storybook build --docs"
     },
     "peerDependencies": {
         "bootstrap": "^5.3.5",

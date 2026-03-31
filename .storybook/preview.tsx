@@ -31,6 +31,7 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    layout: 'centered',
     msw: {
       handlers: [
         http.get("/lib/assets/*", passthrough),
