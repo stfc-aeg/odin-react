@@ -17,8 +17,8 @@ import { ParamNode } from '../lib/components/AdapterEndpoint';
 initialize({
   quiet: true,
   serviceWorker: {
-    //change URL to support MSW mocking on Github Pages. The Github Action sets this env variable
-    url: (import.meta.env.STORYBOOK_FOR_GIT_PAGE as string) == "YES" ? "odin-react/mockServiceWorker.js" : "./mockServiceWorker.js"
+    //change URL to support MSW mocking on Github Pages, the ./ in front is IMPORTANT
+    url: "./mockServiceWorker.js"
   },
   onUnhandledRequest: "bypass"
 });
