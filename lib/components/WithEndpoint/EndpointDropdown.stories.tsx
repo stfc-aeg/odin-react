@@ -10,12 +10,18 @@ const meta = {
   component: EndpointDropdown,
   args: {
     endpoint: undefined,
-    fullpath: "selected"
+    fullpath: "selected",
+    children: undefined
   },
   argTypes: {
     endpoint: {
       table: {
         readonly: true
+      }
+    },
+    children: {
+      table: {
+        disable: true
       }
     }
   },
