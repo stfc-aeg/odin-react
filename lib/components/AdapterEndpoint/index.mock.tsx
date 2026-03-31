@@ -36,7 +36,7 @@ interface EndpointData extends actual.ParamNode {
 
 const testAdapterData: EndpointData = {
     string_val: "String Value Test",
-    num_val: 42,
+    num_val: 25,
     float_val: 1.5,
     rand_num: 32,
     data: {
@@ -66,7 +66,7 @@ const originalData = structuredClone(testAdapterData);
 
 const metadataPaths: { [key: string]: Partial<MetadataValue> } = {
     "selected": { allowed_values: ["item 1", "item 2", "item 3"] },
-    "num_val": { min: 15, max: 76 },
+    "num_val": { min: 10, max: 90 },
     "rand_num": { writeable: false },
     "dict": { writeable: false, type: "dict" }
 }
