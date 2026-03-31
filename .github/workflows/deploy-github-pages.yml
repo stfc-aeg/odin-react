@@ -10,6 +10,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      STORYBOOK_FOR_GIT_PAGE: "YES"
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
@@ -29,7 +31,7 @@ jobs:
         run: npm run storybook-build
       # Upload pages artifact
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: 'storybook-static'
       # Deploy to Github Pages

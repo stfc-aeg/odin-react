@@ -1,11 +1,10 @@
-import type { Preview } from '@storybook/react-vite'
+import type { Preview } from '@storybook/react-vite';
 
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
-
-import { initialize, mswLoader } from 'msw-storybook-addon';
 import { http, passthrough } from 'msw';
+import { initialize, mswLoader } from 'msw-storybook-addon';
 import { OdinErrorContext } from '../lib/components/OdinErrorContext';
-import { getHandler, putHandler, apiVersionHandler, getHandlerUpdate, putHandlerUpdate } from './stories.mock';
+import { apiVersionHandler, getHandler, getHandlerUpdate, putHandler, putHandlerUpdate } from './stories.mock';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ParamNode } from '../lib/components/AdapterEndpoint';
@@ -15,7 +14,14 @@ import { ParamNode } from '../lib/components/AdapterEndpoint';
  * See https://github.com/mswjs/msw-storybook-addon#configuring-msw
  * to learn how to customize it
  */
-initialize({ quiet: true });
+initialize({
+  quiet: true,
+  serviceWorker: {
+    //change URL to support MSW mocking on Github Pages. The Github Action sets this env variable
+    url: (import.meta.env.STORYBOOK_FOR_GIT_PAGE as string) == "YES" ? "odin-react/mockServiceWorker.js" : "./mockServiceWorker.js"
+  },
+  onUnhandledRequest: "bypass"
+});
 
 const preview: Preview = {
   parameters: {
