@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ComponentProps } from 'react';
+import { expect, spyOn, waitFor } from 'storybook/test';
+import { resetMockData, useAdapterEndpoint } from '../AdapterEndpoint/index.mock';
 import { EndpointSlider } from './EndpointSlider';
-import { useAdapterEndpoint, resetMockData } from '../AdapterEndpoint/index.mock';
-import { expect, spyOn, userEvent, waitFor } from 'storybook/test';
-import { Canvas } from 'storybook/internal/types';
 
 const PlacementOptionsList: ComponentProps<typeof EndpointSlider>["tooltipPlacement"][] = [
   "auto",
@@ -22,34 +21,6 @@ const PlacementOptionsList: ComponentProps<typeof EndpointSlider>["tooltipPlacem
   "top-end",
   "top-start"
 ]
-
-const moveSliderToPercent = async (
-  canvas: Canvas,
-  percent: number
-) => {
-  const sliderHandle = canvas.getByRole("slider");
-  const sliderTrack = sliderHandle.parentElement;
-
-  if(!sliderTrack) {
-    throw new Error("Slider Not Found");
-  }
-
-  const sliderRect = sliderHandle.getBoundingClientRect();
-  console.log(sliderHandle, sliderRect);
-  const clampPercent = Math.max(0, Math.min(1, percent));
-
-  const targetX = sliderRect.left + sliderRect.width * clampPercent;
-
-  await userEvent.pointer([
-    { keys: `[MouseLeft>]`, target: sliderHandle },
-    { 
-      pointerName: `mouse`,
-      target: sliderTrack,
-      coords: {x: targetX}
-    },
-    { keys: `[/MouseLeft]`}
-  ])
-}
 
 const meta = {
   component: EndpointSlider,
