@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { EndpointDropdown } from './EndpointDropdown';
 import { Dropdown } from 'react-bootstrap';
-import { useAdapterEndpoint, resetMockData } from '../AdapterEndpoint/index.mock';
-import { expect, spyOn } from 'storybook/test';
+import { useAdapterEndpoint, resetMockData, transformMockCode } from '../AdapterEndpoint/index.mock';
 
 
 const meta = {
@@ -22,6 +21,15 @@ const meta = {
     children: {
       table: {
         disable: true
+      }
+    }
+  },
+  parameters: {
+    layout: "centered",
+    docs: {
+      source: {
+        transform: transformMockCode,
+        language: "tsx"
       }
     }
   },

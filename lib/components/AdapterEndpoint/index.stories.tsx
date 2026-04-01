@@ -162,6 +162,107 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     adapter: "test",
+    endpoint_url: "http://localhost:1338"
+  },
+  play: async ({ args, canvas, step, userEvent }) => {
+
+    // //horrid little timeout to let the adapter initialise
+    const pathTextbox = await canvas.findByLabelText("Param Path");
+    const putDataTextBox = await canvas.findByLabelText("PUT data");
+    const getButton = await canvas.findByText("GET");
+    const putButton = await canvas.findByText("PUT");
+    const metadataButton = await canvas.findByLabelText("get Metadata");
+
+    await step("Initialisation", async () => {
+      await new Promise(res => setTimeout(res, 2000));
+      await expect(args.endpoint.data, "Data Init").not.toEqual({});
+      await expect(args.endpoint.apiVersion, "Api Version").toEqual("");
+    });
+
+    await step("Get Requests", async () => {
+      let path = "deep/long/nested/path";
+      await userEvent.type(pathTextbox, path);
+      await userEvent.click(getButton);
+      await expect(args.endpoint.get(path), `get: ${path}`)
+        .resolves.toEqual({
+          val: "Deep Text",
+          num_val: 12.5
+        });
+
+      path = "deep/long/nested/path/num_val";
+      await userEvent.type(pathTextbox, "/path");
+      await userEvent.click(getButton);
+      await expect(args.endpoint.get(path), "get: Single Val")
+        .resolves.toEqual({
+          value: 12.5
+        });
+
+      path = "";
+      await userEvent.clear(pathTextbox);
+      await userEvent.click(getButton);
+      await expect(args.endpoint.get(path), "get: Adapter Root")
+        .resolves.toHaveProperty("string_val");
+
+      path = "invalid";
+      await userEvent.type(pathTextbox, path);
+      await userEvent.click(getButton);
+      await expect(args.endpoint.get(path), `get: ${path}`)
+        .rejects.toThrow(`GET request failed with status 400 : Invalid Path: ${path}`);
+
+      path = "data/set_data";
+      await userEvent.clear(pathTextbox)
+      await userEvent.type(pathTextbox, path);
+      await userEvent.click(metadataButton);
+      await userEvent.click(getButton);
+      await expect(args.endpoint.get(path, { wants_metadata: true }), "Get: Metadata")
+        .resolves.toHaveProperty("writeable", true);
+
+    });
+
+    await step("Put Requests", async () => {
+
+      await userEvent.clear(pathTextbox);
+      await userEvent.clear(putDataTextBox);
+      await userEvent.type(putDataTextBox, "{{\"string_val\": \"Put Test\"}");
+      await userEvent.click(putButton);
+      await expect(args.endpoint.put({ "string_val": "Put Test" }), "Put: String Val")
+        .resolves.toHaveProperty("string_val", "Put Test");
+
+      let path = "float_val";
+      await userEvent.clear(pathTextbox);
+      await userEvent.type(pathTextbox, path);
+      await userEvent.clear(putDataTextBox);
+      await userEvent.type(putDataTextBox, "{{\"value\": 15.5}");
+      await userEvent.click(putButton);
+      await expect(args.endpoint.put({ "value": 15.5 }, "float_val"), "Put: Single Val")
+        .resolves.toEqual({
+          value: 15.5
+        });
+
+      path = "deep/long/nested/path";
+      await userEvent.clear(pathTextbox);
+      await userEvent.type(pathTextbox, path);
+      await userEvent.clear(putDataTextBox);
+      await userEvent.type(putDataTextBox, "{{\"num_val\": 16.5}");
+      await userEvent.click(putButton);
+      await expect(args.endpoint.put({ "num_val": 16.5 }, path), "Put: Nested Val")
+        .resolves.toEqual({
+          val: "Deep Text",
+          num_val: 16.5
+        });
+      await userEvent.clear(pathTextbox);
+      await userEvent.clear(putDataTextBox);
+      await userEvent.type(putDataTextBox, "{{\"rand_num\": 55}");
+      await userEvent.click(putButton);
+      await expect(args.endpoint.put({ "rand_num": 55 }))
+        .rejects.toThrow("PUT request failed with status 400 : Parameter rand_num is read-only");
+    });
+  }
+}
+
+export const OlderOdinVersion: Story = {
+  args: {
+    adapter: "test",
     endpoint_url: "http://localhost:1337"
   },
   play: async ({ args, canvas, step, userEvent }) => {
@@ -245,103 +346,3 @@ export const Default: Story = {
   }
 };
 
-export const UpdatedOdin: Story = {
-  args: {
-    adapter: "test",
-    endpoint_url: "http://localhost:1338"
-  },
-  play: async ({ args, canvas, step, userEvent }) => {
-
-    // //horrid little timeout to let the adapter initialise
-    const pathTextbox = await canvas.findByLabelText("Param Path");
-    const putDataTextBox = await canvas.findByLabelText("PUT data");
-    const getButton = await canvas.findByText("GET");
-    const putButton = await canvas.findByText("PUT");
-    const metadataButton = await canvas.findByLabelText("get Metadata");
-
-    await step("Initialisation", async () => {
-      await new Promise(res => setTimeout(res, 2000));
-      await expect(args.endpoint.data, "Data Init").not.toEqual({});
-      await expect(args.endpoint.apiVersion, "Api Version").toEqual("");
-    });
-    
-    await step("Get Requests", async () => {
-      let path = "deep/long/nested/path";
-      await userEvent.type(pathTextbox, path);
-      await userEvent.click(getButton);
-      await expect(args.endpoint.get(path), `get: ${path}`)
-        .resolves.toEqual({
-          val: "Deep Text",
-          num_val: 12.5
-        });
-      
-      path = "deep/long/nested/path/num_val";
-      await userEvent.type(pathTextbox, "/path");
-      await userEvent.click(getButton);
-      await expect(args.endpoint.get(path), "get: Single Val")
-        .resolves.toEqual({
-          value: 12.5
-        });
-
-      path = "";
-      await userEvent.clear(pathTextbox);
-      await userEvent.click(getButton);
-      await expect(args.endpoint.get(path), "get: Adapter Root")
-        .resolves.toHaveProperty("string_val");
-      
-      path = "invalid";
-      await userEvent.type(pathTextbox, path);
-      await userEvent.click(getButton);
-      await expect(args.endpoint.get(path), `get: ${path}`)
-        .rejects.toThrow(`GET request failed with status 400 : Invalid Path: ${path}`);
-
-      path = "data/set_data";
-      await userEvent.clear(pathTextbox)
-      await userEvent.type(pathTextbox, path);
-      await userEvent.click(metadataButton);
-      await userEvent.click(getButton);
-      await expect(args.endpoint.get(path, {wants_metadata: true}), "Get: Metadata")
-        .resolves.toHaveProperty("writeable", true);
-
-    });
-
-    await step("Put Requests", async () => {
-      
-      await userEvent.clear(pathTextbox);
-      await userEvent.clear(putDataTextBox);
-      await userEvent.type(putDataTextBox, "{{\"string_val\": \"Put Test\"}");
-      await userEvent.click(putButton);
-      await expect(args.endpoint.put({"string_val": "Put Test"}), "Put: String Val")
-        .resolves.toHaveProperty("string_val", "Put Test");
-
-      let path = "float_val";
-      await userEvent.clear(pathTextbox);
-      await userEvent.type(pathTextbox, path);
-      await userEvent.clear(putDataTextBox);
-      await userEvent.type(putDataTextBox, "{{\"value\": 15.5}");
-      await userEvent.click(putButton);
-      await expect(args.endpoint.put({"value": 15.5}, "float_val"), "Put: Single Val")
-        .resolves.toEqual({
-          value: 15.5
-        });
-
-      path = "deep/long/nested/path";
-      await userEvent.clear(pathTextbox);
-      await userEvent.type(pathTextbox, path);
-      await userEvent.clear(putDataTextBox);
-      await userEvent.type(putDataTextBox, "{{\"num_val\": 16.5}");
-      await userEvent.click(putButton);
-      await expect(args.endpoint.put({"num_val": 16.5}, path), "Put: Nested Val")
-        .resolves.toEqual({
-          val: "Deep Text",
-          num_val: 16.5
-        });
-      await userEvent.clear(pathTextbox);
-      await userEvent.clear(putDataTextBox);
-      await userEvent.type(putDataTextBox, "{{\"rand_num\": 55}");
-      await userEvent.click(putButton);
-      await expect(args.endpoint.put({"rand_num": 55}))
-        .rejects.toThrow("PUT request failed with status 400 : Parameter rand_num is read-only");
-    });
-  }
-}

@@ -5,7 +5,7 @@ import { EndpointButton } from './EndpointButton';
 import { fn, expect, spyOn } from 'storybook/test';
 
 // Mocked Endpoint
-import { useAdapterEndpoint } from '../AdapterEndpoint/index.mock';
+import { useAdapterEndpoint, transformMockCode } from '../AdapterEndpoint/index.mock';
 
 const meta = {
   component: EndpointButton,
@@ -26,6 +26,15 @@ const meta = {
           detail: "String, Number, Boolean, null/undefined, or an array or dict of those values"
         }
       }
+    },
+  },
+  parameters: {
+    layout: "centered",
+    docs: {
+      source: {
+        transform: transformMockCode,
+        language: "tsx"
+      }
     }
   },
   render: (args) => {
@@ -38,6 +47,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+/** Standard use of the EndpointButton. */
 export const Default: Story = {
   args: {
     value: true
@@ -53,6 +63,7 @@ export const Default: Story = {
   }
 };
 
+/** The Button can be disabled by a Prop.*/
 export const Disabled: Story = {
   args: {
     disabled: true
@@ -63,7 +74,8 @@ export const Disabled: Story = {
   }
 }
 
-export const DisabledBecasueParam: Story = {
+/** The Button is automatically disabled if pointed at a read-only Parameter */
+export const DisabledBecauseParam: Story = {
   args: {
     fullpath: "rand_num"
   },
@@ -72,15 +84,17 @@ export const DisabledBecasueParam: Story = {
   }
 }
 
+/** The Button can be provided a function (and optional args) */
 export const PreTrigger: Story = {
   args: {
-    pre_method: fn()
+    pre_method: fn(),
+    pre_args: ["Pre Function Arg"]
   },
   play: async ({canvas, args, userEvent}) => {
     const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
     await userEvent.click(canvas.getByRole("button"));
 
-    await expect(args.pre_method).toHaveBeenCalled();
+    await expect(args.pre_method).toHaveBeenCalledWith(args.pre_args);
     await expect(put).toHaveBeenCalled();
   }
 }

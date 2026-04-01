@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ComponentProps } from 'react';
 import { expect, spyOn, waitFor } from 'storybook/test';
-import { resetMockData, useAdapterEndpoint } from '../AdapterEndpoint/index.mock';
+import { resetMockData, useAdapterEndpoint, transformMockCode } from '../AdapterEndpoint/index.mock';
 import { EndpointSlider } from './EndpointSlider';
 
 const PlacementOptionsList: ComponentProps<typeof EndpointSlider>["tooltipPlacement"][] = [
@@ -36,6 +36,14 @@ const meta = {
     },
     tooltipPlacement: {
       options: PlacementOptionsList
+    }
+  },
+  parameters: {
+    docs: {
+      source: {
+        transform: transformMockCode,
+        language: "tsx"
+      }
     }
   },
   render: (args) => {

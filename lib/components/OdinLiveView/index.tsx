@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import type { AdapterEndpoint as AdapterEndpoint, ParamNode} from '../AdapterEndpoint';
+import type {ReactNode} from 'react';
+import type { AdapterEndpoint as AdapterEndpoint, ParamNode } from '../AdapterEndpoint';
 import { getValueFromPath } from '../AdapterEndpoint';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import defaultImg from '../../assets/odin.png';
 
 import { Row, Col, Button, Dropdown, ButtonGroup, OverlayTriggerProps } from 'react-bootstrap';
-import { OverlayTrigger, Popover, Card} from 'react-bootstrap';
+import { OverlayTrigger, Popover, Card } from 'react-bootstrap';
 
 import { ZoomIn, ZoomOut, PauseFill, PlayFill, List, ArrowsAngleContract, ArrowsAngleExpand } from 'react-bootstrap-icons';
 
@@ -16,19 +16,35 @@ import { WithEndpoint } from '../WithEndpoint';
 import { OdinDoubleSlider } from '../OdinDoubleSlider';
 
 interface LiveViewProps {
+    /** What to display in the Card Header */
     title?: ReactNode;
+    /** The endpoint to connect to, which provides the Image*/
     endpoint: AdapterEndpoint<LiveViewParam>;
+    /** The path to the image on the adapter's Param Tree */
     img_path?: string;
+    /** How often to request the image from the Adapter, in Milliseconds */
     interval?: number;
+    /** If the Adapter is not the standard Live View Adapter, you can specify paths to
+     * the various controls with this Prop
+     */
     addrs?: Partial<LiveViewerAddrs>;
+    /** Set to true to render the Live View as a standalone image without the Card container */
     justImage?: boolean;
 }
 
-interface ZoomableImageProps {
-    src: string;
-    caption?: string;
-    additional_hover?: ReactNode;
+interface ControlsProps {
+    ref: HTMLDivElement;
+    placement?: OverlayTriggerProps["placement"];
 
+}
+
+interface ZoomableImageProps {
+    /** The URL Source of the image*/
+    src: string;
+    /** A caption to display below the image*/
+    caption?: string;
+    /** Additonal Components to display in the Hover Overlay, next to the zoom controls */
+    children?: ReactNode;
 }
 
 interface LiveViewParam extends ParamNode {
@@ -53,9 +69,20 @@ interface LiveViewerAddrs {
 const EndpointDropdown = WithEndpoint(Dropdown);
 const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 
-const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
-
-    const {src, caption, additional_hover } = props;
+/**
+ * An image rendering component that provides the ability to zoom into
+ * and drag around the image within its container. Used by {@link OdinLiveView},
+ * but also available as a standalone component for other potential uses.
+ * 
+ * @param {ZoomableImageProps} props 
+ * @param {string} props.src the URL of the image to display
+ * @param {string} props.caption An optional caption to display below the image
+ * @param {ReactNode} props.children Any additional components to render alongside
+ * the Zoom controls overlay, such as additional buttons
+ */
+const ZoomableImage: React.FC<ZoomableImageProps> = (
+    { src, caption, children }
+) => {
 
     const [dims, setDims] = useState([1024, 1024]);
     const [divWidth, setDivWidth] = useState(500);
@@ -77,14 +104,14 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
     }
 
     const onMouseDown: React.MouseEventHandler<HTMLImageElement> = (event) => {
-        if(event.buttons & 1){ // if button that triggered event is left click
+        if (event.buttons & 1) { // if button that triggered event is left click
             setDragStart([event.screenX, event.screenY]);
         }
     }
 
     const onDrag: React.MouseEventHandler<HTMLImageElement> = (event) => {
         event.preventDefault();
-        if(event.buttons & 1){ // check if primary button active (left click)
+        if (event.buttons & 1) { // check if primary button active (left click)
             const img = imgRef.current!;
             const parent = img.parentElement!;
             const y = parent.scrollTop;
@@ -104,39 +131,57 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (props) => {
 
     return (
         <figure className={style.figure}>
-            <div className={style.liveImg} style={{aspectRatio: `${dims[0]} / ${dims[1]}`}}>
-                <img src={src} onLoad={onLoad} width={dims[0]*(scale/100)}
-                     onMouseMove={onDrag} onMouseDown={onMouseDown} ref={imgRef}
-                     draggable={false}/>
-                
+            <div className={style.liveImg} style={{ aspectRatio: `${dims[0]} / ${dims[1]}` }}>
+                <img src={src} onLoad={onLoad} width={dims[0] * (scale / 100)}
+                    onMouseMove={onDrag} onMouseDown={onMouseDown} ref={imgRef}
+                    draggable={false} />
+
             </div>
             {caption && <figcaption>{caption}</figcaption>}
             <Row className={style.zoomOverlay}>
-                <Col>{additional_hover}</Col>
+                {children && <Col xs="auto">{children}</Col>}
                 <Col xs="auto">
-                <ButtonGroup size='sm'>
-                <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale-10, 10 ))}>
-                    <ZoomOut/>
-                </Button>
-                <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(getFitScale())}>
-                    <ArrowsAngleContract/>
-                </Button>
-                <Button title='Full Scale' variant='secondary' onClick={() => setScale(100)}>
-                    <ArrowsAngleExpand/>
-                </Button>
-                <Button title="Zoom In" variant="secondary" onClick={() => setScale(oldScale => oldScale+10)}>
-                    <ZoomIn/>
-                </Button>
-                </ButtonGroup>
+                    <ButtonGroup size='sm'>
+                        <Button title="Zoom Out" variant="secondary" onClick={() => setScale(oldScale => Math.max(oldScale - 10, 10))}>
+                            <ZoomOut />
+                        </Button>
+                        <Button title='Reset Zoom' variant='secondary' onClick={() => setScale(getFitScale())}>
+                            <ArrowsAngleContract />
+                        </Button>
+                        <Button title='Full Scale' variant='secondary' onClick={() => setScale(100)}>
+                            <ArrowsAngleExpand />
+                        </Button>
+                        <Button title="Zoom In" variant="secondary" onClick={() => setScale(oldScale => oldScale + 10)}>
+                            <ZoomIn />
+                        </Button>
+                    </ButtonGroup>
                 </Col>
             </Row>
         </figure>
     )
 }
 
-const OdinLiveView: React.FC<LiveViewProps> = (props) => {
-    const { title="Live View", img_path="image", endpoint, interval=1000, addrs={}, justImage } = props;
-    
+
+/**
+ * Component designed to connect to a
+ * {@link https://github.com/odin-detector/odin-data/blob/master/python/src/odin_data/control/live_view_adapter.py Live View Adapter}
+ * to display the Live Image, as well as provide controls for value clipping and colourmapping, if available.
+ * It can also work with other Adapters, so long as those adapters also provide the ability to request an Image via a HTTP Get request
+ * on the parameter tree structure.
+ * 
+ * If an alternate Adapter is used that does not provide all the controls that the Live View Adapter does, such as Colourmapping or Clipping,
+ * the controls for those will not render as part of the Component.
+ * 
+ * @param {LiveViewProps} props
+ * @param {boolean} props.justImage Set to true, the component will render as a standalone image, and the live controls will be
+ * inserted into an overlay alongside the zoom controls. If false, it will render within a {@link Card Bootstrap Card}
+ */
+const OdinLiveView: React.FC<LiveViewProps> = (
+    { title = "Live View", img_path = "image",
+        endpoint, interval = 1000, addrs = {}, justImage }
+) => {
+    // const { title="Live View", img_path="image", endpoint, interval=1000, addrs={}, justImage } = props;
+
     const [imgPath, setImgPath] = useState(defaultImg);
     const [enable, setEnable] = useState(true);
     const [frameNum, setFrameNum] = useState(0);
@@ -147,30 +192,30 @@ const OdinLiveView: React.FC<LiveViewProps> = (props) => {
     const [clip_range, setClipRange] = useState<LiveViewParam["clip_range"] | undefined>();
 
 
-    const {min_max_addr = "data_min_max",
-           clip_range_addr = "clip_range",
-           colormap_options_addr = "colormap_options",
-           colormap_selected_addr = "colormap_selected",
-           frame_num_addr = "frame/frame_num"} = addrs;
+    const { min_max_addr = "data_min_max",
+        clip_range_addr = "clip_range",
+        colormap_options_addr = "colormap_options",
+        colormap_selected_addr = "colormap_selected",
+        frame_num_addr = "frame/frame_num" } = addrs;
 
-
+    const div = useRef<HTMLDivElement>(null);
 
     const refreshImage = useCallback(() => {
-        endpoint.get<Blob>(img_path, {responseType: "blob"})
-        .then(result => {
-            URL.revokeObjectURL(imgPath);  // memory management
-            const img_url = URL.createObjectURL(result);
-            setImgPath(img_url);
-            endpoint.refreshData();
-        }).catch((error) => {
-            console.error("IMAGE GET FAILED: ", error);
-            setImgPath(defaultImg);
-        })
+        endpoint.get<Blob>(img_path, { responseType: "blob" })
+            .then(result => {
+                URL.revokeObjectURL(imgPath);  // memory management
+                const img_url = URL.createObjectURL(result);
+                setImgPath(img_url);
+                endpoint.refreshData();
+            }).catch((error) => {
+                console.error("IMAGE GET FAILED: ", error);
+                setImgPath(defaultImg);
+            })
     }, [endpoint.updateFlag]);
 
     useEffect(() => {
         let timer_id: NodeJS.Timeout;
-        if(enable){
+        if (enable) {
             timer_id = setInterval(refreshImage, interval);
         }
 
@@ -192,70 +237,98 @@ const OdinLiveView: React.FC<LiveViewProps> = (props) => {
             <Popover.Header>Options</Popover.Header>
             <Popover.Body>
                 <div className='d-grid gap-2'>
-                    {(colormap_selected && colormap_options) && 
-                    <EndpointDropdown endpoint={endpoint} event_type='select' fullpath={colormap_selected_addr}
-                        className="d-grid">
+                    {(colormap_selected && colormap_options) &&
+                        <EndpointDropdown endpoint={endpoint} event_type='select' fullpath={colormap_selected_addr}
+                            className="d-grid">
                             <Dropdown.Toggle id="colormap_dropdown">
                                 {colormap_options[colormap_selected]}
                             </Dropdown.Toggle>
                             <Dropdown.Menu>
-                                {colormap_options ? 
+                                {colormap_options ?
                                     Object.entries(colormap_options).map(([key, value], index) => (
                                         <Dropdown.Item eventKey={key} key={index} active={key == colormap_selected}>
                                             {value}
                                         </Dropdown.Item>
-                                    )): <></>
-                                    
+                                    )) : <></>
+
                                 }
                             </Dropdown.Menu>
-                    </EndpointDropdown>
+                        </EndpointDropdown>
                     }
-                {clip_range && 
-                <EndpointSlider endpoint={endpoint} title='Data Clipping' fullpath={clip_range_addr}
-                    min={data_min_max?.[0] ?? 0} max={data_min_max?.[1] ?? 1024}/>
-                }
+                    {clip_range &&
+                        <EndpointSlider endpoint={endpoint} title='Data Clipping' fullpath={clip_range_addr}
+                            min={data_min_max?.[0] ?? 0} max={data_min_max?.[1] ?? 1024} />
+                    }
                 </div>
             </Popover.Body>
         </Popover>
     )
 
-    const optionButtons = (placement: OverlayTriggerProps["placement"]="bottom-end") => (
-        <ButtonGroup size='sm'>
-            <Button onClick={() => setEnable(val => !val)}
+    const OptionButtons: React.FC<ControlsProps> =
+        ({ ref, placement = "bottom-end" }) => (
+            <ButtonGroup size='sm'>
+                <Button onClick={() => setEnable(val => !val)}
                     variant="secondary"
-                    title={`${enable ? "Disable": "Enable"} Live View`}>
-                {enable ? <PauseFill/> : <PlayFill/>}
-            </Button>
-            {((colormap_options && colormap_selected) || clip_range) && 
-                <OverlayTrigger placement={placement} overlay={renderOptions} trigger="click" rootClose> 
-                    <Button title='Options'><List/></Button>
-                </OverlayTrigger>
-            }
-        </ButtonGroup>
-    )
-
-    if(justImage){
-        return (
-            <ZoomableImage src={imgPath} caption={frameNum > -1? `Frame Number: ${frameNum}` : ""}
-                           additional_hover={optionButtons("bottom-start")}/>
+                    title={`${enable ? "Disable" : "Enable"} Live View`}>
+                    {enable ? <PauseFill /> : <PlayFill />}
+                </Button>
+                {((colormap_options && colormap_selected) || clip_range) &&
+                    <OverlayTrigger placement={placement} overlay={renderOptions}
+                        trigger="click" rootClose container={ref}>
+                        <Button title='Options'><List /></Button>
+                    </OverlayTrigger>
+                }
+            </ButtonGroup>
         )
-    }else{
+
+    if (justImage) {
+        return (
+            <ZoomableImage src={imgPath} caption={frameNum > -1 ? `Frame Number: ${frameNum}` : ""}>
+                <ButtonGroup size='sm' ref={div}>
+                    <Button onClick={() => setEnable(val => !val)}
+                        variant="secondary"
+                        title={`${enable ? "Disable" : "Enable"} Live View`}>
+                        {enable ? <PauseFill /> : <PlayFill />}
+                    </Button>
+                    {((colormap_options && colormap_selected) || clip_range) &&
+                        <OverlayTrigger placement="bottom" overlay={renderOptions}
+                            trigger="click" rootClose container={div}>
+                            <Button title='Options'><List /></Button>
+                        </OverlayTrigger>
+                    }
+                </ButtonGroup>
+            </ZoomableImage>
+                
+        )
+    } else {
         return (
             <Card>
                 <Card.Header>
                     <Row>
-                    <Col className={style.centerContents}>{title}</Col>
-                    <Col xs="auto">
-                        {optionButtons()}
-                    </Col>
+                        <Col className={style.centerContents}>{title}</Col>
+                        <Col xs="auto">
+                            <ButtonGroup size='sm' ref={div}>
+                                <Button onClick={() => setEnable(val => !val)}
+                                    variant="secondary"
+                                    title={`${enable ? "Disable" : "Enable"} Live View`}>
+                                    {enable ? <PauseFill /> : <PlayFill />}
+                                </Button>
+                                {((colormap_options && colormap_selected) || clip_range) &&
+                                    <OverlayTrigger placement="bottom" overlay={renderOptions}
+                                        trigger="click" rootClose container={div}>
+                                        <Button title='Options'><List /></Button>
+                                    </OverlayTrigger>
+                                }
+                            </ButtonGroup>
+                        </Col>
                     </Row>
                 </Card.Header>
                 <Card.Body className={style.centerContents}>
-                    <ZoomableImage src={imgPath} caption={frameNum > -1? `Frame Number: ${frameNum}` : ""}/>
+                    <ZoomableImage src={imgPath} caption={frameNum > -1 ? `Frame Number: ${frameNum}` : ""} />
                 </Card.Body>
             </Card>
         )
     }
 }
 
-export { ZoomableImage, OdinLiveView};
+export { ZoomableImage, OdinLiveView };

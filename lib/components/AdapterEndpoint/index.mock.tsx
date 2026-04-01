@@ -4,7 +4,9 @@ import * as actual from '.';
 import type { AdapterEndpoint, ParamTree, ParamNode, Parameter } from '.';
 import type { MetadataValue } from './AdapterEndpoint.types';
 
+import defaultImg from '../../assets/testImage.png';
 
+const imgBlob = await fetch(defaultImg).then(response => { return response.blob() });
 
 interface EndpointData extends actual.ParamNode {
     string_val: string;
@@ -32,6 +34,16 @@ interface EndpointData extends actual.ParamNode {
             }
         }
     };
+}
+
+interface LiveViewData extends actual.ParamNode {
+    frame: {
+        frame_num: number;
+    }
+    colormap_options: Record<string, string>;
+    colormap_selected: string;
+    data_min_max: [number, number];
+    clip_range: [number, number];
 }
 
 const testAdapterData: EndpointData = {
@@ -62,6 +74,19 @@ const testAdapterData: EndpointData = {
     trigger: null
 }
 
+const testLiveData: LiveViewData = {
+    clip_range: [0, 1023 ],
+    data_min_max: [0, 1023],
+    frame: {frame_num: 12},
+    colormap_options: {
+        "jet": "Jet",
+        "bone": "Bone",
+        "cool": "Cool",
+        "hot": "Hot"
+    },
+    colormap_selected: "jet"
+}
+
 const originalData = structuredClone(testAdapterData);
 
 const metadataPaths: { [key: string]: Partial<MetadataValue> } = {
@@ -77,6 +102,9 @@ const testMetadata = createMetadata(testAdapterData, metadataPaths);
 export * from '.'
 
 async function mockGet<T = ParamNode>(param_path?: string, config?: { wants_metadata?: boolean }) {
+    if(param_path == "image"){
+        return imgBlob;
+    }
     const wants_metadata = config?.wants_metadata ?? false;
 
     let pointer: ParamTree = wants_metadata ? testAdapterData : testMetadata;
@@ -109,12 +137,12 @@ function mockPut<T = Parameter>(data: { [key: string]: T }, param_path = '') {
     })
 
     Object.keys(dataCopy).forEach((key) => {
-        if(pointer[key] != null){
+        if (pointer[key] != null) {
             Object.assign(pointer, { [key]: dataCopy[key] });
         }
     })
     if ("value" in data && Object.keys(data).length == 1) {
-        pointer = {value: pointer[param_path.split("/").pop()!]};
+        pointer = { value: pointer[param_path.split("/").pop()!] };
     }
 
     return pointer;
@@ -144,10 +172,57 @@ const MockedEndpoint: AdapterEndpoint<EndpointData> = {
     updateFlag: Symbol("mocked")
 }
 
+const MockedLiveEndpoint: AdapterEndpoint<LiveViewData> = {
+    // @ts-ignore
+    get: fn(mockGet).mockName("get"),
+    // @ts-ignore
+    put: fn(mockPut).mockName("put"),
+    post: fn().mockName("post"),
+    remove: fn(),
+    refreshData: fn(),
+    mergeData: fn(),
+    data: testLiveData,
+    // @ts-ignore
+    metadata: testLiveData,
+    status: "connected",
+    apiVersion: "",
+    error: null,
+    loading: false,
+    updateFlag: Symbol("mocked")
+
+}
+
 const useAdapterEndpoint = fn(
     (..._: any[]) => { return MockedEndpoint }
 ).mockName('useAdapterEndpoint');
 
-export { useAdapterEndpoint, resetMockData };
+const useAdapterEndpoint_LiveView = fn(
+    (..._: any[]) => {return MockedLiveEndpoint}
+).mockName("useAdapterEndpoint");
+
+const transformMockCode = async (source: string) => {
+    
+    const prettier = await import('prettier/standalone');
+    const prettierPluginBabel = await import('prettier/plugins/babel');
+    const prettierPluginEstree = await import('prettier/plugins/estree');
+
+    const addEndpointString = `const endpoint = useAdapterEndpoint("live", import.meta.VITE_ENDPOINT_URL);`
+    let ret_string = source;
+    if (!(source.split("\n")[0].includes("const endpoint"))) {
+        ret_string = [addEndpointString,
+            "",
+            "return (",
+            source.replace(/endpoint={{[\s\S]*updateFlag: Symbol\(mocked\)\s*}}/, ` endpoint={endpoint}`),
+            ")"].join("\n");
+    }
+
+    return prettier.format(ret_string, {
+        parser: 'babel',
+        plugins: [prettierPluginBabel, prettierPluginEstree]
+    });
+    // return addEndpointString.concat("test");
+}
+
+export { useAdapterEndpoint, useAdapterEndpoint_LiveView, resetMockData, transformMockCode };
 // export {testAdapterData};
 

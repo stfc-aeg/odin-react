@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { EndpointInput } from './EndpointInput';
-import { useAdapterEndpoint, resetMockData } from '../AdapterEndpoint/index.mock';
+import { useAdapterEndpoint, resetMockData, transformMockCode } from '../AdapterEndpoint/index.mock';
 import { expect, spyOn } from 'storybook/test';
 
 const meta = {
@@ -21,6 +21,14 @@ const meta = {
         readonly: true
       },
       description: "Unused for Textbox, will always read from Adapter instead to display Parameter"
+    }
+  },
+  parameters: {
+    docs: {
+      source: {
+        transform: transformMockCode,
+        language: "tsx"
+      }
     }
   },
   render: (args) => {

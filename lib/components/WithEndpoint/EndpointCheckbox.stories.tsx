@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { EndpointCheckbox } from './EndpointCheckbox';
-import { useAdapterEndpoint } from '../AdapterEndpoint/index.mock';
+import { useAdapterEndpoint, transformMockCode } from '../AdapterEndpoint/index.mock';
 import { Form } from 'react-bootstrap';
 import { spyOn, expect } from 'storybook/test';
 
@@ -23,6 +23,15 @@ const meta = {
         options: ["checkbox", "radio", "switch"],
         control: {type: "radio"}
       }
+  },
+  parameters: {
+    layout: "centered",
+    docs: {
+      source: {
+        transform: transformMockCode,
+        language: "tsx"
+      }
+    }
   },
   render: (args) => {
     args.endpoint = useAdapterEndpoint("test", "http://localhost:1338");

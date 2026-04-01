@@ -1,0 +1,28 @@
+import {Canvas, Meta, ArgTypes, Primary, Controls, Stories, Source} from '@storybook/addon-docs/blocks'
+
+import * as LiveViewStories from './index.stories';
+
+<Meta of={LiveViewStories}/>
+
+# Odin Live View
+
+An Image display designed to connect to a
+[Live View Adapter](https://github.com/odin-detector/odin-data/blob/master/python/src/odin_data/control/live_view_adapter.py),
+to display the Live Image. It also provides controls to access the various controls
+in that adapter, such as Clipping and Colourmapping, if they are accessible.
+
+It can be used with any Adapter, so long as that Adapter provides the ability
+to request an Image via the HTTP GET API. This adapter can, but does not have to,
+also provide the various controls mentioned above.
+
+<Canvas of={LiveViewStories.Default} />
+{/* <Source of={LiveViewStories.Default} /> */}
+
+## Props
+<Controls />
+
+## Stories
+
+<Stories />
+
+

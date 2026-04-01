@@ -18,6 +18,7 @@ initialize({
   quiet: true,
   serviceWorker: {
     //change URL to support MSW mocking on Github Pages, the ./ in front is IMPORTANT
+    //otherwise it looks for the file in the root of the organisation Github Page, which doesn't exist
     url: "./mockServiceWorker.js"
   },
   onUnhandledRequest: "bypass"
@@ -31,7 +32,6 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
-    layout: 'centered',
     msw: {
       handlers: [
         http.get("/lib/assets/*", passthrough),
