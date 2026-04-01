@@ -94,7 +94,7 @@ export const PreTrigger: Story = {
     const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
     await userEvent.click(canvas.getByRole("button"));
 
-    await expect(args.pre_method).toHaveBeenCalledWith(args.pre_args);
+    await expect(args.pre_method).toHaveBeenCalledWith(...(args.pre_args as string[]));
     await expect(put).toHaveBeenCalled();
   }
 }
