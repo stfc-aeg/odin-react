@@ -15,14 +15,25 @@ import ProdinImg from '../../assets/prodin.png'
 import styles from './styles.module.css'
 import { OdinErrorOutlet, SingleErrorOutlet, useError } from '../OdinErrorContext';
 
-type NavLink_t = string | Record<string, string[]>;
+type NavLinkType = string | Record<string, string[]>;
 
 
 interface OdinAppProps extends PropsWithChildren{
+    /** Title to display on the Nav Bar*/
     title: string;
-    navLinks?: NavLink_t[];
+    /** 
+     * Links to include in the Nav Bar. The order will map to the order
+     * of pages included as children.
+     *  
+     * If a Dict-type object is included, it will render the links in that
+     * object in a dropdown menu, with the key as dropdown title. 
+    */
+    navLinks?: NavLinkType[];
+    /** Left Margin to pad the icon*/
     icon_marginLeft?: CSSProperties['marginLeft'];
+    /** Right Margin to pad the icon*/
     icon_marginRight?: CSSProperties['marginRight'];
+    /** URL to custom icon*/
     custom_icon?: string;
 }
 
@@ -55,7 +66,7 @@ const PageNotFound: React.FC = () => {
 }
 
 interface routeAppProps extends PropsWithChildren{
-    routeLinks?: NavLink_t[];
+    routeLinks?: NavLinkType[];
 }
 
 const darkModeAttr = "data-bs-theme";
@@ -104,7 +115,7 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
 }
 
 interface ScrollableNavListProps {
-    navLinks?: NavLink_t[];
+    navLinks?: NavLinkType[];
 }
  
 const ScrollableNavList: React.FC<ScrollableNavListProps> = ({navLinks}) => {
@@ -236,7 +247,19 @@ const ScrollableNavList: React.FC<ScrollableNavListProps> = ({navLinks}) => {
      );
 }
 
-
+/**
+ * Component designed to encapsulate the entire GUI. Provides a Nav Bar
+ * with routing for GUIs with multiple pages,that also displays
+ * an Icon, App title, a button to toggle between dark and light mode,
+ * and a button to display any errors that may have occured.
+ * This Nav Bar is pinned to the top of the screen and so is always visible.
+ * 
+ * An error boundary is included in this component, so feedback for any
+ * rendering errors caused by React is displayed, rather than a blank
+ * page.
+ * 
+ 
+ */
 const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
 {
     const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
