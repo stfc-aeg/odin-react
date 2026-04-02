@@ -19,9 +19,7 @@ interface Endpoint {
 
 }
 
-const EndpointDisplay: React.FC<Endpoint> = (
-  { endpoint }
-) => {
+const EndpointDisplay = ({ endpoint }: Endpoint) => {
   // const endpoint = useAdapterEndpoint(adapter, endpoint_url, interval, timeout);
 
   const [path, setPath] = useState("");

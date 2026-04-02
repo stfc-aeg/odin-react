@@ -1,4 +1,4 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 import type { AdapterEndpoint as AdapterEndpoint, ParamNode } from '../AdapterEndpoint';
 import { getValueFromPath } from '../AdapterEndpoint';
 
@@ -18,7 +18,7 @@ import { OdinDoubleSlider } from '../OdinDoubleSlider';
 interface LiveViewProps {
     /** What to display in the Card Header */
     title?: ReactNode;
-    /** The endpoint to connect to, which provides the Image*/
+    /** The endpoint to get the image from*/
     endpoint: AdapterEndpoint<LiveViewParam>;
     /** The path to the image on the adapter's Param Tree */
     img_path?: string;
@@ -80,9 +80,7 @@ const EndpointSlider = WithEndpoint(OdinDoubleSlider);
  * @param {ReactNode} props.children Any additional components to render alongside
  * the Zoom controls overlay, such as additional buttons
  */
-const ZoomableImage: React.FC<ZoomableImageProps> = (
-    { src, caption, children }
-) => {
+const ZoomableImage = ({ src, caption, children }: ZoomableImageProps) => {
 
     const [dims, setDims] = useState([1024, 1024]);
     const [divWidth, setDivWidth] = useState(500);
@@ -163,8 +161,7 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (
 
 
 /**
- * Component designed to connect to a
- * {@link https://github.com/odin-detector/odin-data/blob/master/python/src/odin_data/control/live_view_adapter.py Live View Adapter}
+ * Component designed to connect to a [Live View Adapter](https://github.com/odin-detector/odin-data/blob/master/python/src/odin_data/control/live_view_adapter.py)
  * to display the Live Image, as well as provide controls for value clipping and colourmapping, if available.
  * It can also work with other Adapters, so long as those adapters also provide the ability to request an Image via a HTTP Get request
  * on the parameter tree structure.
@@ -172,15 +169,12 @@ const ZoomableImage: React.FC<ZoomableImageProps> = (
  * If an alternate Adapter is used that does not provide all the controls that the Live View Adapter does, such as Colourmapping or Clipping,
  * the controls for those will not render as part of the Component.
  * 
- * @param {LiveViewProps} props
- * @param {boolean} props.justImage Set to true, the component will render as a standalone image, and the live controls will be
- * inserted into an overlay alongside the zoom controls. If false, it will render within a {@link Card Bootstrap Card}
+ * Can be rendered either within a `Bootstrap Card`, or as a standalone image
  */
-const OdinLiveView: React.FC<LiveViewProps> = (
+const OdinLiveView = (
     { title = "Live View", img_path = "image",
-        endpoint, interval = 1000, addrs = {}, justImage }
+        endpoint, interval = 1000, addrs = {}, justImage }: LiveViewProps
 ) => {
-    // const { title="Live View", img_path="image", endpoint, interval=1000, addrs={}, justImage } = props;
 
     const [imgPath, setImgPath] = useState(defaultImg);
     const [enable, setEnable] = useState(true);
@@ -264,23 +258,6 @@ const OdinLiveView: React.FC<LiveViewProps> = (
         </Popover>
     )
 
-    const OptionButtons: React.FC<ControlsProps> =
-        ({ ref, placement = "bottom-end" }) => (
-            <ButtonGroup size='sm'>
-                <Button onClick={() => setEnable(val => !val)}
-                    variant="secondary"
-                    title={`${enable ? "Disable" : "Enable"} Live View`}>
-                    {enable ? <PauseFill /> : <PlayFill />}
-                </Button>
-                {((colormap_options && colormap_selected) || clip_range) &&
-                    <OverlayTrigger placement={placement} overlay={renderOptions}
-                        trigger="click" rootClose container={ref}>
-                        <Button title='Options'><List /></Button>
-                    </OverlayTrigger>
-                }
-            </ButtonGroup>
-        )
-
     if (justImage) {
         return (
             <ZoomableImage src={imgPath} caption={frameNum > -1 ? `Frame Number: ${frameNum}` : ""}>
@@ -298,7 +275,7 @@ const OdinLiveView: React.FC<LiveViewProps> = (
                     }
                 </ButtonGroup>
             </ZoomableImage>
-                
+
         )
     } else {
         return (

@@ -2,7 +2,7 @@ import type { Metadata, ParamTree, Parameter } from "../AdapterEndpoint";
 import { AdapterEndpoint, getValueFromPath, isMetadataValue, isParamNode } from "../AdapterEndpoint";
 import { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput } from "../WithEndpoint";
 
-import {  useState } from "react";
+import { useState } from "react";
 import { Card, Collapse, Dropdown, InputGroup, OverlayTrigger, Table, Tooltip } from "react-bootstrap";
 
 import type { PropsWithChildren, ReactNode } from "react";
@@ -14,8 +14,8 @@ interface CollapseableCardProps extends PropsWithChildren {
     defaultOpen?: boolean;
 }
 
-const CollapseableCard: React.FC<CollapseableCardProps> = (
-    { header, defaultOpen = true, children }
+const CollapseableCard = (
+    { header, defaultOpen = true, children }: CollapseableCardProps
 ) => {
 
     const [open, setOpen] = useState(defaultOpen);
@@ -45,11 +45,8 @@ interface ParamControllerProps {
 }
 
 
-const ParamController: React.FC<ParamControllerProps> = (
-    { endpoint, path = "", title }
-) => {
+const ParamController = ({ endpoint, path = "", title }: ParamControllerProps) => {
 
-    // const param: JSON = getValueFromPath(endpoint.data, path);
     const metadata: Metadata = getValueFromPath(endpoint.metadata, path)!;
     const param: ParamTree = getValueFromPath(endpoint.data, path)!;
 

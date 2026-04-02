@@ -38,8 +38,7 @@ interface OdinAppProps extends PropsWithChildren{
 }
 
 
-const Fallback: React.FC<FallbackProps> = (props) => {
-    const {error, resetErrorBoundary} = props;
+const Fallback = ({ error, resetErrorBoundary }: FallbackProps) => {
     const message = getErrorMessage(error) ?? "Unknown Rendering Error";
     return (
         <Card>
@@ -54,7 +53,7 @@ const Fallback: React.FC<FallbackProps> = (props) => {
     )
 }
 
-const PageNotFound: React.FC = () => {
+const PageNotFound = () => {
     const {"*": splat} = useParams();
     return (
         <div className={styles.notFound}>
@@ -72,12 +71,11 @@ interface routeAppProps extends PropsWithChildren{
 const darkModeAttr = "data-bs-theme";
 const buttonSvgSize = "2em";
 
-const RouteApp: React.FC<routeAppProps> = (props) => {
+const RouteApp = ({ routeLinks, children }: routeAppProps) => {
     
-    const {routeLinks} = props;
     let childRoute: ReactNode[] = [];
 
-    if(routeLinks && props.children){
+    if(routeLinks && children){
 
         const expandedRouteLinks: string[] = [];
 
@@ -90,11 +88,11 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
             }
         })
 
-        childRoute = Children.map<ReactElement, ReactNode>(props.children, (child, index) => 
+        childRoute = Children.map<ReactElement, ReactNode>(children, (child, index) => 
                 <Route path={expandedRouteLinks[index]} element={child} key={expandedRouteLinks[index]}/>
         ) ?? [];
 
-        childRoute.push(<Route index element={Children.toArray(props.children)[0]} key={"/"}/>)
+        childRoute.push(<Route index element={Children.toArray(children)[0]} key={"/"}/>)
         childRoute.push(<Route path="*" element={<PageNotFound/>}/>)
 
 
@@ -108,7 +106,7 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
     }else{
         return (
             <Routes>
-                <Route index element={props.children} />
+                <Route index element={children} />
             </Routes>
         )
     }
@@ -118,7 +116,7 @@ interface ScrollableNavListProps {
     navLinks?: NavLinkType[];
 }
  
-const ScrollableNavList: React.FC<ScrollableNavListProps> = ({navLinks}) => {
+const ScrollableNavList = ({ navLinks }: ScrollableNavListProps) => {
     
     const navLinkRef = useRef<HTMLDivElement>(null);
     const [navLinkOffset, setNavLinkOffset] = useState(0);
@@ -260,10 +258,9 @@ const ScrollableNavList: React.FC<ScrollableNavListProps> = ({navLinks}) => {
  * 
  
  */
-const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
-{
-    const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
-
+const OdinApp = (
+    { title, navLinks, icon_marginLeft = "5px", icon_marginRight = "10px", custom_icon, children }: OdinAppProps
+) => {
     const [iconHover, changeIconHover] = useState(false);
     
     const handleHoverOn = () => changeIconHover(true);
@@ -348,7 +345,7 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                 </Nav>
             </Navbar>
             <SingleErrorOutlet/>
-            <RouteApp routeLinks={navLinks} children={props.children}/>
+            <RouteApp routeLinks={navLinks} children={children}/>
         </HashRouter>
     </ErrorBoundary>
     )

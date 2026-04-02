@@ -34,7 +34,7 @@ interface OdinGraphProps extends Partial<Omit<PlotParams, "data">>{
 
 }
 
-const FallbackPlotComponent: React.FC<Partial<PlotParams>> = (props) => {
+const FallbackPlotComponent = (props: Partial<PlotParams>) => {
 
     const style = Object.assign({height: "450px", textAlign: "center"}, props.style);
     const [timeoutMessage, setMessage] = useState<React.ReactNode>('');
@@ -87,9 +87,10 @@ const getPlot = async () => {
     }
 }
 
-const OdinGraph: React.FC<OdinGraphProps> = (props) => {
-
-    const {title, data, layout={}, style={}, type="scatter", series_names, colorscale="Portland", axis=[], ...leftoverProps} = props;
+const OdinGraph = (
+    { title, data, layout = {}, style = {}, type = "scatter", series_names,
+    colorscale = "Portland", axis = [], ...leftoverProps }: OdinGraphProps
+) => {
 
     const [_Plot, setPlot] = useState<React.ComponentType<PlotParams>>(() => (FallbackPlotComponent));
 

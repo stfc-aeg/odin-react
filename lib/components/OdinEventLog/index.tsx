@@ -1,6 +1,6 @@
 import { TitleCard } from "../TitleCard";
-import type {AdapterEndpoint, ParamNode} from "../AdapterEndpoint";
-import {Row, Col } from 'react-bootstrap';
+import type { AdapterEndpoint, ParamNode } from "../AdapterEndpoint";
+import { Row, Col } from 'react-bootstrap';
 import { ToggleButtonGroup, ToggleButton, Form, InputGroup, Button, OverlayTrigger, Popover } from "react-bootstrap";
 
 import { DashCircle, InfoCircle, ExclamationTriangle, ExclamationOctagon, XOctagon } from "react-bootstrap-icons";
@@ -53,10 +53,13 @@ interface PropsWithEndpoint extends BasicProps {
 
 type EventLogProps = PropsWithMethod | PropsWithEndpoint;
 
-const FilterButtons = (props: LogHeaderProps) => {
+const FilterButtons = (
+    {
+        displayLogLevels, displayDay, LogLevelFilter, autoScroll,
+        changeDisplayDay, changeAutoScroll, onFilterChange, changeTimestampFilter
+    }: LogHeaderProps
+) => {
 
-    const {displayLogLevels, displayDay, LogLevelFilter, autoScroll,
-           changeDisplayDay, changeAutoScroll, onFilterChange, changeTimestampFilter} = props;
 
     const startDateInput = useRef<HTMLInputElement>(null);
     const startTimeInput = useRef<HTMLInputElement>(null);
@@ -82,107 +85,109 @@ const FilterButtons = (props: LogHeaderProps) => {
         const target = event.target as HTMLInputElement;
         let val = new Date();
         const zeroDate = new Date(0, 0);
-        
-        switch(target) {
+
+        switch (target) {
             case startDateInput.current:
                 val = combineDateandTime(target.valueAsDate ?? val,
                     startTimeInput.current?.valueAsDate ?? zeroDate);
-                changeTimestampFilter(oldDates => ({start: val, end: oldDates.end}));
+                changeTimestampFilter(oldDates => ({ start: val, end: oldDates.end }));
                 break;
             case startTimeInput.current:
                 val = combineDateandTime(startDateInput.current?.valueAsDate ?? val,
                     target.valueAsDate ?? zeroDate);
-                changeTimestampFilter(oldDates => ({start: val, end: oldDates.end}));
+                changeTimestampFilter(oldDates => ({ start: val, end: oldDates.end }));
                 break;
             case endDateInput.current:
                 val = combineDateandTime(target.valueAsDate ?? val,
                     endTimeInput.current?.valueAsDate ?? zeroDate);
-                changeTimestampFilter(oldDates => ({start: oldDates.start, end: val}));
+                changeTimestampFilter(oldDates => ({ start: oldDates.start, end: val }));
                 break;
             case endTimeInput.current:
                 val = combineDateandTime(endDateInput.current?.valueAsDate ?? val,
                     target.valueAsDate ?? zeroDate);
-                changeTimestampFilter(oldDates => ({start: oldDates.start, end: val}));
+                changeTimestampFilter(oldDates => ({ start: oldDates.start, end: val }));
                 break;
         }
     }
-    
+
     const renderOptions = (
         <Popover>
             <Popover.Header>Options</Popover.Header>
             <Popover.Body>
-            {displayLogLevels ?
-            <>
-            <Row className={style.headerControl}>
-                <Col>
-                    <Form.Label>Filter Log Levels</Form.Label>
-                    <ToggleButtonGroup type="checkbox" value={LogLevelFilter} onChange={onFilterChange}>
-                        <ToggleButton className={style.iconButton} key="debug"  id="debug" value="debug" variant="outline-secondary"><DashCircle className={style.svg} title="Debug"/></ToggleButton>
-                        <ToggleButton className={style.iconButton} key="info"  id="info" value="info" variant="outline-success"><InfoCircle className={style.svg} title="Info"/></ToggleButton>
-                        <ToggleButton className={style.iconButton} key="warning"  id="warning" value="warning" variant="outline-warning"><ExclamationTriangle className={style.svg} title="Warning"/></ToggleButton>
-                        <ToggleButton className={style.iconButton} key="error"  id="error" value="error" variant="outline-danger"><ExclamationOctagon className={style.svg} title="Wrror"/></ToggleButton>
-                        <ToggleButton className={style.iconButton} key="critical"  id="critical" value="critical" variant="outline-danger"><XOctagon className={style.svg} title="Critical"/></ToggleButton>
-                    </ToggleButtonGroup>
-                </Col>
-            </Row>
-            <hr/>
-            </>
-            : <></>}
-            <Form.Label>Filter Log Timestamps</Form.Label>
-            <InputGroup size="sm">
-                <InputGroup.Text>From</InputGroup.Text>
-                <Form.Control ref={startDateInput} type="date" onChange={onTimestampChange} defaultValue={todayString}/>
-                <Form.Control ref={startTimeInput} type="time" onChange={onTimestampChange} step="1"/>
-            </InputGroup>
-            <InputGroup size="sm">
-                <InputGroup.Text>To</InputGroup.Text>
-                <Form.Control ref={endDateInput} type="date" onChange={onTimestampChange} defaultValue={todayString}/>
-                <Form.Control ref={endTimeInput} type="time" onChange={onTimestampChange} step="1"/>
-            </InputGroup>
+                {displayLogLevels ?
+                    <>
+                        <Row className={style.headerControl}>
+                            <Col>
+                                <Form.Label>Filter Log Levels</Form.Label>
+                                <ToggleButtonGroup type="checkbox" value={LogLevelFilter} onChange={onFilterChange}>
+                                    <ToggleButton className={style.iconButton} key="debug" id="debug" value="debug" variant="outline-secondary"><DashCircle className={style.svg} title="Debug" /></ToggleButton>
+                                    <ToggleButton className={style.iconButton} key="info" id="info" value="info" variant="outline-success"><InfoCircle className={style.svg} title="Info" /></ToggleButton>
+                                    <ToggleButton className={style.iconButton} key="warning" id="warning" value="warning" variant="outline-warning"><ExclamationTriangle className={style.svg} title="Warning" /></ToggleButton>
+                                    <ToggleButton className={style.iconButton} key="error" id="error" value="error" variant="outline-danger"><ExclamationOctagon className={style.svg} title="Wrror" /></ToggleButton>
+                                    <ToggleButton className={style.iconButton} key="critical" id="critical" value="critical" variant="outline-danger"><XOctagon className={style.svg} title="Critical" /></ToggleButton>
+                                </ToggleButtonGroup>
+                            </Col>
+                        </Row>
+                        <hr />
+                    </>
+                    : <></>}
+                <Form.Label>Filter Log Timestamps</Form.Label>
+                <InputGroup size="sm">
+                    <InputGroup.Text>From</InputGroup.Text>
+                    <Form.Control ref={startDateInput} type="date" onChange={onTimestampChange} defaultValue={todayString} />
+                    <Form.Control ref={startTimeInput} type="time" onChange={onTimestampChange} step="1" />
+                </InputGroup>
+                <InputGroup size="sm">
+                    <InputGroup.Text>To</InputGroup.Text>
+                    <Form.Control ref={endDateInput} type="date" onChange={onTimestampChange} defaultValue={todayString} />
+                    <Form.Control ref={endTimeInput} type="time" onChange={onTimestampChange} step="1" />
+                </InputGroup>
             </Popover.Body>
         </Popover>
     )
 
     return (
         <Row className={style.headerControl}>
-        <Col>Event Log</Col>
-        <Col xs="auto">
-            <OverlayTrigger placement="bottom-end" overlay={renderOptions} trigger="click" rootClose>
-            <Button className={style.iconButton} variant="outline-secondary"><Filter className={style.svg} title="Filter Options"/></Button>
-            </OverlayTrigger>
-            <Button className={style.iconButton} onClick={() => changeAutoScroll(val => !val)}
+            <Col>Event Log</Col>
+            <Col xs="auto">
+                <OverlayTrigger placement="bottom-end" overlay={renderOptions} trigger="click" rootClose>
+                    <Button className={style.iconButton} variant="outline-secondary"><Filter className={style.svg} title="Filter Options" /></Button>
+                </OverlayTrigger>
+                <Button className={style.iconButton} onClick={() => changeAutoScroll(val => !val)}
                     variant={autoScroll ? "secondary" : "outline-secondary"}>
-                <ArrowBarDown className={style.svg} title={autoScroll ? "Disable Auto Scroll" : "Enable Auto Scroll"}/>
-            </Button>
-            <Button className={style.iconButton} onClick={() => changeDisplayDay(val => !val)} 
+                    <ArrowBarDown className={style.svg} title={autoScroll ? "Disable Auto Scroll" : "Enable Auto Scroll"} />
+                </Button>
+                <Button className={style.iconButton} onClick={() => changeDisplayDay(val => !val)}
                     variant={displayDay ? "secondary" : "outline-secondary"}>
-                {displayDay ? <Clock className={style.svg} title="Hide Date"/> :
-                              <CalendarEvent className={style.svg} title="Show Date"/>}
-            </Button>
-        </Col>
-        
-        
+                    {displayDay ? <Clock className={style.svg} title="Hide Date" /> :
+                        <CalendarEvent className={style.svg} title="Show Date" />}
+                </Button>
+            </Col>
+
+
         </Row>
     )
 }
 
-const OdinEventLog: React.FC<EventLogProps> = (props) => {
+const OdinEventLog = (
+    { refreshRate = 1000, getLatestLogs, endpoint, path,
+    displayHeight = "330px", maxLogs = 500, events }: EventLogProps
+) => {
 
-    const { refreshRate=1000, getLatestLogs, endpoint, path, displayHeight="330px", maxLogs=500 } = props;
-    const propEvents = props.events;
+    // const propEvents = events;
 
     const log_levels = ["debug", "info", "warning", "error", "critical"];
 
     const [level_filter, setLevelFilter] = useState(log_levels);
     //timestamp boundaries set as min and max possible dates to start with
-    const [timestampFilter, changeTimestampFilter] = useState<TimestampFilter_t>({start: new Date(0), end: new Date(8.64e15)});
-    const [events, changeEvents] = useState(propEvents);
+    const [timestampFilter, changeTimestampFilter] = useState<TimestampFilter_t>({ start: new Date(0), end: new Date(8.64e15) });
+    const [stateEvents, changeEvents] = useState(events);
     const [lastTimestamp, changeLastTimestamp] = useState("");
 
     const [displayDay, changeDisplayDay] = useState(false);
     const [autoScroll, changeAutoScroll] = useState(true);
 
-    const displayLogLevels = events[0] ? "level" in events[0] : false;
+    const displayLogLevels = stateEvents[0] ? "level" in stateEvents[0] : false;
 
     const dateFormatter = new Intl.DateTimeFormat("en-UK", {
         dateStyle: "short"
@@ -197,28 +202,28 @@ const OdinEventLog: React.FC<EventLogProps> = (props) => {
 
     const RefreshLogs = useCallback(async () => {
         let newLogs: Log[] = [];
-        if(getLatestLogs != null){
+        if (getLatestLogs != null) {
             newLogs = getLatestLogs(lastTimestamp);
-        }else{
+        } else {
             // get the latest logs from the endpoint manually
-           const response = await endpoint.get(`${path}?timestamp=${lastTimestamp}`);
-           newLogs = Object.values(response)[0] as Log[];
+            const response = await endpoint.get(`${path}?timestamp=${lastTimestamp}`);
+            newLogs = Object.values(response)[0] as Log[];
         }
-        if(newLogs.length){
-            const lastLog = newLogs[newLogs.length -1];
+        if (newLogs.length) {
+            const lastLog = newLogs[newLogs.length - 1];
             changeLastTimestamp(lastLog.timestamp);
             changeEvents(oldEvents => oldEvents.concat(newLogs).slice(-maxLogs));
         }
 
-    }, [lastTimestamp, events, getLatestLogs]);
+    }, [lastTimestamp, stateEvents, getLatestLogs]);
 
     useEffect(() => {
-        if(autoScroll){
+        if (autoScroll) {
             const bottomDiv = scrollRef.current!;
-            const options: ScrollToOptions = {behavior: "smooth", top: bottomDiv.offsetTop};
+            const options: ScrollToOptions = { behavior: "smooth", top: bottomDiv.offsetTop };
             bottomDiv.parentElement!.scrollTo(options);
         }
-    }, [events]);
+    }, [stateEvents]);
 
     useEffect(() => {
         const timer_id = setInterval(RefreshLogs, refreshRate);
@@ -239,17 +244,17 @@ const OdinEventLog: React.FC<EventLogProps> = (props) => {
         return (
             <Row key={event.timestamp} className={`${style.log} ${style[event_level_class]}`}>
                 <Col sm="12" md="auto">{dateTimeString}</Col>
-                {event.level ? 
-                <Col xs="auto">{event.level.padStart(8)}</Col> : <></>}
+                {event.level ?
+                    <Col xs="auto">{event.level.padStart(8)}</Col> : <></>}
                 <Col>{event.message}</Col>
             </Row>
         )
     }
 
     const onFilterChange = (val: string[]) => setLevelFilter(val);
-    
+
     const filterEvent = () => {
-        const filteredLogs = events.filter((event) => {
+        const filteredLogs = stateEvents.filter((event) => {
             const level_filtered = event.level ? level_filter.includes(event.level.toLowerCase()) : true;
             const timestamp = new Date(event.timestamp);
             const timestamp_filtered_start = timestamp >= timestampFilter.start;
@@ -263,11 +268,11 @@ const OdinEventLog: React.FC<EventLogProps> = (props) => {
     return (
         <TitleCard title={<FilterButtons
             displayLogLevels={displayLogLevels} displayDay={displayDay} LogLevelFilter={level_filter} autoScroll={autoScroll}
-            changeDisplayDay={changeDisplayDay} onFilterChange={onFilterChange} changeAutoScroll={changeAutoScroll} changeTimestampFilter={changeTimestampFilter}/>
+            changeDisplayDay={changeDisplayDay} onFilterChange={onFilterChange} changeAutoScroll={changeAutoScroll} changeTimestampFilter={changeTimestampFilter} />
         }>
-            <div className={style.preScrollable} style={{height: displayHeight}}>
+            <div className={style.preScrollable} style={{ height: displayHeight }}>
                 {filterEvent().map((log) => renderEvent(log))}
-                <div className="scrollToBottom" ref={scrollRef}/>
+                <div className="scrollToBottom" ref={scrollRef} />
             </div>
         </TitleCard>
     )

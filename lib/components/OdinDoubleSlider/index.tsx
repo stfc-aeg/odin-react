@@ -50,11 +50,10 @@ const OptionalOverlay = (props: OverlayTriggerProps) => {
 
 }
 
-const OdinDoubleSlider: React.FC<SliderProps> = ({
+const OdinDoubleSlider = ({
     min = 0, max = 100, step = 1, value = [min, max],
     title, showTooltip = true, tooltipPosition = "auto", disabled, showMinMaxValues = true,
-    onChange, onMouseUp
-}) => {
+    onChange, onMouseUp }: SliderProps) => {
 
     const [vals, changeVals] = useState<value_t>({ low: value[0], high: value[1] });
 

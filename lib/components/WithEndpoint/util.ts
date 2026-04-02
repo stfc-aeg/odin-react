@@ -6,13 +6,21 @@ import { useError } from "../OdinErrorContext";
 
 
 export interface EndpointProps<PreArgs extends unknown[], PostArgs extends unknown[]> {
+    /** Endpoint to connect to */
     endpoint: AdapterEndpoint;
+    /** Path to the Parameter(s) to control with this component */
     fullpath: string;
+    /** Optional value to override the value read from the adapter*/
     value?: ParamTree;
+    /** Disable the component, so it cannot be interacted with*/
     disabled?: boolean;
+    /** A method to run before performing the PUT request */
     pre_method?: (...args: PreArgs) => void;
+    /** A method to run after the PUT request succeeds*/
     post_method?: (...args: PostArgs) => void;
+    /** An array of args to pass to the pre_method*/
     pre_args?: PreArgs;
+    /** An array of args to pass to the post_method*/
     post_args?: PostArgs;
 }
 

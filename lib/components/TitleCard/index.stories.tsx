@@ -4,17 +4,21 @@ import { TitleCard } from './index';
 
 
 const meta = {
-  decorators: [(story) => <div style={{ margin: '3rem' }}>{story()}</div>],
   component: TitleCard,
   argTypes: {
     children: {
       options: ['Normal', 'Bold', 'Italic'],
       mapping: {
-        Normal: <span>Normal</span>,
-        Bold: <b>Bold</b>,
-        Italic: <i>Italic</i>,
+        Normal: (<span>Normal</span>),
+        Bold: (<b>Bold</b>),
+        Italic: (<i>Italic</i>),
       },
       control: { type: 'radio' },
+      table: {
+        type: {
+          summary: "ReactNode"
+        }
+      }
     }
   }
 } satisfies Meta<typeof TitleCard>;

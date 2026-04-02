@@ -39,32 +39,34 @@ interface ErrorAction {
 
 const errorsReducer = (errors: OdinError[], action: ErrorAction) => {
     const err = action.error;
-    switch(action.type){
+    switch (action.type) {
         case ErrorActionType.ADD:
-            { if(err === undefined){
-                console.error("Error not provided to setError method");
-                return errors;
-            }
-            const now = new Date();
-            const newError = new OdinError(err.message, now);
-            const newErrorList = errors.length ? errors.flatMap((old_err, index) => {
-                if(index == 0){
-                    if(newError.message == old_err.message){
-                        //new error has same message as the lastest in the list, so we simply want to replace it with an updated Count and Timestamp
-                        newError.count += old_err.count;
-                        return newError;
-                    }
-                    return [newError, old_err];
+            {
+                if (err === undefined) {
+                    console.error("Error not provided to setError method");
+                    return errors;
                 }
-                return old_err;
-            }) : [newError];
-            return newErrorList; }
+                const now = new Date();
+                const newError = new OdinError(err.message, now);
+                const newErrorList = errors.length ? errors.flatMap((old_err, index) => {
+                    if (index == 0) {
+                        if (newError.message == old_err.message) {
+                            //new error has same message as the lastest in the list, so we simply want to replace it with an updated Count and Timestamp
+                            newError.count += old_err.count;
+                            return newError;
+                        }
+                        return [newError, old_err];
+                    }
+                    return old_err;
+                }) : [newError];
+                return newErrorList;
+            }
         case ErrorActionType.REMOVE:
-            if(err === undefined){
+            if (err === undefined) {
                 console.error("Error not provided to clearError method");
                 return errors;
             }
-            if("timestamp" in err){
+            if ("timestamp" in err) {
                 return errors.filter(old_err => old_err.message !== err.message || old_err.timestamp !== err.timestamp);
             }
             return errors.filter(old_err => old_err.message !== err.message);
@@ -109,14 +111,14 @@ const OdinErrorContext = (props: PropsWithChildren) => {
         type: ErrorActionType.CLEAR
     });
 
-    const context = useMemo<ErrorContext_t>(() => ({setError, clearError, clearAllError}), [errors]);
+    const context = useMemo<ErrorContext_t>(() => ({ setError, clearError, clearAllError }), [errors]);
 
     return (
-    <ErrorContext value={errors}>
-        <ErrorDispatchContext value={context}>
-            {props.children}
-        </ErrorDispatchContext>
-    </ErrorContext>
+        <ErrorContext value={errors}>
+            <ErrorDispatchContext value={context}>
+                {props.children}
+            </ErrorDispatchContext>
+        </ErrorContext>
     )
 }
 
@@ -127,45 +129,47 @@ interface ErrorAlertProps extends extendableAlertProps {
 
 
 
-const ErrorAlert: React.FC<ErrorAlertProps> = ({error, className, ...props}) => {
-    const {clearError} = useError();
+const ErrorAlert = ({ error, className, ...props }: ErrorAlertProps) => {
+    const { clearError } = useError();
 
     const closeHandler = () => {
         clearError(error);
     }
     return (
         <Alert variant="danger" onClose={closeHandler}
-        dismissible className={`${Style.errorAlert} ${className}`} transition={false} {...props}>
-        <small>
-            <Badge bg="danger" className={Style.errorBadge}>{error.count}</Badge>
-            {error.timestamp.toLocaleTimeString()}
-        </small>
-        <div className={Style.errorMessage}>{error.message}</div>
+            dismissible className={`${Style.errorAlert} ${className}`} transition={false} {...props}>
+            <small>
+                <Badge bg="danger" className={Style.errorBadge}>{error.count}</Badge>
+                {error.timestamp.toLocaleTimeString()}
+            </small>
+            <div className={Style.errorMessage}>{error.message}</div>
         </Alert>
     )
 }
 
 
-const OdinErrorOutlet: React.FC<{height?: CSSProperties["height"]}> = ({height = "calc(100vh - 15rem)"}) => {
+const OdinErrorOutlet = (
+    { height = "calc(100vh - 15rem)" }: { height?: CSSProperties["height"] }
+) => {
 
-    const {errors} = useError();
+    const { errors } = useError();
 
-    const secondsSinceError = errors.length > 0 ? (new Date().getTime() - errors[0].timestamp.getTime())/1000 : -1;
+    const secondsSinceError = errors.length > 0 ? (new Date().getTime() - errors[0].timestamp.getTime()) / 1000 : -1;
     const lastErrorMessage = (secondsSinceError > 3600) ? "over an Hour ago" :
-                             (secondsSinceError > 60) ? `${Math.floor(secondsSinceError/60)} minutes, ${Math.floor(secondsSinceError % 60)} seconds ago` :
-                             "just now";
+        (secondsSinceError > 60) ? `${Math.floor(secondsSinceError / 60)} minutes, ${Math.floor(secondsSinceError % 60)} seconds ago` :
+            "just now";
 
     return (
         errors.length > 0 && (
             <>
                 <div>{`Last Error occured ${lastErrorMessage}`}</div>
-                <hr/>
-                <div className={Style.scrollable} style={{maxHeight: height}}>
+                <hr />
+                <div className={Style.scrollable} style={{ maxHeight: height }}>
                     {errors.slice(0, 100).map((err, index) => (
-                        <ErrorAlert error={err} key={index}/>
+                        <ErrorAlert error={err} key={index} />
                     ))}
-                    {errors.length >=100 &&
-                    <Alert key="culled_err_warn" variant="warning" transition={false}>Additional Errors not shown</Alert>}
+                    {errors.length >= 100 &&
+                        <Alert key="culled_err_warn" variant="warning" transition={false}>Additional Errors not shown</Alert>}
                 </div>
             </>
         )
@@ -180,14 +184,14 @@ function usePrevious<T>(value: T): T {
     return ref.current;
 }
 
-const SingleErrorOutlet: React.FC<{delay?: number}> = ({delay=5000}) => {
-    const {errors} = useError();
+const SingleErrorOutlet = ({ delay = 5000 }: { delay?: number }) => {
+    const { errors } = useError();
     const [show, setShow] = useState(true);
 
     const prevErrors = usePrevious(errors);
 
     const latestError = useMemo(() => {
-        if(errors.length > prevErrors.length || errors[0]?.count > prevErrors[0]?.count){
+        if (errors.length > prevErrors.length || errors[0]?.count > prevErrors[0]?.count) {
             return errors[0];
         }
         return null
@@ -202,7 +206,7 @@ const SingleErrorOutlet: React.FC<{delay?: number}> = ({delay=5000}) => {
 
     return (
         latestError && (
-            <ErrorAlert error={latestError} className={Style.latest} show={show}/>
+            <ErrorAlert error={latestError} className={Style.latest} show={show} />
         )
     )
 
@@ -212,13 +216,13 @@ const useError = () => {
     const errors = useContext(ErrorContext);
     const methods = useContext(ErrorDispatchContext);
 
-    if(methods ==  null){
+    if (methods == null) {
         throw new Error(
             "Context not found. useError has to be used within <OdinErrorContext>"
         );
     }
 
-    return {errors, ...methods};
+    return { errors, ...methods };
 }
 
-export { OdinErrorContext, OdinErrorOutlet, SingleErrorOutlet, useError};
+export { OdinErrorContext, OdinErrorOutlet, SingleErrorOutlet, useError };
