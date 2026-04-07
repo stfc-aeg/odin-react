@@ -21,7 +21,7 @@ interface Axis {
 }
 
 const isGraphData = (x: Object[]): x is GraphData[] => {
-    return "data" in x[0] && Array.isArray(x[0].data) && typeof x[0].data[0] === "number"
+    return x[0] != undefined && "data" in x[0] && Array.isArray(x[0].data) && typeof x[0].data[0] === "number"
 }
 
 interface OdinGraphProps extends Partial<Omit<PlotParams, "data">> {
@@ -270,5 +270,5 @@ const OdinGraph = (
     )
 }
 
-export { OdinGraph };
+export { OdinGraph, FallbackPlotComponent };
 export type { Axis, GraphData };

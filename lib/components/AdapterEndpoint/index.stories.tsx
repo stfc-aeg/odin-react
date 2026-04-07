@@ -126,18 +126,27 @@ const meta = {
   argTypes: {
     endpoint: {
       table: {
-        disable: true
-      }
+        disable: true,
+        
+      },
+    },
+    adapter: {
+      description: "Name of the Adapter in Odin Control"
+    },
+    endpoint_url: {
+      description: "The URL of the Odin Control Instance, including port number. \
+      Once compiled and served statically by Odin Control, this can be blank. \
+      Its recommended this be set by a `.env.development` file and imported"
     },
     interval: {
       type: "number",
-      table: {
-        
-      }
+      description: "An optional polling loop interval, in milliseconds"
     },
     timeout: {
-      type: "number"
-    }
+      type: "number",
+      description: "An optional Timeout for API requests, in milliseconds."
+    },
+
   },
   render: (args) => {
     args.endpoint = useAdapterEndpoint(args.adapter, args.endpoint_url, args.interval, args.timeout);

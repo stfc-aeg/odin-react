@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Axis, OdinGraph, type GraphData } from './index';
+import { Axis, FallbackPlotComponent, OdinGraph, type GraphData } from './index';
 import { Layout, PlotData } from 'plotly.js';
 
 const mid_data: GraphData[] = [
@@ -54,6 +54,7 @@ export const Default: Story = {
   }
 };
 
+/** Two dimensional data can be multiple single series */
 export const MultipleSeries: Story = {
   args: {
     title: "Multiple Series Plot",
@@ -64,6 +65,7 @@ export const MultipleSeries: Story = {
   }
 }
 
+/** Two Dimensional data can be shown as a heatmap*/
 export const Heatmap: Story = {
   args: {
     title: "Heatmap",
@@ -78,7 +80,7 @@ export const Heatmap: Story = {
 }
 
 /** Data can be defined with Axis, for data that needs to be mapped
- * against separate y Axis
+ * against separate Y Axis
  */
 export const MultipleAxis: Story = {
   args: {
@@ -88,10 +90,27 @@ export const MultipleAxis: Story = {
   }
 }
 
+/** Data and Layout props can be provided as if the Odin Graph were just
+ * a Plotly graph, for full customisation. Options can be seen in the 
+ * [Plotly Documentation](https://plotly.com/javascript/react/)
+ */
 export const FullyCustom: Story = {
   args: {
     title: "Fully Custom",
     data: [sine_dataset, cosine_dataset],
     layout: custom_layout
+  }
+}
+
+/** If Plotly React is not installed, this fallback graph will be displayed.
+ * Plotly is an optional install for projects due to its size, and the fact
+ * not every Odin React GUI needs its graphing capabilities.
+ */
+export const FallbackGraph: Story = {
+  args: {
+    data: [1, 2, 3, 4]
+  },
+  render: (args) => {
+    return <FallbackPlotComponent {...args}/>
   }
 }
