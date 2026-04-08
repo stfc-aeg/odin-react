@@ -99,6 +99,58 @@ export const FullyCustom: Story = {
     title: "Fully Custom",
     data: [sine_dataset, cosine_dataset],
     layout: custom_layout
+  },
+  parameters: {
+    docs: {
+      source: {
+        language: "tsx",
+        transform: async (source: string) => {
+          const prettier = await import('prettier/standalone');
+          const prettierPluginBabel = await import('prettier/plugins/babel');
+          const prettierPluginEstree = await import('prettier/plugins/estree');
+
+          // let ret_string = source;
+          const date_array = `const date_array = Array.from(Array(200), (_, x) => new Date(new Date(1992, 0, 1, 17, 0).getTime() + (x * 60000)));`;
+          const sine_dataset = [
+            "const sine_dataset: Partial<PlotData> = {",
+            "// Date start at 17:00, Jan 1st 1992, increase by 1 minute each step",
+            "x: Array.from(date_array, (x) => x.toISOString()),",
+            "y: Array.from(date_array, (x) => Math.sin((x.getMinutes()* 6)*(Math.PI/180))),",
+            `name: "Sine"`,
+            "}"
+          ].join("\n");
+          const cosine_dataset = [
+            "const cosine_dataset: Partial<PlotData> = {",
+            "x: Array.from(date_array, (x) => x.toISOString()),",
+            "y: Array.from(date_array, (x) => Math.cos((x.getMinutes() * 12) * (Math.PI / 180))),",
+            `name: "Cosine"`,
+            "}"
+          ].join("\n");
+
+          const custom_layout = [
+            `const custom_layout: Partial<Layout> = {`,
+            `title: { text: "Custom Layout Testing", subtitle: "For Storybook" },`,
+            `yaxis: {`,
+            `title: { text: "Maths" },`,
+            `range: [-1.2, 1.2]`,
+            `},`,
+            `xaxis: {`,
+            `title: { text: "Time" }`,
+            `}`,
+            `}`,
+          ].join("\n");
+
+          const ret_string = [
+            date_array, sine_dataset, cosine_dataset, custom_layout,
+            "return <OdinGraph data={[sine_dataset, cosine_dataset]} layout={custom_layout}/>;"
+          ].join("\n\n");
+          return prettier.format(ret_string, {
+            parser: 'babel-ts',
+            plugins: [prettierPluginBabel, prettierPluginEstree]
+          });
+        }
+      }
+    }
   }
 }
 

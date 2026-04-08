@@ -1,4 +1,5 @@
 import type { Preview } from '@storybook/react-vite';
+import { themes } from 'storybook/theming';
 
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
 import { http, passthrough } from 'msw';
@@ -54,6 +55,12 @@ const preview: Preview = {
 
       ]
     },
+    docs: {
+      theme: themes.dark
+    },
+    backgrounds: {
+      disable: true
+    }
   },
   globalTypes: {
     margin: {
@@ -71,7 +78,7 @@ const preview: Preview = {
   decorators: [
     (Story, context) => (
       <OdinErrorContext>
-        <div style={{ margin: `1rem ${context.globals.margin || "0"}rem` }}>
+        <div style={{ padding: `1rem ${context.globals.margin || "0"}rem`, backgroundColor: `var(--bs-body-bg)`}}>
           <Story />
         </div>
       </OdinErrorContext>

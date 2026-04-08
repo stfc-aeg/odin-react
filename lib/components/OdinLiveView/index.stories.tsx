@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { OdinLiveView, ZoomableImage } from './index';
-import { useAdapterEndpoint_LiveView as useAdapterEndpoint, transformMockCode } from '../AdapterEndpoint/index.mock';
+import { transformMockCode } from '../AdapterEndpoint/index.mock';
+import { useAdapterEndpoint_LiveView, userAdapterEndpoint_LiveView_noControls } from '../AdapterEndpoint/index.mock';
 
 const meta = {
   component: OdinLiveView,
@@ -22,13 +23,13 @@ const meta = {
   parameters: {
     docs: {
       source: {
-        transform: transformMockCode,
+        transform: (source: string) => transformMockCode(source, undefined, "live"),
         language: "tsx"
       }
     }
   },
   render: (args) => {
-    const endpoint = useAdapterEndpoint("live", "http://localhost:1338");
+    const endpoint = useAdapterEndpoint_LiveView("live", "http://localhost:1338");
     args.endpoint = endpoint;
     return <OdinLiveView {...args} />
   }
@@ -51,5 +52,20 @@ export const Default: Story = {
 export const JustImage: Story = {
   args: {
     justImage: true
+  }
+}
+
+/**
+ * The Component will not display the controls dropdown button if the adapter does
+ * not provide them as parameters
+ */
+export const NoControls: Story = {
+  args: {
+    title: "No Controls"
+  },
+  render: (args) => {
+    const endpoint = userAdapterEndpoint_LiveView_noControls("live_No_Controls", "http://localhost:1338");
+    args.endpoint = endpoint as typeof args.endpoint;
+    return <OdinLiveView {...args} />
   }
 }

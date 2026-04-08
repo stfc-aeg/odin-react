@@ -5,6 +5,7 @@ import type { AdapterEndpoint, ParamTree, ParamNode, Parameter } from '.';
 import type { MetadataValue } from './AdapterEndpoint.types';
 
 import defaultImg from '../../assets/testImage.png';
+import { StoryContext } from '@storybook/react-vite';
 
 const imgBlob = await fetch(defaultImg).then(response => { return response.blob() });
 
@@ -192,21 +193,43 @@ const MockedLiveEndpoint: AdapterEndpoint<LiveViewData> = {
 
 }
 
+const MockedLiveEndpointNoControls: AdapterEndpoint<{}> = {
+    // @ts-ignore
+    get: fn(mockGet).mockName("get"),
+    // @ts-ignore
+    put: fn(mockPut).mockName("put"),
+    post: fn().mockName("post"),
+    remove: fn(),
+    refreshData: fn(),
+    mergeData: fn(),
+    data: {},
+    // @ts-ignore
+    metadata: {},
+    status: "connected",
+    apiVersion: "",
+    error: null,
+    loading: false,
+    updateFlag: Symbol("mocked")
+}
+
 const useAdapterEndpoint = fn(
     (..._: any[]) => { return MockedEndpoint }
 ).mockName('useAdapterEndpoint');
 
 const useAdapterEndpoint_LiveView = fn(
-    (..._: any[]) => {return MockedLiveEndpoint}
+    (..._: any[]) => { return MockedLiveEndpoint}
 ).mockName("useAdapterEndpoint");
 
-const transformMockCode = async (source: string) => {
-    
+const userAdapterEndpoint_LiveView_noControls = fn(
+    (..._: any[]) => { return MockedLiveEndpointNoControls }
+).mockName("useAdapterEndpoint");
+
+const transformMockCode = async (source: string, _?: StoryContext, adapterName: string = "test") => {
     const prettier = await import('prettier/standalone');
     const prettierPluginBabel = await import('prettier/plugins/babel');
     const prettierPluginEstree = await import('prettier/plugins/estree');
 
-    const addEndpointString = `const endpoint = useAdapterEndpoint("live", import.meta.VITE_ENDPOINT_URL);`
+    const addEndpointString = `const endpoint = useAdapterEndpoint(${adapterName}, import.meta.VITE_ENDPOINT_URL);`
     let ret_string = source;
     if (!(source.split("\n")[0].includes("const endpoint"))) {
         ret_string = [addEndpointString,
@@ -217,12 +240,13 @@ const transformMockCode = async (source: string) => {
     }
 
     return prettier.format(ret_string, {
-        parser: 'babel',
+        parser: 'babel-ts',
         plugins: [prettierPluginBabel, prettierPluginEstree]
     });
     // return addEndpointString.concat("test");
 }
 
-export { useAdapterEndpoint, useAdapterEndpoint_LiveView, resetMockData, transformMockCode };
+export { useAdapterEndpoint, useAdapterEndpoint_LiveView, userAdapterEndpoint_LiveView_noControls};
+export { resetMockData, transformMockCode };
 // export {testAdapterData};
 
