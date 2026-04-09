@@ -1,14 +1,67 @@
-# Welcome to Odin React
+import { Meta } from "@storybook/addon-docs/blocks";
 
-Odin React is a [React](https://react.dev/) package designed to make the development of GUIs for [Odin Control](https://odin-detector.github.io/odin-control/) interfaces easier and faster.
+import React from "./img/React-icon.svg"
+import Bootstrap from "./img/bootstrap-icon.svg"
 
-Using React, creating these GUIs is now simplified, with many of the provided Components automating the connection to the Odin Control API.
+import "./storydocs.css"
 
-Many Odin React components are built upon the [Bootstrap React](https://react-bootstrap.netlify.app/) library, to provide styling and layout options.
-This also means that Odin React Apps are automatically responsive to allow them to viewable on multiple sizes of screen.
+<Meta title="Welcome to Odin React" />
 
+<div className="sb-container">
+    <div className='sb-section-title'>
+        # Welcome to Odin React
 
-## Storybook
+        Odin React is a [React](https://react.dev/) package designed to make the
+        development of GUIs for [Odin Control](https://odin-detector.github.io/odin-control/)
+        interfaces easier and faster.
+    </div>
 
-This documentation has been generated using [Storybook](https://storybook.js.org/), providing interactive demonstrations of each component in the library.
-Each page displays one or more examples of how to use the Component, as well as a table of *Props* that may be passed to the component.
+<div className="sb-section">
+    <div className="sb-section-item">
+        <svg class="sb-section-svg">
+            <use href="./docs/img/odin-control-logo.svg" / >
+        </svg>
+
+        ### Odin Control
+        This library is designed to connect to and work with the Odin Control
+        API. During development, it can be connected to a separatly running
+        instance of Odin Control. Once development is completed, it can be
+        compiled and served as a static resource by Odin Control's web server.
+        
+        <a className="sb-action-link" href="https://odin-detector.github.io/odin-control/" target="_blank"
+        >Learn more ></a>
+    </div>
+    <div className="sb-section-item">
+        <svg class="sb-section-svg">
+            <use href="./docs/img/React-icon.svg" />
+        </svg>
+
+        ### React
+        React is a Javascript based Library that allows for the creation of
+        Components: individual reusable UI elements that can contain their
+        own state and logic. These components return a form of markout called
+        **JSX**, which allows for a mix of HTML and Javascript within a single
+        object.
+
+        <a className="sb-action-link" href="https://react.dev/learn" target="_blank"
+        >Learn more ></a>
+    </div>
+    <div className="sb-section-item">
+        <svg class="sb-section-svg">
+            <use href="./docs/img/vite-logo.svg"/>
+        </svg>
+
+        ### Vite
+        Vite is an open source build tool that provides compilation settings
+        and a development environment. During development, Vite can run
+        the GUI as a standalone web service, with *Hot Module Replacement*
+        (live monitoring of code changes, refreshing if anything chances).
+        
+        Vite's compilation step bundles source code, image assets, and any
+        dependencies together into a minified static web resource.
+
+        <a className="sb-action-link" href="https://react.dev/" target="_blank"
+        >Learn more ></a>
+    </div>
+</div>
+</div>

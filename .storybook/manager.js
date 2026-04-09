@@ -1,9 +1,10 @@
 import { addons } from "storybook/manager-api";
 import { create } from "storybook/theming";
 
-import OdinLogo from "../docs/img/odin_react_logo.png";
+import OdinLogo from "../docs/img/odin-react-logo.svg";
 
-const customTheme = create({
+export const customTheme = create({
+    base: "normal",
     brandTitle: "Odin React",
     brandImage: OdinLogo,
     
@@ -11,4 +12,4 @@ const customTheme = create({
 
 addons.setConfig({
     theme: customTheme
-})
+});

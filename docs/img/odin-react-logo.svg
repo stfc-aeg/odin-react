@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 100 40">
+  <title>Odin Control Logo</title>
+  <!-- triangle side length 10? -->
+
+  <g stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="butt">
+    <circle cx="-5" cy="calc(0.2887 * 10)" r="10" stroke="#047101"/>
+    <circle cx="0" cy="calc(-0.5773 * 10)" r="10" stroke="#FFDC33"/>
+    
+    <circle cx="5" cy="calc(0.2887 * 10)" r="10" stroke="#003366"/>
+    <path stroke="#047101"
+    d=" M -5 12.887
+        A 10 10 0 1 0 -5 -7.113"
+    />
+    <path stroke="#FFDC33"
+    d=" M 0 -15.773
+        A 10 10 0 0 1 0 4.227"
+    />
+    <path stroke="#003366"
+    d=" M 5 -7.113
+        A 10 10 0 1 1 5 12.887"
+    />
+  </g>
+
+  <style>
+    .name {
+      font: bold 10px sans-serif;
+      fill: grey;
+      dominant-baseline: middle;
+    }
+  </style>
+  <text x="20" y="0" class="name">Odin React</text>
+
+</svg>
