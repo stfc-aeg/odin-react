@@ -1,7 +1,7 @@
 import { addons } from "storybook/manager-api";
 import { create } from "storybook/theming";
 
-import OdinLogo from "../docs/img/odin-react-logo.svg";
+import OdinLogo from "../public/odin-react-logo.svg";
 
 export const customTheme = create({
     base: "normal",

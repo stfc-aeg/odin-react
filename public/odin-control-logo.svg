@@ -2,11 +2,11 @@
   <title>Odin Control Logo</title>
   <!-- triangle side length 10? -->
 
-  <g stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="butt">
-    <circle cx="-5" cy="calc(0.2887 * 10)" r="10" stroke="#047101"/>
-    <circle cx="0" cy="calc(-0.5773 * 10)" r="10" stroke="#FFDC33"/>
+  <g stroke-width="5" fill="none" stroke-linecap="butt">
+    <circle cx="-5" cy="2.887" r="10" stroke="#047101"/>
+    <circle cx="0" cy="-5.773" r="10" stroke="#FFDC33"/>
     
-    <circle cx="5" cy="calc(0.2887 * 10)" r="10" stroke="#003366"/>
+    <circle cx="5" cy="2.887" r="10" stroke="#003366"/>
     <path stroke="#047101"
     d=" M -5 12.887
         A 10 10 0 1 0 -5 -7.113"

@@ -29,12 +29,12 @@ jobs:
         run: npm run storybook-docs-build
       # Upload pages artifact
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: 'storybook-static'
       # Deploy to Github Pages
       - id: deploy
         name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         with:
           token: ${{ github.token }}
