@@ -1,54 +1,40 @@
 
 import { Meta } from "@storybook/addon-docs/blocks";
-import "./storydocs.css"
 
 <Meta title="Compiling the Static GUI" />
 
 # Finishing the Development
 
 When you've finished development of the GUI, you can compile it to a static
-resource that can be served directly from Odin Control.
+resource that can be served directly from Odin Control. This brings together
+all the components and used libraries into a set of plain HTML and Javascript
+that can be served by any web server, but maintains all the functionality
+provided by those components.
 
-Note there are some potential differences between the static version of the
-project, and the version run in development mode:
+To compile, simply run the following in the root of the GUI project:
 
-### Strict Mode
-
-You may have noticed that the `main.tsx/jsx` file of your project wraps everything
-in a component called `<StrictMode>`. [Strict Mode](https://react.dev/reference/react/StrictMode)
-is a development tool provided by React which helps find common bugs.
-
-Full details are available on the React reference page linked, but the basic
-intention of Strict Mode that it runs several parts of the GUI twice to check
-for **Purity**. This means that if any Components have any side effects
-when rendering, Strict Mode will make it obvious something is wrong.
-
-This is a development-only behaviour and will do nothing in a compiled GUI.
-
-### Environment Variables
-
-Vite projects can import [Environment Variables](https://vite.dev/guide/env-and-mode)
-from various files within the project:
-- .env
-  - loaded in all cases
-- .env.local
-  - loaded in all cases, ignored by git
-- .env.[mode]
-  - only loaded in specified mode
-- .env.[mode].local
-  - only loaded in specified mode, ignored by git
-
-During development, its recommended that the address of the Odin Control Instance
-being used is stored in one of these files for Development Mode, ideally a
-local only one to avoid potentially sharing IP addresses on Github:
-
-```Dotenv
-# .env.development.local
-VITE_ENDPOINT_URL=http://localhost:8888
-
+```bash
+npm run build
 ```
 
-This means when building the static GUI, the any AdapterEndpoints will not use
-this value
-a blank string, allowing the GUI to make requests of the server that is serving
-it directly.
+This will create a `dist` directory with the compiled GUI code contained
+within.
+
+## Serving the Static GUI
+
+To set Odin Control to serve the GUI statically, simply point it at this
+`dist` folder as the static path:
+
+```bash
+odin_control --config <config_file_name> --static <path_to_dist>
+```
+
+This can also be set in the Odin Control config. See
+[The Odin Control Docs](https://odin-detector.github.io/odin-control) for
+more information.
+
+<blockquote class="github-alert">**Note**: when served statically, any `AdapterEndpoint` hooks
+will no longer need to connect to a different URL to access the API.
+This is why it is recommended that the `endpoint_url` be set using a development
+[Environment Variable](https://vite.dev/guide/env-and-mode), so that
+when compiled that string is left blank.</blockquote>

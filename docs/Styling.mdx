@@ -1,0 +1,70 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Layout and Styling" />
+
+# Using Bootstrap's Layout Options
+
+Because many Odin React components are based on Bootstrap for styling,
+we can also use [Bootstrap's Grid Layout](https://react-bootstrap.netlify.app/docs/layout/grid)
+to organise components on a page:
+
+```tsx
+
+import {Container, Row, Col} from "react-bootstrap";
+
+const DemoPage = () => {
+    return (
+      <Container>
+        <Row>
+          <Col>
+            <div>Div Contents</div>
+          </Col>
+          <Col>
+            <div>More Div Contents (Same Row)</div>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <div>New Row Div</div>
+          </Col>
+        </Row>
+      </Container>
+    )
+}
+```
+
+Bootstrap also has a [Breakpoint](https://react-bootstrap.netlify.app/docs/layout/breakpoints)
+system to make pages fully responsive to the size of the screen, reorganising
+the contents if the screen is not wide enough to show them properly.
+
+# How to apply Custom CSS to a component
+
+Most styling is provided by Odin React or Bootstrap. Bootstrap uses a global
+CSS file imported at the top of the `App.tsx` file. The order css files are
+imported matters, where a second file will overwrite any matching CSS rules.
+
+For this reason, it's recommended that any additional Custom styling required
+for your components is done using [CSS Modules](https://github.com/css-modules/css-modules).
+
+## Using CSS Modules
+
+To use your custom stylesheet as a CSS Module, import it as a class instead of directly,
+ensuring that it's filename ends with `module.css`.
+
+```tsx
+
+import styles from "./style.module.css"
+```
+
+Then, when you need to use a specific class from that css module, set the
+`className` of the component using that module.
+
+```tsx
+
+<div className={style.customDiv}>
+
+</div>
+```
+
+Doing this ensures that the CSS classes are defined locally, and won't affect
+other components within the GUI accidentally.

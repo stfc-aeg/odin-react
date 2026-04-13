@@ -1,0 +1,55 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Frequently Asked Questions" />
+
+# Frequently Asked Questions
+
+Below are some of the most common issues that may arise when using Odin React.
+If the issue you are seeing is not listed here, consider
+[Submitting an Issue on Github](https://github.com/stfc-aeg/odin-react/issues)
+
+## The Adapter is running, but I am getting Network Errors from my AdapterEndpoint
+
+- Double check the url passed to `useAdapterEndpoint` is correct, including
+the port number.
+- Ensure that Odin Control has [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)
+enabled in the config file. This allows Odin React to access the API resources
+from another server.
+  - This is only required when running Odin React in development mode. When
+  served statically, it is running on the same server interface and thus
+  does not need CORS.
+
+## Something is causing some/all of my components to render incorrectly, or with the wrong Styling
+
+- Check that the `bootstrap.min.css` file is still imported in `App.tsx`.
+Odin React uses Bootstrap's components and for a lot of it's styling.
+- Ensure that you have not imported a custom CSS file that may be overwriting
+the normal styling for components.
+  - If you want to apply custom CSS styling to a page or component, refer to
+  [Page on Styling](./?path=/docs/layout-and-styling--docs)
+
+## The AdapterEndpoints in my GUI are running twice when a page is loaded.
+
+- This is because of React's [Strict Mode](https://react.dev/reference/react/StrictMode),
+which performs a few steps twice for testing purposes
+  - It renders components twice to ensure they are [Pure Functions](https://react.dev/learn/keeping-components-pure)
+  and have no side effects when rendering.
+  - It runs Effects and Callbacks twice to ensure they are not missing
+  any required cleanup.
+- These bugs can be common problems, and hard to debug without Strict Mode,
+so keeping it enabled during development is highly recommended.
+- **Strict mode has no effect in a compiled static GUI, so this behaviour should
+not occur in the released GUI.**
+
+## The console is warning me that "A component is going from uncontrolled to controlled"
+
+- A **Controlled** component means that React sets the value of that component,
+such as with a textbox or other input. This is often done using a
+[State Variable](https://react.dev/learn/state-a-components-memory).
+- An **Uncontrolled** component means React is not handling the value, or changes to it.
+- If the value of the component starts as `undefined` but later changes, React
+won't know if you want the component to be controlled or not.
+- To avoid this issue in your own components, ensure that any State being used
+as a value for a component does not initialise as `undefined` or `null`.
+- If this is occurring in a `WithEndpoint` component, submit a
+[Bug Report](https://github.com/stfc-aeg/odin-react/issues) on github detailing the issue.

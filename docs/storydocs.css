@@ -9,19 +9,11 @@
     gap: 20px;
 }
 
-svg.sb-section-svg {
+.sb-section-svg {
     max-height: 5rem;
     max-width: 5rem;
     display: block;
     margin: .5rem auto;
-}
-
-body.light svg.sb-section-svg {
-    color: rgb(46, 51, 56);
-}
-
-body.dark svg.sb-section-svg {
-    color: rgb(201, 204, 207);
 }
 
 .sb-section-title {
