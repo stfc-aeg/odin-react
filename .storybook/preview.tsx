@@ -70,29 +70,21 @@ const preview: Preview = {
     },
     backgrounds: {
       disable: true
-    }
-  },
-  globalTypes: {
-    margin: {
-      description: "Add Margins to the side of the Component",
-      toolbar: {
-        title: "Margin",
-        items: ["0", "5", "10", "20"],
-        dynamicTitle: true
+    },
+    options: {
+      storySort: {
+        // define order of the docs in the sidebar
+        order: [
+          "Welcome to Odin React", "Getting Started", "Using Adapter Endpoints",
+          "Layout and Styling", "*", "Frequently Asked Questions"
+        ]
       }
     }
   },
-  initialGlobals: {
-    margin: "5"
-  },
   decorators: [
-    (Story, context) => (
+    (Story) => (
       <OdinErrorContext>
         <div
-          style={{
-            padding: `1rem ${context.globals.margin || "0"}rem`,
-            backgroundColor: `var(--bs-body-bg)`
-          }}
           data-bs-theme={useDarkMode() ? "dark" : "light"}
         >
           <Story />

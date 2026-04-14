@@ -131,12 +131,20 @@ const meta = {
       },
     },
     adapter: {
-      description: "Name of the Adapter in Odin Control"
+      description: "Name of the Adapter in Odin Control",
+      type: {
+        required: true,
+        name: "string"
+      }
     },
     endpoint_url: {
       description: "The URL of the Odin Control Instance, including port number. \
       Once compiled and served statically by Odin Control, this can be blank. \
-      Its recommended this be set by a `.env.development` file and imported"
+      Its recommended this be set by a `.env.development` file and imported",
+      type: {
+        required: true,
+        name: "string"
+      }
     },
     interval: {
       type: "number",

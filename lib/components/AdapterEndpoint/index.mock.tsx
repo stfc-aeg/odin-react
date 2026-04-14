@@ -229,7 +229,7 @@ const transformMockCode = async (source: string, _?: StoryContext, adapterName: 
     const prettierPluginBabel = await import('prettier/plugins/babel');
     const prettierPluginEstree = await import('prettier/plugins/estree');
 
-    const addEndpointString = `const endpoint = useAdapterEndpoint(${adapterName}, import.meta.VITE_ENDPOINT_URL);`
+    const addEndpointString = `const endpoint = useAdapterEndpoint("${adapterName}", import.meta.VITE_ENDPOINT_URL);`
     let ret_string = source;
     if (!(source.split("\n")[0].includes("const endpoint"))) {
         ret_string = [addEndpointString,
