@@ -1,0 +1,5 @@
+
+.endpointCheckbox > label 
+{
+    color: var(--bs-body-color);
+}

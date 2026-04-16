@@ -6,17 +6,28 @@ import { OverlayTrigger, OverlayTriggerProps, Tooltip, InputGroup } from "react-
 import style from './styles.module.css'
 
 
-interface SliderProps extends ComponentPropsWithRef<"div">{
+interface SliderProps extends ComponentPropsWithRef<"div"> {
+    /** Lower bound value for the range.*/
     min?: number;
+    /** Upper bound value for the range.*/
     max?: number;
+    /** Initial Value for the two sliders. Does not stop a user changing them. */
     value?: number[];
+    /** Specify the value step, so the value must be a multiple of the Step */
     step?: number;
+    /** Optional title that will display above the range sliders*/
     title?: string;
+    /** Change Event Handler which returns the pair of values in the event.target.value*/
     onChange?: React.ChangeEventHandler<DivRef>;
+    /** Mouse Event Handler applied to both ranges.*/
     onMouseUp?: React.MouseEventHandler<HTMLInputElement>;
+    /** Show a tooltip with current values while manipulating one of the ranges */
     showTooltip?: boolean;
+    /** Show labels at either end of the range to display the min and max values */
     showMinMaxValues?: boolean;
+    /** Define the position of the tooltip, if its shown */
     tooltipPosition?: OverlayTriggerProps["placement"];
+    /** Disable the slider */
     disabled?: boolean;
 
 }
@@ -50,6 +61,10 @@ const OptionalOverlay = (props: OverlayTriggerProps) => {
 
 }
 
+/**
+ *  Special Double Slider component, designed to control an upper and lower
+ *  value as a pair.
+ */
 const OdinDoubleSlider = ({
     min = 0, max = 100, step = 1, value = [min, max],
     title, showTooltip = true, tooltipPosition = "auto", disabled, showMinMaxValues = true,
@@ -105,9 +120,9 @@ const OdinDoubleSlider = ({
 
     const titleDiv = (
         <div className={style.dataList}>
-            {showMinMaxValues ? <InputGroup.Text>{min}</InputGroup.Text> : <div />}
-            {title != null ? <InputGroup.Text>{title}</InputGroup.Text> : <></>}
-            {showMinMaxValues ? <InputGroup.Text>{max}</InputGroup.Text> : <div />}
+            {showMinMaxValues ? <label htmlFor="left_slider">{min}</label> : <div />}
+            {title != null ? <label>{title}</label> : <></>}
+            {showMinMaxValues ? <label htmlFor="right_slider">{max}</label> : <div />}
         </div>
     )
     return (
@@ -130,3 +145,4 @@ const OdinDoubleSlider = ({
 }
 
 export { OdinDoubleSlider };
+export type { SliderProps };

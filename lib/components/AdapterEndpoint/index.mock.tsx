@@ -93,6 +93,7 @@ const originalData = structuredClone(testAdapterData);
 const metadataPaths: { [key: string]: Partial<MetadataValue> } = {
     "selected": { allowed_values: ["item 1", "item 2", "item 3"] },
     "num_val": { min: 10, max: 90 },
+    "clip_data": {min: -25, max: 25},
     "rand_num": { writeable: false },
     "dict": { writeable: false, type: "dict" }
 }

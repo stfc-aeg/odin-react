@@ -3,6 +3,17 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Axis, FallbackPlotComponent, OdinGraph, type GraphData } from './index';
 import { Layout, PlotData } from 'plotly.js';
 
+
+const heatmapData = [
+  [2, 4, 7, 12, 13, 14, 15, 16],
+  [3, 1, 6, 11, 12, 13, 16, 17],
+  [4, 2, 7, 7, 11, 14, 17, 18],
+  [5, 3, 8, 8, 13, 15, 18, 19],
+  [7, 4, 10, 9, 16, 18, 20, 19],
+  [9, 10, 5, 27, 23, 21, 21, 21],
+  [11, 14, 17, 26, 25, 24, 23, 22]
+];
+
 const mid_data: GraphData[] = [
   { data: [5, 10, 15, 20], axis: 1 },
   { data: [18, 42, 6, 11], axis: 2 }
@@ -18,29 +29,60 @@ const date_array = Array.from(Array(200), (_, x) => new Date(new Date(1992, 0, 1
 const sine_dataset: Partial<PlotData> = {
   // Date start at 17:00, Jan 1st 1992, increase by 1 minute each step
   x: Array.from(date_array, (x) => x.toISOString()),
-  y: Array.from(date_array, (x) => Math.sin((x.getMinutes()* 6)*(Math.PI/180))),
-  name: "Sine"
+  y: Array.from(date_array, (x) => Math.sin((x.getMinutes() * 6) * (Math.PI / 180))),
+  name: "Sine",
+  line: { color: 'rgb(91, 206, 250)' }
 }
 const cosine_dataset: Partial<PlotData> = {
   x: Array.from(date_array, (x) => x.toISOString()),
   y: Array.from(date_array, (x) => Math.cos((x.getMinutes() * 12) * (Math.PI / 180))),
-  name: "Cosine"
+  name: "Cosine",
+  line: { color: `rgb(245, 169, 184)`, width: 5 }
 }
 
+
 const custom_layout: Partial<Layout> = {
-  title: { text: "Custom Layout Testing", subtitle: "For Storybook" },
+  title: { text: "Custom Layout Testing", subtitle: { text: "For Storybook" } },
+  font: { family: "monospace" },
   yaxis: {
     title: { text: "Maths" },
     range: [-1.2, 1.2]
   },
   xaxis: {
-    title: {text: "Time" }
+    title: { text: "Time" }
   }
 }
 
 
 const meta = {
   component: OdinGraph,
+  argTypes: {
+    layout: {
+      description: "Layout object for customisation. See \
+      [Plotly Documentation](https://plotly.com/javascript/reference/layout/) \
+      for details.",
+      table: {
+        type: {
+          summary: "Partial<Layout>"
+        }
+      }
+    },
+    style: {
+      description: "Custom CSS Styling options",
+      table: {
+        type: {
+          summary: "CSSProperties"
+        }
+      }
+    },
+    data: {
+      table: {
+        type: {
+          detail: "number[] | number[][] | {data: number[], axis: number}[] | Plotly.Data[]"
+        }
+      }
+    }
+  }
 } satisfies Meta<typeof OdinGraph>;
 
 export default meta;
@@ -61,7 +103,8 @@ export const MultipleSeries: Story = {
     data: [
       [0, 1, 2, 4],
       [5, 4, 3, 2]
-    ]
+    ],
+    series_names: ["Alpha", "Beta"]
   }
 }
 
@@ -69,13 +112,18 @@ export const MultipleSeries: Story = {
 export const Heatmap: Story = {
   args: {
     title: "Heatmap",
-    data: [
-      [0, 1, 2, 3],
-      [1, 2, 3, 0],
-      [2, 3, 0, 1],
-      [3, 0, 1, 2]
-    ],
+    data: heatmapData,
     type: "heatmap"
+  }
+}
+
+/** Two Dimensional data can be shown as a Contour Map*/
+export const Contour: Story = {
+  args: {
+    title: "Contour Map",
+    data: heatmapData,
+    type: "contour",
+    colorscale: "blackbody"
   }
 }
 
@@ -100,11 +148,23 @@ export const FullyCustom: Story = {
     data: [sine_dataset, cosine_dataset],
     layout: custom_layout
   },
+  argTypes: {
+    data: {
+      table: {
+        readonly: true
+      }
+    }
+  },
   parameters: {
     docs: {
       source: {
         language: "tsx",
         transform: async (source: string) => {
+
+          if (source.includes("args: {")) {
+            return "INVALID";
+          }
+
           const prettier = await import('prettier/standalone');
           const prettierPluginBabel = await import('prettier/plugins/babel');
           const prettierPluginEstree = await import('prettier/plugins/estree');
@@ -112,42 +172,44 @@ export const FullyCustom: Story = {
           // let ret_string = source;
           const date_array = `const date_array = Array.from(Array(200), (_, x) => new Date(new Date(1992, 0, 1, 17, 0).getTime() + (x * 60000)));`;
           const sine_dataset = [
-            "const sine_dataset: Partial<PlotData> = {",
-            "// Date start at 17:00, Jan 1st 1992, increase by 1 minute each step",
+            "const sine_dataset = {",
             "x: Array.from(date_array, (x) => x.toISOString()),",
             "y: Array.from(date_array, (x) => Math.sin((x.getMinutes()* 6)*(Math.PI/180))),",
-            `name: "Sine"`,
-            "}"
+            `name: "Sine",`,
+            `line: { color: 'rgb(91, 206, 250)' }`,
+            "}\n"
           ].join("\n");
           const cosine_dataset = [
-            "const cosine_dataset: Partial<PlotData> = {",
+            "const cosine_dataset = {",
             "x: Array.from(date_array, (x) => x.toISOString()),",
             "y: Array.from(date_array, (x) => Math.cos((x.getMinutes() * 12) * (Math.PI / 180))),",
-            `name: "Cosine"`,
-            "}"
+            `name: "Cosine",`,
+            `line: { color: 'rgb(245, 169, 184)', width: 5 }`,
+            "}\n"
           ].join("\n");
 
-          const custom_layout = [
-            `const custom_layout: Partial<Layout> = {`,
-            `title: { text: "Custom Layout Testing", subtitle: "For Storybook" },`,
-            `yaxis: {`,
-            `title: { text: "Maths" },`,
-            `range: [-1.2, 1.2]`,
-            `},`,
-            `xaxis: {`,
-            `title: { text: "Time" }`,
-            `}`,
-            `}`,
-          ].join("\n");
 
-          const ret_string = [
-            date_array, sine_dataset, cosine_dataset, custom_layout,
-            "return <OdinGraph data={[sine_dataset, cosine_dataset]} layout={custom_layout}/>;"
-          ].join("\n\n");
-          return prettier.format(ret_string, {
-            parser: 'babel-ts',
-            plugins: [prettierPluginBabel, prettierPluginEstree]
-          });
+          const data_replaced_source = source.replace(/data={\[[\s\S]*\]}/m, `data={[sine_dataset, cosine_dataset]}`);
+          const layout = source.match(/layout={(?<layout>{[\s\S]*})}/m)?.groups?.layout;
+          const layout_replaced_source = data_replaced_source.replace(/layout={{[\s\S]*}}/m, `layout={layout}`)
+          let ret_string = source;
+          if (!(source.split("\n")[0].includes("// Date start"))) {
+            ret_string = [
+              "// Date start at 17:00, Jan 1st 1992, increase by 1 minute each step",
+              date_array, sine_dataset, cosine_dataset,
+              ["const layout =", layout ?? "{}"].join(" "),
+              "",
+              ["return", layout_replaced_source].join(" "),
+            ].join("\n");
+          }
+          return prettier.format(ret_string,
+            {
+              parser: 'babel-ts',
+              plugins: [prettierPluginBabel, prettierPluginEstree],
+              printWidth: 100,
+              objectWrap: "collapse"
+            }
+          );
         }
       }
     }
@@ -163,6 +225,6 @@ export const FallbackGraph: Story = {
     data: [1, 2, 3, 4]
   },
   render: (args) => {
-    return <FallbackPlotComponent {...args}/>
+    return <FallbackPlotComponent {...args} />
   }
 }

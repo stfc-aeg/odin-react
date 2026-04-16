@@ -11,6 +11,16 @@ type EndpointInputProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
     EndpointProps<PreArgs, PostArgs> & Omit<FormControlProps, keyof EndpointProps<PreArgs, PostArgs>>;
 
 
+/**
+ * Specialised Input component designed to work with a Parameter on the Parameter Tree
+ * 
+ * Based on the [Bootstrap Form.Control](https://react-bootstrap.netlify.app/docs/forms/form-control),
+ * so all props available on that component can be set here.
+ * 
+ * Performs the PUT request when the user hits the Enter key after changing the value.
+ * 
+ * Can be used for both string and number based Parameters.
+ */
 const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,

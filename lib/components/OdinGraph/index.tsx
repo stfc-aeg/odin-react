@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { CSSProperties, useEffect, useState } from 'react';
 
 import type { ColorScale, Layout, PlotData, PlotType } from 'plotly.js';
 import { Alert, Placeholder, Spinner } from 'react-bootstrap';
@@ -20,6 +20,10 @@ interface Axis {
     visible?: boolean;
 }
 
+const isObject = (item: any): item is Object => {
+    return (item && typeof item === 'object' && !Array.isArray(item));
+}
+
 const isGraphData = (x: Object[]): x is GraphData[] => {
     return x[0] != undefined && "data" in x[0] && Array.isArray(x[0].data) && typeof x[0].data[0] === "number"
 }
@@ -29,15 +33,23 @@ interface OdinGraphProps extends Partial<Omit<PlotParams, "data">> {
     title?: string;
     /**
      * The data to be graphed. Either a 1D or 2D array of numbers,
-     * or the Plotly Data type for more complex graphing options*/
+     * an array of GraphData objects which pair 1D data with an axis number
+     * to map to multiple Y Axis, or the Plotly Data type for more complex
+     * graphing options.
+     */
     data: PlotParams["data"] | Array<number> | Array<Array<number>> | GraphData[];
-    /** Type of graph*/
-    type?: PlotType | "line";
+    /** Type of graph. Heatmap or Contour only work with 2D data*/
+    type?: "scatter" | "line" | "heatmap" | "contour";
     /** Array of names for each series on a line graph*/
     series_names?: string[];
-    /** Colourscale for Headmaps*/
+    /** Colourscale for Heatmaps and Contour Graphs.
+     * See [Plotly Docs](https://plotly.com/javascript/colorscales/) for
+     * details */
     colorscale?: ColorScale;
-    /** Custom Axis information */
+    /**
+     * Custom Axis information, which can set the range, title, inversion,
+     * side, and visibility of each Axis
+     */
     axis?: Axis[];
 
 }
@@ -95,6 +107,29 @@ const getPlot = async () => {
     }
 }
 
+/** Helper function to merge layouts. Works with any nested object, though */
+const mergeLayouts = (target: Object, ...sources: Object[]) => {
+    if (!sources.length) return target;
+
+    const source = sources.shift();
+
+    if (isObject(target) && isObject(source)) {
+        let key: keyof typeof source;
+        for (key in source) {
+            if (isObject(source[key])) {
+                if (!target[key]) {
+                    Object.assign(target, { [key]: {} });
+                }
+                mergeLayouts(target[key], source[key])
+            } else {
+                Object.assign(target, { [key]: source[key] });
+            }
+        }
+    }
+
+    return mergeLayouts(target, ...sources);
+}
+
 /**
  * Graphing component designed to make data visualisation as simple or
  * complex as needed. 
@@ -113,7 +148,7 @@ const getPlot = async () => {
  * installed.
  */
 const OdinGraph = (
-    { title, data, layout = {}, style = {}, type = "scatter", series_names,
+    { title, data, layout = {}, style = {}, type = "line", series_names,
         colorscale = "Portland", axis = [], ...leftoverProps }: OdinGraphProps
 ) => {
 
@@ -122,25 +157,17 @@ const OdinGraph = (
     const [stateData, changeData] = useState<PlotParams["data"]>([]);
     const [stateLayout, changeLayout] = useState<Exclude<OdinGraphProps['layout'], undefined>>(layout || {});
     const [stateStyle, changeStyle] = useState<React.CSSProperties>(style);
+    const [fontColor, changeFontColor] = useState<React.CSSProperties["color"]>(
+        window.getComputedStyle(document.documentElement).getPropertyValue("--bs-body-color-rgb")
+    )
 
     const defaultLayout: typeof layout = {
-        font: {
-            color: window.getComputedStyle(document.documentElement).getPropertyValue("--bs-body-color")
-        },
         plot_bgcolor: "rgba(255, 255, 255, 0)",
-        paper_bgcolor: "rgba(255, 255, 255, 0)"
+        paper_bgcolor: "rgba(255, 255, 255, 0)",
+        title: title ? { text: title } : undefined,
+        autosize: true,
+        uirevision: "true"
     }
-    const line_default_layout: Partial<Layout> = {
-        yaxis: { autorange: true, automargin: true },
-        title: title ? { text: title } : undefined,
-        autosize: true,
-        uirevision: "true"
-    };
-    const heatmap_default_layout: Partial<Layout> = {
-        title: title ? { text: title } : undefined,
-        autosize: true,
-        uirevision: "true"
-    };
 
     useEffect(() => {
         // useEffect that only runs at the start (empty dependency array) to import the Plot component
@@ -149,10 +176,38 @@ const OdinGraph = (
         getPlot()
             .then((returned) => {
                 setPlot(returned as () => typeof _Plot);
+            });
+
+        const htmlElement = document.querySelector("html");
+
+        // add an observer to watch for changes to the dark mode attribute
+        // on the root HTML element. This allows us to change the plotly
+        // colours if darkmode is toggled.
+        const dark = "222, 226, 230";
+        const light = "33, 37, 41";
+
+        const darkmodeObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName == "data-bs-theme") {
+
+                    const mode = (mutation.target as Element).getAttribute("data-bs-theme");
+                    const color = mode == "dark" ? dark : light;
+                    changeFontColor(color);
+                }
             })
+        });
+
+        if (htmlElement) {
+            darkmodeObserver.observe(htmlElement, { attributes: true });
+        }
+
+        return () => {
+            darkmodeObserver.disconnect();
+        }
 
 
     }, []);
+
     useEffect(() => {
         let tmp_data: typeof stateData = [];
         let data_array: number[] | number[][];
@@ -172,11 +227,6 @@ const OdinGraph = (
                 })
 
                 );
-                changeLayout(Object.assign(
-                    // Default Values
-                    line_default_layout,
-                    layout
-                ));
             }
             else if (type == "heatmap" || type == "contour") {
                 //we want a proper 2d heatmap rather than a bunch of separate 1d datasets
@@ -188,11 +238,6 @@ const OdinGraph = (
                     yaxis: "y",
                     colorscale: colorscale
                 }];
-                changeLayout(Object.assign(
-                    //default values
-                    heatmap_default_layout,
-                    layout
-                ));
             }
 
 
@@ -204,15 +249,10 @@ const OdinGraph = (
                 y: data_array,
                 type: "scatter"
             }];
-            changeLayout(Object.assign(
-                // Default Values
-                line_default_layout,
-                layout
-            ));
 
         } else if (isGraphData(data)) {
             // we're doing some of our own formatting, but not the full Plotly stuff
-            const tmp_layout = line_default_layout;
+            const tmp_layout: Partial<Layout> = {};
             if (axis.length) {
                 //axis have been defined, huzzah
                 axis.forEach((axis, index) => {
@@ -237,7 +277,7 @@ const OdinGraph = (
                     overlaying: "y"
                 }
             }
-            changeLayout(Object.assign(tmp_layout, layout));
+            changeLayout(tmp_layout);
             tmp_data = data.map<Partial<PlotData>>((data, index) => (
                 {
                     x: Array.from(data.data, (_, k) => k),
@@ -248,23 +288,41 @@ const OdinGraph = (
                 }
             ))
         } else {
-            //data is Ploty.data and can probs just be passed straight to the Plot
+            //data is Ploty.data and can just be passed straight to the Plot
             tmp_data = data as typeof stateData;
             changeLayout(layout);
         }
         changeData(tmp_data);
 
         changeStyle(Object.assign(
-            { width: "100%" },
+            { width: "100%" } as CSSProperties,
             style
         ))
 
-    }, [data]);
+    }, [data, type, colorscale]);
 
 
     return (
         <_Plot data={stateData}
-            layout={Object.assign(defaultLayout, stateLayout)}
+            layout={mergeLayouts({},
+                defaultLayout,
+                {
+                    font: { color: `rgba(${fontColor}, 1)` },
+                    xaxis: {
+                        zerolinecolor: `rgba(${fontColor}, 1)`,
+                        gridcolor: `rgba(${fontColor}, 0.5)`
+                    },
+                    yaxis: {
+                        zerolinecolor: `rgba(${fontColor}, 1)`,
+                        gridcolor: `rgba(${fontColor}, 0.5)`
+                    },
+                    yaxis2: {
+                        zerolinecolor: `rgba(${fontColor}, 1)`,
+                        gridcolor: `rgba(${fontColor}, 0.5)`
+                    }
+                } as Partial<Layout>,
+                stateLayout, layout
+            )}
             style={stateStyle}
             {...leftoverProps} useResizeHandler={true} />
     )

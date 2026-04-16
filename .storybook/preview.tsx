@@ -9,6 +9,7 @@ import { apiVersionHandler, getHandler, getHandlerUpdate, putHandler, putHandler
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import type { ParamNode } from '../lib/components/AdapterEndpoint';
+import { useEffect } from 'react';
 
 /*
  * Initializes MSW
@@ -63,10 +64,34 @@ const preview: Preview = {
       ]
     },
     docs: {
-      container: ThemedDocsContainer
+      container: ThemedDocsContainer,
+      codePanel: true,
+      source: {
+        language: "tsx",
+        transform: async (source: string) => {
+
+          if (source.includes("args: {")) {
+            return "INVALID";
+          }
+
+          const prettier = await import('prettier/standalone');
+          const prettierPluginBabel = await import('prettier/plugins/babel');
+          const prettierPluginEstree = await import('prettier/plugins/estree');
+
+          return prettier.format(source,
+            {
+              parser: 'babel-ts',
+              plugins: [prettierPluginBabel, prettierPluginEstree],
+              printWidth: 100,
+              objectWrap: "collapse"
+            }
+          )
+        }
+      }
     },
     darkMode: {
-      stylePreview: true
+      stylePreview: true,
+      classTarget: "html"
     },
     backgrounds: {
       disable: true
@@ -82,15 +107,17 @@ const preview: Preview = {
     }
   },
   decorators: [
-    (Story) => (
-      <OdinErrorContext>
-        <div
-          data-bs-theme={useDarkMode() ? "dark" : "light"}
-        >
-          <Story />
-        </div>
-      </OdinErrorContext>
-    ),
+    (Story) => {
+      const isDarkMode = useDarkMode();
+      useEffect(() => document.documentElement?.setAttribute(
+        "data-bs-theme", isDarkMode ? "dark" : "light"
+      ))   
+      return (
+        <OdinErrorContext>
+            <Story />
+        </OdinErrorContext>
+      )
+    }
   ],
   tags: ['autodocs'],
   loaders: [mswLoader]

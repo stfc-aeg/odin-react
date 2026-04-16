@@ -33,4 +33,26 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+/** Default appearance of the Double Slider */
 export const Default: Story = {};
+
+/** Double Slider with Title */
+export const WithTitle: Story = {
+  args: {
+    title: "Demo Double Sliders"
+  }
+};
+
+/** Double slider without the Min and Max Labels */
+export const WithoutLabels: Story = {
+  args: {
+    showMinMaxValues: false
+  }
+}
+
+/** Disabled Double slider */
+export const Disabled: Story = {
+  args: {
+    disabled: true
+  }
+};

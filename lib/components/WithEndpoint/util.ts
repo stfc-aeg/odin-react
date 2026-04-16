@@ -78,11 +78,11 @@ function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]
 ): RequestHandler {
 
     const [isPending, startTransition] = useTransition();
-    const {setError} = useError();
+    const { setError } = useError();
     const data: ParamTree = value ?? getValueFromPath(endpoint.data, fullpath);
     const metadata: MetadataValue = getValueFromPath(endpoint.metadata, fullpath)
         ?? {
-            value: data,
+        value: data,
         type: typeof data == "number" ? "int" : "str",
         writeable: true
     };
