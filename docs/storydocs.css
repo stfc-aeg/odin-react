@@ -30,6 +30,7 @@
     background-color: rgba(120, 120, 120, .1);
     border-radius: var(--bs-border-radius);
     margin-bottom: 1rem !important;
+    padding: 0.1rem;
 }
 
 h1 a,h2 a,h3 a,h4 a,h5 a {

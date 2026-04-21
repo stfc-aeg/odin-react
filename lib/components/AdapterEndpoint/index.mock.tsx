@@ -9,7 +9,7 @@ import { StoryContext } from '@storybook/react-vite';
 
 const imgBlob = await fetch(defaultImg).then(response => { return response.blob() });
 
-interface EndpointData extends actual.ParamNode {
+export interface EndpointData extends actual.ParamNode {
     string_val: string;
     num_val: number;
     float_val: number;
@@ -35,6 +35,7 @@ interface EndpointData extends actual.ParamNode {
             }
         }
     };
+    graph_data: number[];
 }
 
 interface LiveViewData extends actual.ParamNode {
@@ -47,11 +48,15 @@ interface LiveViewData extends actual.ParamNode {
     clip_range: [number, number];
 }
 
+const generateRandomNumber = () => {
+    return Math.round(Math.random()*100)
+}
+
 const testAdapterData: EndpointData = {
     string_val: "String Value Test",
     num_val: 25,
     float_val: 1.5,
-    rand_num: 32,
+    rand_num: generateRandomNumber(),
     data: {
         set_data: 10,
         clip_data: [-10, 5],
@@ -72,7 +77,8 @@ const testAdapterData: EndpointData = {
     },
     selected: "item 1",
     toggle: true,
-    trigger: null
+    trigger: null,
+    graph_data: Array.from(Array(360), (_, x) => Math.sin(x * (Math.PI / 180)))
 }
 
 const testLiveData: LiveViewData = {
@@ -122,6 +128,7 @@ async function mockGet<T = ParamNode>(param_path?: string, config?: { wants_meta
 }
 
 function mockPut<T = Parameter>(data: { [key: string]: T }, param_path = '') {
+    console.debug("Mock Put Called: ", data, param_path);
     let pointer: ParamNode = testAdapterData;
     const splitPath = param_path.split("/");
     let dataCopy: { [key: string]: T };
@@ -146,7 +153,7 @@ function mockPut<T = Parameter>(data: { [key: string]: T }, param_path = '') {
     if ("value" in data && Object.keys(data).length == 1) {
         pointer = { value: pointer[param_path.split("/").pop()!] };
     }
-
+    console.debug("Returning: ", pointer);
     return pointer;
 
 }

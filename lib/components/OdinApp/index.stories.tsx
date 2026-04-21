@@ -58,6 +58,9 @@ const meta = {
         </Container>
       </OdinApp>
     )
+  },
+  parameters: {
+    layout: "fullscreen"
   }
 } satisfies Meta<typeof OdinApp>;
 

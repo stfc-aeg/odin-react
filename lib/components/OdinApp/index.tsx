@@ -20,7 +20,7 @@ type NavLinkType = string | Record<string, string[]>;
 
 interface OdinAppProps extends PropsWithChildren{
     /** Title to display on the Nav Bar*/
-    title: string;
+    title?: string;
     /** 
      * Links to include in the Nav Bar. The order will map to the order
      * of pages included as children.
@@ -259,7 +259,7 @@ const ScrollableNavList = ({ navLinks }: ScrollableNavListProps) => {
  
  */
 const OdinApp = (
-    { title, navLinks, icon_marginLeft = "5px", icon_marginRight = "10px", custom_icon, children }: OdinAppProps
+    { title = "Odin", navLinks, icon_marginLeft = "5px", icon_marginRight = "10px", custom_icon, children }: OdinAppProps
 ) => {
     const [iconHover, changeIconHover] = useState(false);
     

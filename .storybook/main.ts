@@ -4,6 +4,7 @@ const config: StorybookConfig = {
   stories: [
     "../docs/Introduction.mdx", // default page
     "../docs/*.mdx",
+    "../docs/*.stories.@(jsx|tsx)",
     // "../lib/**/*.mdx",
     "../lib/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],

@@ -36,6 +36,7 @@ interface EndpointData extends ParamNode {
       }
     }
   };
+  graph_data: number[];
 }
 
 // const imgBlob = await fetch(defaultImg).then(response => { return response.blob() })
@@ -68,11 +69,12 @@ const testAdapterData: EndpointData = {
   },
   selected: "item 1",
   toggle: true,
-  trigger: null
+  trigger: null,
+  graph_data: Array.from(Array(360), (_, x) => Math.sin(x * (Math.PI / 180)))
 }
 
 const metadataPaths: { [key: string]: Partial<MetadataValue> } = {
-  "select": { allowed_values: ["item 1", "item 2", "item 3"] },
+  "selected": { allowed_values: ["item 1", "item 2", "item 3"] },
   "num_val": { min: 15, max: 76 },
   "rand_num": { writeable: false },
   "dict": { writeable: false, type: "dict" }
