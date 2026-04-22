@@ -14,3 +14,7 @@
     width: 100%;
     right: 0px;
 }
+
+.odinGraph .plot-container {
+    color: var(--bs-body-color)
+}

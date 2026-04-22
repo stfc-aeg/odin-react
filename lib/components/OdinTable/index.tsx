@@ -4,8 +4,14 @@ import { Table } from "react-bootstrap";
 import { ParamTree, ParamNode } from "../AdapterEndpoint";
 
 interface OdinTableProps extends React.ComponentProps<typeof Table> {
+    /** 
+     * Dictionary of Key: Val pairs, where the key is used to filter
+     * OdinTableRows and define widths, and the Val is the title to display in the table header
+     */
     columns: {[key: string]: string};
+    /** Render the Table Header */
     header?: boolean;
+    /** Object to define specific widths for some or all of the Columns*/
     widths?: {[key: string]: CSSProperties["width"]};
 }
 
@@ -20,9 +26,12 @@ interface OdinTableContext {
 
 const OdinTableContext = createContext<OdinTableContext>({column_keys: [], widths: {}});
 
-const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
+/**
+ * A single table row, to be displayed in the OdinTable.
+ * Contents are defined by the row prop
+ * */
+const OdinTableRow = ({ row }: OdinTableRowProps) => {
     const ctx = useContext(OdinTableContext);
-    const {row} = props;
 
     const col_styles: {[key: string]: CSSProperties} = {};
 
@@ -42,10 +51,20 @@ const OdinTableRow: React.FC<OdinTableRowProps> = (props) => {
 
 }
 
-
-const OdinTable: React.FC<OdinTableProps> = (props) => {
+/**
+ * A simple table component that defines a set of columns by key. Any 
+ * table rows provided as children will then have their contents filtered
+ * to only show data matching the keys
+ * 
+ * Based on the [Bootstrap Table](https://react-bootstrap.netlify.app/docs/components/table)
+ * component, and so any of its props for styling and layout can also be
+ * provided
+ */
+const OdinTable = (
+    { columns, header = true, widths = {}, children, ...leftoverProps }: OdinTableProps
+) => {
     
-    const {columns, header = true, widths = {}, children, ...leftoverProps } = props;
+    // const {columns, header = true, widths = {}, children, ...leftoverProps } = props;
     const column_keys = Object.keys(columns);
 
     const tableDefaults: React.ComponentProps<typeof Table> = {responsive: true, striped: true};

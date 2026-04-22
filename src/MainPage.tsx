@@ -1,5 +1,5 @@
 import { Container, Row, Col } from "react-bootstrap"
-import { TitleCard } from "../"
+import { TitleCard } from "odin-react"
 
 export const MainPage: React.FC = () => {
 

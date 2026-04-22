@@ -115,6 +115,10 @@
     width: 100%;
 }
 
+.dataList > label {
+    color: var(--bs-body-color);
+}
+
 .dataList option {
     position: relative;
     background-color: var(--bs-tertiary-bg);

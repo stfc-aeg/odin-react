@@ -21,17 +21,39 @@
     top: 0;
     left: 0;
     z-index: 1;
-    background-color: transparent;
-    visibility: hidden;
-    margin: 5px;
+    /* visibility: hidden; */
+    display: flex;
+    justify-content: right;
+}
+
+.figure:hover .zoomOverlay> :global(.col-auto) {
+    /* visibility: visible; */
+    opacity: .75;
+}
+
+.zoomOverlay> :global(.col-auto):hover {
+    opacity: 1 !important;
+    border-color: var(--bs-highlight-color);
+
+}
+
+.zoomOverlay> :global(.col-auto) {
+    padding: calc(.5rem + var(--bs-border-width)) calc(.75rem + var(--bs-border-width));
+    background-color: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: 0;
+    border-bottom-left-radius: var(--bs-border-radius);
+    opacity: 0;
+    transition: opacity .15s linear;
+}
+
+.zoomOverlay> :not(:first-child) {
+    border-bottom-left-radius: 0;
+    /* border-style: none none solid solid; */
 }
 
 .figure {
     position: relative;
     text-align: center;
     align-content: center;
-}
-
-.figure:hover .zoomOverlay {
-    visibility: visible;
 }

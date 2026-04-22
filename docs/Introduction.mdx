@@ -1,0 +1,89 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import { Container, Row, Col } from 'react-bootstrap';
+
+import "./storydocs.css"
+
+<Meta title="Welcome to Odin React" />
+
+<Container fluid>
+    <Row>
+        <Col>
+        # Welcome to Odin React
+        ![Test Odin React](https://github.com/stfc-aeg/odin-react/actions/workflows/test-ui.yml/badge.svg)
+        ![GitHub package.json version](https://img.shields.io/github/package-json/v/stfc-aeg/odin-react)
+        ![GitHub package.json dev/peer/optional dependency version](https://img.shields.io/github/package-json/dependency-version/stfc-aeg/odin-react/peer/react)
+        ![GitHub package.json dev/peer/optional dependency version](https://img.shields.io/github/package-json/dependency-version/stfc-aeg/odin-react/dev/vite)
+
+        Odin React is a [React](https://react.dev/) package designed to make the
+        development of GUIs for [Odin Control](https://odin-detector.github.io/odin-control/)
+        interfaces easier and faster.
+        </Col>
+    </Row>
+    <Row xs={1} sm={2} md={3}>
+        <Col>
+            <div className="sb-section-item-header">
+                <img className="sb-section-svg" src="./odin-control-logo.svg" />
+            </div>
+            ### Odin Control
+            This library is designed to connect to and work with the Odin Control
+            API. During development, it can be connected to a separately running
+            instance of Odin Control. Once development is completed, it can be
+            compiled and served as a static resource by Odin Control's web server.
+            
+            <a className="sb-action-link" href="https://odin-detector.github.io/odin-control/" target="_blank"
+            >Learn more ></a>
+        </Col>
+        <Col>
+            <div className="sb-section-item-header">
+                <img className="sb-section-svg" src="./React-icon.svg" />
+            </div>
+
+            ### React
+            React is a Javascript based Library that allows for the creation of
+            Components: individual reusable UI elements that can contain their
+            own state and logic. These components return a form of markup called
+            **JSX**, which allows for a mix of HTML and Javascript within a single
+            object.
+
+            <a className="sb-action-link" href="https://react.dev/learn" target="_blank"
+            >Learn more ></a>
+        </Col>
+        <Col>
+            <div className="sb-section-item-header">
+                <img className="sb-section-svg" src="./vite-logo.svg" />
+            </div>
+
+            ### Vite
+            Vite is an open source build tool that provides compilation settings
+            and a development environment. During development, Vite can run
+            the GUI as a standalone web service, with *Hot Module Replacement*
+            (live monitoring of code changes, refreshing if anything chances).
+            
+            Vite's compilation step bundles source code, image assets, and any
+            dependencies together into a minified static web resource.
+
+            <a className="sb-action-link" href="https://react.dev/" target="_blank"
+            >Learn more ></a>
+        </Col>
+
+        <Col>
+            <div className="sb-section-item-header">
+                <img className="sb-section-svg" src="./bootstrap-icon.svg" />
+            </div>
+
+            ### Bootstrap
+            Much of the styling and layout of Odin React was inherited from
+            React Bootstrap, a Component Library that provides several useful
+            components, and utilities like Transition animations, overlays,
+            Layout components, and stylesheets with many useful CSS variables.
+
+            Many Odin React components are built on top of the components and
+            utilities provided by React Bootstrap, so it's use for developing
+            the GUI is highly recommended to keep the visuals standardised and
+            cohesive.
+
+            <a className="sb-action-link" href="https://react-bootstrap.netlify.app/" target="_blank"
+            >Learn more ></a>
+        </Col>
+    </Row>
+</Container>

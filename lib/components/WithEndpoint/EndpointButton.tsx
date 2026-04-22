@@ -7,6 +7,19 @@ import { useRequestHandler } from "./util";
 type EndpointButtonProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
     EndpointProps<PreArgs, PostArgs> & Omit<ButtonProps, keyof EndpointProps<PreArgs, PostArgs>>;
 
+
+
+/**
+ * Specialised Button component designed to work with an Adapter Endpoint,
+ * doing a PUT request whenever clicked. Uses the value read from the adapter
+ * unless the Value Prop is set.
+ * 
+ * Based on the [Bootstrap Button](https://react-bootstrap.netlify.app/docs/components/buttons),
+ * so all props available on that component can be set here.
+ * 
+ * PUTs the value prop if supplied, otherwise PUTs whatever the parameter is
+ * on the Tree.
+ */
 const EndpointButton = <PreArgs extends unknown[], PostArgs extends unknown[]>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
@@ -27,7 +40,7 @@ const EndpointButton = <PreArgs extends unknown[], PostArgs extends unknown[]>(
     }
 
     return (
-        <Button onClick={onClickHandler} {...rest} disabled={disable}>
+        <Button {...rest} onClick={onClickHandler}  disabled={disable}>
             {rest.children}
         </Button>
     )

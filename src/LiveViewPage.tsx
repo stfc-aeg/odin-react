@@ -1,8 +1,8 @@
 import { Container, Row, Col } from "react-bootstrap"
 
-import { OdinLiveView, ParamTree, TitleCard, useAdapterEndpoint } from "../";
+import { OdinLiveView, ParamNode, TitleCard, useAdapterEndpoint } from "odin-react";
 
-interface LiveViewParam extends ParamTree {
+interface LiveViewParam extends ParamNode {
     frame: {
         dtype: string;
         shape: number[];

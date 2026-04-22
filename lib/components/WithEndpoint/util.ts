@@ -6,13 +6,21 @@ import { useError } from "../OdinErrorContext";
 
 
 export interface EndpointProps<PreArgs extends unknown[], PostArgs extends unknown[]> {
+    /** Endpoint to connect to */
     endpoint: AdapterEndpoint;
+    /** Path to the Parameter(s) to control with this component */
     fullpath: string;
+    /** Optional value to override the value read from the adapter*/
     value?: ParamTree;
+    /** Disable the component, so it cannot be interacted with*/
     disabled?: boolean;
+    /** A method to run before performing the PUT request */
     pre_method?: (...args: PreArgs) => void;
+    /** A method to run after the PUT request succeeds*/
     post_method?: (...args: PostArgs) => void;
+    /** An array of args to pass to the pre_method*/
     pre_args?: PreArgs;
+    /** An array of args to pass to the post_method*/
     post_args?: PostArgs;
 }
 
@@ -70,11 +78,11 @@ function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]
 ): RequestHandler {
 
     const [isPending, startTransition] = useTransition();
-    const {setError} = useError();
+    const { setError } = useError();
     const data: ParamTree = value ?? getValueFromPath(endpoint.data, fullpath);
     const metadata: MetadataValue = getValueFromPath(endpoint.metadata, fullpath)
         ?? {
-            value: data,
+        value: data,
         type: typeof data == "number" ? "int" : "str",
         writeable: true
     };
@@ -148,6 +156,8 @@ function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]
             case "string":
                 val = String(val);
                 break;
+            case "null":
+                val = val ?? true;
         }
 
         if (isMetadataValue(metadata)) {

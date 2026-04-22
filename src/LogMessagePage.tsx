@@ -1,6 +1,6 @@
 import {Container, Row, Col } from 'react-bootstrap';
 
-import { OdinEventLog, OdinTable, OdinTableRow, TitleCard, useAdapterEndpoint } from '../';
+import { OdinEventLog, OdinTable, OdinTableRow, TitleCard, useAdapterEndpoint } from 'odin-react';
 
 import { EndpointData } from './EndpointPage';
 

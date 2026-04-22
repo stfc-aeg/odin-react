@@ -15,20 +15,30 @@ import ProdinImg from '../../assets/prodin.png'
 import styles from './styles.module.css'
 import { OdinErrorOutlet, SingleErrorOutlet, useError } from '../OdinErrorContext';
 
-type NavLink_t = string | Record<string, string[]>;
+type NavLinkType = string | Record<string, string[]>;
 
 
 interface OdinAppProps extends PropsWithChildren{
-    title: string;
-    navLinks?: NavLink_t[];
+    /** Title to display on the Nav Bar*/
+    title?: string;
+    /** 
+     * Links to include in the Nav Bar. The order will map to the order
+     * of pages included as children.
+     *  
+     * If a Dict-type object is included, it will render the links in that
+     * object in a dropdown menu, with the key as dropdown title. 
+    */
+    navLinks?: NavLinkType[];
+    /** Left Margin to pad the icon*/
     icon_marginLeft?: CSSProperties['marginLeft'];
+    /** Right Margin to pad the icon*/
     icon_marginRight?: CSSProperties['marginRight'];
+    /** URL to custom icon*/
     custom_icon?: string;
 }
 
 
-const Fallback: React.FC<FallbackProps> = (props) => {
-    const {error, resetErrorBoundary} = props;
+const Fallback = ({ error, resetErrorBoundary }: FallbackProps) => {
     const message = getErrorMessage(error) ?? "Unknown Rendering Error";
     return (
         <Card>
@@ -43,7 +53,7 @@ const Fallback: React.FC<FallbackProps> = (props) => {
     )
 }
 
-const PageNotFound: React.FC = () => {
+const PageNotFound = () => {
     const {"*": splat} = useParams();
     return (
         <div className={styles.notFound}>
@@ -55,18 +65,17 @@ const PageNotFound: React.FC = () => {
 }
 
 interface routeAppProps extends PropsWithChildren{
-    routeLinks?: NavLink_t[];
+    routeLinks?: NavLinkType[];
 }
 
 const darkModeAttr = "data-bs-theme";
 const buttonSvgSize = "2em";
 
-const RouteApp: React.FC<routeAppProps> = (props) => {
+const RouteApp = ({ routeLinks, children }: routeAppProps) => {
     
-    const {routeLinks} = props;
     let childRoute: ReactNode[] = [];
 
-    if(routeLinks && props.children){
+    if(routeLinks && children){
 
         const expandedRouteLinks: string[] = [];
 
@@ -79,11 +88,11 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
             }
         })
 
-        childRoute = Children.map<ReactElement, ReactNode>(props.children, (child, index) => 
+        childRoute = Children.map<ReactElement, ReactNode>(children, (child, index) => 
                 <Route path={expandedRouteLinks[index]} element={child} key={expandedRouteLinks[index]}/>
         ) ?? [];
 
-        childRoute.push(<Route index element={Children.toArray(props.children)[0]} key={"/"}/>)
+        childRoute.push(<Route index element={Children.toArray(children)[0]} key={"/"}/>)
         childRoute.push(<Route path="*" element={<PageNotFound/>}/>)
 
 
@@ -97,17 +106,17 @@ const RouteApp: React.FC<routeAppProps> = (props) => {
     }else{
         return (
             <Routes>
-                <Route index element={props.children} />
+                <Route index element={children} />
             </Routes>
         )
     }
 }
 
 interface ScrollableNavListProps {
-    navLinks?: NavLink_t[];
+    navLinks?: NavLinkType[];
 }
  
-const ScrollableNavList: React.FC<ScrollableNavListProps> = ({navLinks}) => {
+const ScrollableNavList = ({ navLinks }: ScrollableNavListProps) => {
     
     const navLinkRef = useRef<HTMLDivElement>(null);
     const [navLinkOffset, setNavLinkOffset] = useState(0);
@@ -236,11 +245,22 @@ const ScrollableNavList: React.FC<ScrollableNavListProps> = ({navLinks}) => {
      );
 }
 
-
-const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
-{
-    const {title, navLinks, icon_marginLeft="5px", icon_marginRight="10px", custom_icon} = props;
-
+/**
+ * Component designed to encapsulate the entire GUI. Provides a Nav Bar
+ * with routing for GUIs with multiple pages,that also displays
+ * an Icon, App title, a button to toggle between dark and light mode,
+ * and a button to display any errors that may have occured.
+ * This Nav Bar is pinned to the top of the screen and so is always visible.
+ * 
+ * An error boundary is included in this component, so feedback for any
+ * rendering errors caused by React is displayed, rather than a blank
+ * page.
+ * 
+ 
+ */
+const OdinApp = (
+    { title = "Odin", navLinks, icon_marginLeft = "5px", icon_marginRight = "10px", custom_icon, children }: OdinAppProps
+) => {
     const [iconHover, changeIconHover] = useState(false);
     
     const handleHoverOn = () => changeIconHover(true);
@@ -325,7 +345,7 @@ const OdinApp: React.FC<OdinAppProps> = (props: OdinAppProps) =>
                 </Nav>
             </Navbar>
             <SingleErrorOutlet/>
-            <RouteApp routeLinks={navLinks} children={props.children}/>
+            <RouteApp routeLinks={navLinks} children={children}/>
         </HashRouter>
     </ErrorBoundary>
     )

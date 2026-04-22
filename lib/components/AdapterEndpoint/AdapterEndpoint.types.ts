@@ -103,7 +103,7 @@ type ParamTree = Parameter | ParamTree[] | ParamNode;
 type ParamNum = "int" | "float" | "complex" | "bool"
 type ParamList = "list" | "tuple" | "range"
 /**Possible Type values from Python */
-type ParamType = ParamNum | ParamList | "str" | "NoneType"
+type ParamType = ParamNum | ParamList | "str" | "NoneType" | "dict"
 
 /** Structure of the Metadata for a single Parameter */
 interface MetadataValue<T extends ParamTree = ParamTree> extends ParamNode {

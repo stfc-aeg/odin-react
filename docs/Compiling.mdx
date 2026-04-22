@@ -1,0 +1,40 @@
+
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Compiling the Static GUI" />
+
+# Finishing the Development
+
+When you've finished development of the GUI, you can compile it to a static
+resource that can be served directly from Odin Control. This brings together
+all the components and used libraries into a set of plain HTML and Javascript
+that can be served by any web server, but maintains all the functionality
+provided by those components.
+
+To compile, simply run the following in the root of the GUI project:
+
+```bash
+npm run build
+```
+
+This will create a `dist` directory with the compiled GUI code contained
+within.
+
+## Serving the Static GUI
+
+To set Odin Control to serve the GUI statically, simply point it at this
+`dist` folder as the static path:
+
+```bash
+odin_control --config <config_file_name> --static <path_to_dist>
+```
+
+This can also be set in the Odin Control config. See
+[The Odin Control Docs](https://odin-detector.github.io/odin-control) for
+more information.
+
+<blockquote class="github-alert">**Note**: when served statically, any `AdapterEndpoint` hooks
+will no longer need to connect to a different URL to access the API.
+This is why it is recommended that the `endpoint_url` be set using a development
+[Environment Variable](https://vite.dev/guide/env-and-mode), so that
+when compiled that string is left blank.</blockquote>

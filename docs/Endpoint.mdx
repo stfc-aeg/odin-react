@@ -1,0 +1,227 @@
+import { Meta, ArgTypes, Canvas } from "@storybook/addon-docs/blocks";
+import { Table } from "react-bootstrap";
+
+import * as EndpointStories from "../lib/components/AdapterEndpoint/index.stories";
+import * as EndpointInputStories from "../lib/components/WithEndpoint/EndpointInput.stories";
+
+import "./storydocs.css"
+
+<Meta title="Using Adapter Endpoints" />
+
+# The Adapter Endpoint Hook
+
+The [useAdapterEndpoint](./?path=/docs/components-adapterendpoint--docs)
+custom hook allows you to connect your GUI to the API of Odin Control, 
+automatically accessing the Parameter Tree and handling the `GET` and `PUT`
+HTTP requests. It provides a local copy of the Parameter Tree that can be
+used to display or check various values. This local copy can be updated
+periodically by the endpoint if specified
+
+
+# Creating the Endpoint
+
+The basic way of creating the endpoint is as follows
+
+```tsx
+const endpoint = useAdapterEndpoint("test", import.meta.env.VITE_ENDPOINT_URL);
+```
+
+This table specifies the parameters for the `useAdapterEndpoint` hook:
+
+<ArgTypes of={EndpointStories} sort="requiredFirst"/>
+
+As described above, it's recommended that the `endpoint_url` prop be defined
+with an [Environment Variable](https://vite.dev/guide/env-and-mode#env-files). This
+is both for potential security (a `.local` env file is ignored by git, and so
+won't share IP addresses onto github) and for configurability when compiling.
+
+```
+VITE_ENDPOINT_URL="http://127.0.0.1:8888"
+```
+
+However, using this basic method will mean the AdapterEndpoint has no
+way of specifying what the *shape* of the expected Parameter Tree might be,
+and so when trying to reference the parameters your IDE may display warnings
+that the specified property may not exist.
+
+We can make it easier for future development, and avoid showing these
+incorrect errors, if we are using **Typescript**
+
+## Defining the expected Parameter Tree
+
+We can define an [Interface](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces)
+using typescript to specify what Parameters we expect to get from the Adapter
+
+```typescript
+
+import type { ParamNode } from "odin-react";
+
+// We extend the type "ParamNode" so that the AdapterEndpoint knows
+// that we are specifying a nested Dictionary shaped oject
+interface AdapterParams extends ParamNode {
+
+    string_val: string;
+    num_val: number;
+    toggle: boolean;
+    trigger: null;
+    data: {
+        set_data: number;
+        clip_data: number[];
+    }
+}
+
+function App() {
+    // we provide the interface to the hook, as a Type Parameter, to tell
+    // it the shape of the ParamTree we expect.
+    const endpoint = useAdapterEndpoint<AdapterParams>("test", import.meta.env.VITE_ENDPOINT_URL);
+}
+
+```
+
+Defining this means that when we come to use the data from the adapter, 
+the IDE being used should be able to tell what parameters are available for
+use when accessing `endpoint.data` or `endpoint.metadata`.
+
+<blockquote class="github-alert">
+**Note:** Because Typescript compiles to standard Javascript,providing
+this Interface does not restrict or limit what the AdapterEndpoint can
+actually receive from the Adapter. It's used for hinting during development
+and reduces the need for explicit type checks.
+</blockquote>
+
+With this defined, we can avoid annoying errors in the IDE when using the data.
+
+
+## Using the AdapterEndpoint object
+
+The object returned by the `useAdapterEndpoint` hook has the following relevant properties:
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>data</td>
+        <td>Readonly ParamTree Object</td>
+        <td>
+        Recursive nested dictionary structure representing the Adapter
+        Parameter Tree. The shape can be defined by the provided interface
+        </td>
+    </tr>
+    <tr>
+        <td>metadata</td>
+        <td>Readonly Metadata Object</td>
+        <td>
+        Recursive nested dictionary structure representing the Metadata
+        of the ParamTree. The shape can be defined by the provided interface.
+        </td>
+    </tr>
+    <tr>
+        <td>updateFlag</td>
+        <td>symbol</td>
+        <td>
+        Flag token that will change whenever the data has changed,
+        to alert components using the data to re-render.
+        </td>
+    </tr>
+    <tr>
+        <td>status</td>
+        <td>"init" | "connected" | "error"</td>
+        <td>
+        Connection status for the AdapterEndpoint.
+        </td>
+    </tr>
+    <tr>
+        <td>get</td>
+        <td>async \<T = ParamNode\>(param_path, config) => Promise\<T\></td>
+        <td>
+        Async http GET method. Request the provided value(s) from the parameter tree.
+        
+        This method does NOT automatically merge the response into the
+        `Endpoint.Data` object.
+
+        - `param_path`: the path of the data desired. defaults to an Empty String
+        to get the entire param tree.
+        - `config`: Object to configure the HTTP request, with two properties:
+          - `wants_metadata`: a boolean to set the metadata flag in the requests
+          - `responseType`: the response type of the http request.
+
+        Returns a promise that will resolve to the data in the HTTP response.
+        </td>
+    </tr>
+        <tr>
+        <td>put</td>
+        <td>async (data, param_path) => Promise\<ParamNode\></td>
+        <td>
+        Async http PUT method. Modify the data in the param tree at the
+        provided path.
+        
+        This method does NOT automatically merge the response into the
+        `endpoint.data` object.
+
+        - `data`: The data, with a key, that you wish to PUT to the Param Tree.
+        Can put multiple values with the same response.
+        - `param_path`: the path you want to PUT to. Defaults to an empty string for a top level PUT
+
+        Returns a Promise that will resolve to the data within the HTTP response.
+        </td>
+    </tr>
+        <tr>
+        <td>refreshData</td>
+        <td>() => void</td>
+        <td>
+        Function that performs a top level GET request to refresh the 
+        `endpoint.data` object.
+        </td>
+    </tr>
+        <tr>
+        <td>mergeData</td>
+        <td>(newData, param_path) => void</td>
+        <td>
+        A method to merge one chunk of (potentially nested) data into the
+        `endpoint.data` object, to apply any changes.
+        
+        Often used after a PUT or GET request to update the `endpoint.data`
+        object with the response.
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+
+This means that, for instance, we can set some part of the GUI to display
+a parameter from the Adapter easily, without having to do our own GET request:
+```tsx
+
+return (
+    // It's worth setting a default value in case of connection issues
+    <p>String Value: {endpoint.data.string_val ?? "Unknown"}</p>
+)
+```
+
+If we need the Endpoint to keep the data object updated frequently, we can
+create an endpoint with a polling loop:
+
+```tsx
+// create an Endpoint with a polling loop that refreshes every 1000 milliseconds
+const endpoint = useAdapterEndpoint("test", import.meta.env.VITE_ENDPOINT_URL, 1000);
+```
+
+# Interactive Components
+
+To standardise and simplify using PUT requests, Odin React provides several
+components that handle displaying the parameter, and triggering PUT requests
+when a user triggers a relevant event (such as clicking a button).
+
+These components just require the `AdapterEndpoint` object created by the hook,
+and a path specifying which parameter they interact with.
+
+<Canvas of={EndpointInputStories.Default} sourceState="shown"/>
+
+See the relevant documentation for each of these components under the `WithEndpoint`
+directory in the sidebar of Storybook.
