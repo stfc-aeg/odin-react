@@ -23,7 +23,7 @@ periodically by the endpoint if specified
 The basic way of creating the endpoint is as follows
 
 ```tsx
-const endpoint = useAdapterEndpoint("test", import.meta.VITE_ENDPOINT_URL);
+const endpoint = useAdapterEndpoint("test", import.meta.env.VITE_ENDPOINT_URL);
 ```
 
 This table specifies the parameters for the `useAdapterEndpoint` hook:
@@ -73,7 +73,7 @@ interface AdapterParams extends ParamNode {
 function App() {
     // we provide the interface to the hook, as a Type Parameter, to tell
     // it the shape of the ParamTree we expect.
-    const endpoint = useAdapterEndpoint<AdapterParams>("test", import.meta.VITE_ENDPOINT_URL);
+    const endpoint = useAdapterEndpoint<AdapterParams>("test", import.meta.env.VITE_ENDPOINT_URL);
 }
 
 ```
@@ -209,7 +209,7 @@ create an endpoint with a polling loop:
 
 ```tsx
 // create an Endpoint with a polling loop that refreshes every 1000 milliseconds
-const endpoint = useAdapterEndpoint("test", import.meta.VITE_ENDPOINT_URL, 1000);
+const endpoint = useAdapterEndpoint("test", import.meta.env.VITE_ENDPOINT_URL, 1000);
 ```
 
 # Interactive Components

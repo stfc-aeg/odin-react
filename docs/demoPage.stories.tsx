@@ -99,7 +99,7 @@ import { DemoPage } from "./DemoPage";
 
 const App = () => {
 
-    const endpoint = useAdapterEndpoint("test", import.meta.VITE_ENDPOINT_URL);
+    const endpoint = useAdapterEndpoint("test", import.meta.env.VITE_ENDPOINT_URL);
 
     return (
         <OdinApp navLinks={["Demo Page"]}>
