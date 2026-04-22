@@ -5,6 +5,9 @@
     "lib": ["ES2023", "ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "paths": {
+      "odin-react": ["./lib/main.ts"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

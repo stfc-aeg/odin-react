@@ -1,6 +1,6 @@
 import {Container, Row, Col, Stack, Form} from 'react-bootstrap';
 
-import { GraphData, Axis, OdinGraph, TitleCard } from "../"
+import { GraphData, Axis, OdinGraph, TitleCard } from "odin-react"
 
 import type { Layout, PlotData } from 'plotly.js';
 import { useEffect, useState, useMemo } from 'react';

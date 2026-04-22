@@ -1,7 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// import { Button } from '../'
-import { OdinApp, useAdapterEndpoint } from '../'
+import { OdinApp, useAdapterEndpoint } from "odin-react";
 
 import { MainPage } from './MainPage';
 import { EndpointPage, EndpointData } from './EndpointPage';

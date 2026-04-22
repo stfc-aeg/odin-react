@@ -1,5 +1,5 @@
 import { Container, Row, Col, Stack, Form, Button, InputGroup, Alert, DropdownButton, Dropdown } from "react-bootstrap"
-import { TitleCard, useAdapterEndpoint, WithEndpoint } from "../"
+import { TitleCard, useAdapterEndpoint, WithEndpoint } from "odin-react"
 
 const EndpointInput = WithEndpoint(Form.Control);
 const EndpointButton = WithEndpoint(Button);

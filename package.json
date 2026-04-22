@@ -3,15 +3,19 @@
     "private": true,
     "version": "2.1.0",
     "type": "module",
-    "main": "dist/main.js",
-    "types": "dist/main.d.ts",
+    "main": "./dist/odin-react.umd.cjs.js",
+    "module": "./dist/odin-react.js",
+    "types": "./dist/main.d.ts",
     "files": [
         "dist"
     ],
-    "sideEffects": [
-        "**/*.css",
-        "**/*.png"
-    ],
+    "exports": {
+        ".": {
+            "import": "./dist/odin-react.js",
+            "require": "./dist/odin-react.umd.cjs"
+        }
+    },
+    "sideEffects": false,
     "scripts": {
         "dev": "vite",
         "build": "tsc --p ./tsconfig-build.json && vite build",
@@ -27,9 +31,7 @@
     "peerDependencies": {
         "bootstrap": "^5.3.5",
         "plotly.js": "^3.0.1",
-        "react": "^19.1.0",
         "react-bootstrap": "^2.10.9",
-        "react-dom": "^19.1.0",
         "react-plotly.js": "^2.6.0"
     },
     "peerDependenciesMeta": {
@@ -39,44 +41,39 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
-        "@laynezh/vite-plugin-lib-assets": "^2.1.0",
-        "@microsoft/api-extractor": "^7.52.8",
         "@storybook/addon-a11y": "^10.2.17",
         "@storybook/addon-docs": "^10.2.17",
         "@storybook/addon-themes": "^10.2.17",
         "@storybook/addon-vitest": "^10.2.17",
         "@storybook/react-vite": "^10.2.17",
-        "@types/lodash": "^4.17.20",
         "@types/node": "^24.0.10",
         "@types/plotly.js": "^3.0.2",
         "@types/react": "^19.0.8",
         "@types/react-dom": "^19.0.3",
         "@types/react-plotly.js": "^2.6.3",
-        "@vitejs/plugin-react": "^4.3.4",
+        "@vitejs/plugin-react": "^6.0.0",
         "@vitest/browser-playwright": "^4.1.0",
         "@vitest/coverage-v8": "^4.1.0",
         "eslint": "^9.19.0",
-        "eslint-plugin-react-hooks": "^5.0.0",
-        "eslint-plugin-react-refresh": "^0.4.18",
+        "eslint-plugin-react-hooks": "^7.0.0",
+        "eslint-plugin-react-refresh": "^0.5.2",
         "eslint-plugin-storybook": "^10.2.17",
-        "glob": "^11.0.1",
-        "globals": "^16.3.0",
+        "globals": "^17.0.0",
         "msw": "^2.12.10",
         "msw-storybook-addon": "^2.0.6",
         "playwright": "^1.58.2",
         "prettier": "^3.8.1",
         "storybook": "^10.2.17",
         "storybook-dark-mode": "^5.0.0",
-        "typescript": "^5.7.2",
+        "typescript": "^6.0.0",
         "typescript-eslint": "^8.22.0",
-        "unplugin-dts": "^1.0.0-beta.2",
-        "vite": "^7.0.0",
+        "vite": "^8.0.0",
+        "vite-plugin-dts": "^4.5.4",
         "vite-plugin-lib-inject-css": "^2.2.1",
         "vitest": "^4.1.0"
     },
     "dependencies": {
         "axios": "^1.8.1",
-        "lodash": "^4.17.21",
         "react": "^19.1.0",
         "react-bootstrap-icons": "^1.11.5",
         "react-dom": "^19.1.0",

@@ -1,8 +1,8 @@
-import { ParamController } from "../";
+import { ParamController } from "odin-react";
 
 import { Container, Row, Col } from "react-bootstrap";
 
-import type { AdapterEndpoint } from "../";
+import type { AdapterEndpoint } from "odin-react";
 
 
 interface AutoGenPageProps {
