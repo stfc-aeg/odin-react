@@ -5,8 +5,20 @@ import { Alert, AlertProps, Badge } from "react-bootstrap";
 import Style from './styles.module.css';
 
 interface ErrorContext_t {
+    /**
+     * Add a new error to the front of the list of errors.
+     * If the error has an identical message to the most recent error in the list, it will just update the count and timestamp of that error
+     * @param err the error to add to the list. Will be turned into an OdinError, which contains a Timestamp and a Count parameter
+     */
     setError: (err: Error) => void;
+    /**
+     * removes the specified OdinError from the list. Specifically, filters out any errors that have a matching Message and Timestamp
+     * @param err the OdinError to remove.
+     */
     clearError: (err: OdinError) => void;
+    /**
+     * Removes all errors from the ErrorList, resetting it to an empty array.
+     */
     clearAllError: () => void;
 }
 
@@ -14,7 +26,9 @@ interface ErrorContext_t {
  * An Error class specifically for use within the OdinError Context
  */
 class OdinError extends Error {
+    /** Time at which the error most recently occurred */
     timestamp: Date;
+    /** Number of repeated instances of this error that occurred */
     count: number;
 
     constructor(message: string, timestamp: Date) {
@@ -81,32 +95,27 @@ const errorsReducer = (errors: OdinError[], action: ErrorAction) => {
 const ErrorContext = createContext<OdinError[]>([]);
 const ErrorDispatchContext = createContext<ErrorContext_t | null>(null);
 
+/**
+ * A Context Provider to allow components, such as the WithEndpoint inputs,
+ * to access and add to the list of errors.
+ */
 const OdinErrorContext = (props: PropsWithChildren) => {
 
     const [errors, dispatch] = useReducer(errorsReducer, []);
 
-    /**
-     * Add a new error to the front of the list of errors.
-     * If the error has an idential message to the most recent error in the list, it will just update the count and timestamp of that error
-     * @param err the error to add to the list. Will be turned into an OdinError, which contains a Timestamp and a Count parameter
-     */
+
     const setError = (err: Error) => dispatch({
         type: ErrorActionType.ADD,
         error: err
     });
 
-    /**
-     * removes the specified OdinError from the list. Specifically, filters out any errors that have a matching Message and Timestamp
-     * @param err the OdinError to remove.
-     */
+
     const clearError = (err: OdinError) => dispatch({
         type: ErrorActionType.REMOVE,
         error: err
     });
 
-    /**
-     * Removes all errors from the ErrorList, resetting it to an empty array.
-     */
+
     const clearAllError = () => dispatch({
         type: ErrorActionType.CLEAR
     });
@@ -128,7 +137,9 @@ interface ErrorAlertProps extends extendableAlertProps {
 }
 
 
-
+/**
+ * An Alert for a single OdinError.
+ */
 const ErrorAlert = ({ error, className, ...props }: ErrorAlertProps) => {
     const { clearError } = useError();
 
@@ -147,9 +158,19 @@ const ErrorAlert = ({ error, className, ...props }: ErrorAlertProps) => {
     )
 }
 
+interface OdinErrorOutletProps {
+    /**
+     * Max height of the outlet. Will be scrollable if the list of errors
+     * does not fit.
+     */
+    height?: CSSProperties["height"]
+}
 
+/**
+ * A display that shows all errors in the list
+ */
 const OdinErrorOutlet = (
-    { height = "calc(100vh - 15rem)" }: { height?: CSSProperties["height"] }
+    { height = "calc(100vh - 15rem)" }: OdinErrorOutletProps
 ) => {
 
     const { errors } = useError();
@@ -162,7 +183,7 @@ const OdinErrorOutlet = (
     return (
         errors.length > 0 && (
             <>
-                <div>{`Last Error occured ${lastErrorMessage}`}</div>
+                <div>{`Last Error occurred ${lastErrorMessage}`}</div>
                 <hr />
                 <div className={Style.scrollable} style={{ maxHeight: height }}>
                     {errors.slice(0, 100).map((err, index) => (
@@ -184,7 +205,16 @@ function usePrevious<T>(value: T): T {
     return ref.current;
 }
 
-const SingleErrorOutlet = ({ delay = 5000 }: { delay?: number }) => {
+interface SingleErrorOutletProps {
+    /** Number of milliseconds the outlet is visible for before disappearing */
+    delay?: number
+}
+
+/**
+ * A display for the most recent Error added to the list. Will only be visible
+ * when a new error occurs, and will dismiss itself after a timeout
+ */
+const SingleErrorOutlet = ({ delay = 5000 }: SingleErrorOutletProps) => {
     const { errors } = useError();
     const [show, setShow] = useState(true);
 
@@ -212,6 +242,9 @@ const SingleErrorOutlet = ({ delay = 5000 }: { delay?: number }) => {
 
 }
 
+/**
+ * Custom Hook, providing access to the error list and the methods from the context.
+ */
 const useError = () => {
     const errors = useContext(ErrorContext);
     const methods = useContext(ErrorDispatchContext);
