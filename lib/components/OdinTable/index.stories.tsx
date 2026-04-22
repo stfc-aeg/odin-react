@@ -14,6 +14,7 @@ const RowDefs: { [key: string]: ComponentProps<typeof OdinTableRow>["row"] } = {
 
 const meta = {
   component: OdinTable,
+  subcomponents: { OdinTableRow },
   args: {
     columns: { "name": "Name", "val": "Value" }
   },
@@ -22,10 +23,10 @@ const meta = {
       options: Object.keys(RowDefs),
       mapping: Object.keys(RowDefs).reduce(
         (prev, cur) => (
-          { ...prev, [cur]: (<OdinTableRow key={cur} row={RowDefs[cur]} />)}
+          { ...prev, [cur]: (<OdinTableRow key={cur} row={RowDefs[cur]} />) }
         ), {}
       ),
-      control: {type: "check"},
+      control: { type: "check" },
       table: {
         type: {
           summary: "ReactNode",

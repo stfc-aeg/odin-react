@@ -47,7 +47,7 @@ const ErrorContextDisplay = ({ }) => {
         <Row>
           <Col>
             <InputGroup>
-              <InputGroup.Text>Error Text:</InputGroup.Text>
+              <InputGroup.Text>Error Message:</InputGroup.Text>
               <Form.Control value={ErrorText} onChange={
                 (event) => changeErrorText(event.target.value)} />
               <OverlayButton onClick={triggerNewError}
