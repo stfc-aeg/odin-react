@@ -35,6 +35,7 @@ export interface EndpointData extends actual.ParamNode {
             }
         }
     };
+    volt: number;
     graph_data: number[];
 }
 
@@ -78,7 +79,8 @@ const testAdapterData: EndpointData = {
     selected: "item 1",
     toggle: true,
     trigger: null,
-    graph_data: Array.from(Array(360), (_, x) => Math.sin(x * (Math.PI / 180)))
+    graph_data: Array.from(Array(360), (_, x) => Math.sin(x * (Math.PI / 180))),
+    volt: 1500
 }
 
 const testLiveData: LiveViewData = {
@@ -101,7 +103,8 @@ const metadataPaths: { [key: string]: Partial<MetadataValue> } = {
     "num_val": { min: 10, max: 90 },
     "clip_data": {min: -25, max: 25},
     "rand_num": { writeable: false },
-    "dict": { writeable: false, type: "dict" }
+    "dict": { writeable: false, type: "dict" },
+    "volt": {min: 100, max: 5000, units: "mV", name: "Voltage" }
 }
 
 const testMetadata = createMetadata(testAdapterData, metadataPaths);

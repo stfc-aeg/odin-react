@@ -78,7 +78,7 @@ const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
 
     return (
         <Form.Control ref={component} onChange={onChangeHandler} onKeyUp={onEnterHandler} value={compVal}
-            min={compMin} max={compMax} disabled={disable} type={type} {...rest} style={style} />
+            min={compMin} max={compMax} disabled={disable} type={type} style={style} {...rest}  />
     )
 }
 
