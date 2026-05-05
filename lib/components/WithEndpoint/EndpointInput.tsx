@@ -7,7 +7,7 @@ import type { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
 import { useRequestHandler, type EndpointProps } from './util';
 
 
-type EndpointInputProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+type EndpointInputProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
     EndpointProps<PreArgs, PostArgs> & Omit<FormControlProps, keyof EndpointProps<PreArgs, PostArgs>>;
 
 
@@ -21,7 +21,7 @@ type EndpointInputProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
  * 
  * Can be used for both string and number based Parameters.
  */
-const EndpointInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+const EndpointInput = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,

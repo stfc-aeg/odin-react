@@ -23,7 +23,7 @@ interface RangedAdditionalProps {
     step?: number;
 }
 
-type MultipliedInputProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+type MultipliedInputProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
     EndpointProps<PreArgs, PostArgs> & Omit<InputGroupProps, keyof EndpointProps<PreArgs, PostArgs>> &
     RangedAdditionalProps;
 
@@ -37,7 +37,7 @@ type MultipliedInputProps<PreArgs extends unknown[], PostArgs extends unknown[]>
  * the user can more easily view and enter values that might have wide range
  * options.
  */
-const EndpointMultipliedInput = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+const EndpointMultipliedInput = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,

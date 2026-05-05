@@ -4,25 +4,8 @@ import { getValueFromPath, isMetadataValue, isParamNode } from "../AdapterEndpoi
 import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 
+import type { ArgType, EndpointProps } from "./utils.types";
 
-export interface EndpointProps<PreArgs extends unknown[], PostArgs extends unknown[]> {
-    /** Endpoint to connect to */
-    endpoint: AdapterEndpoint;
-    /** Path to the Parameter(s) to control with this component */
-    fullpath: string;
-    /** Optional value to override the value read from the adapter*/
-    value?: ParamTree;
-    /** Disable the component, so it cannot be interacted with*/
-    disabled?: boolean;
-    /** A method to run before performing the PUT request */
-    pre_method?: (...args: PreArgs) => void;
-    /** A method to run after the PUT request succeeds*/
-    post_method?: (...args: PostArgs) => void;
-    /** An array of args to pass to the pre_method*/
-    pre_args?: PreArgs;
-    /** An array of args to pass to the post_method*/
-    post_args?: PostArgs;
-}
 
 interface RequestHandler {
     requestHandler: (val?: ParamTree) => void;
@@ -67,14 +50,14 @@ async function sendRequest<T extends ParamTree>(val: T, endpoint: AdapterEndpoin
         const response = await endpoint.put(sendVal, sendPath);
         endpoint.mergeData(response, sendPath);
     } catch (err) {
-        console.debug("Error in PUT occured in WithEndpoint component", err);
+        console.debug("Error in PUT occurred in WithEndpoint component", err);
     }
 }
 
-function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]>(
+function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType>(
     { endpoint, fullpath, value, disabled,
-        pre_method, pre_args,
-        post_method, post_args }: EndpointProps<PreArgs, PostArgs>
+        pre_method, pre_args = [],
+        post_method, post_args = [] }: EndpointProps<PreArgs, PostArgs>
 ): RequestHandler {
 
     const [isPending, startTransition] = useTransition();
@@ -177,16 +160,19 @@ function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]
         return val;
     }
 
+
+
     const requestHandler: RequestHandler["requestHandler"] = (val) => {
         try {
             val = validate(val);
             startTransition(async () => {
 
-                pre_method?.(...(pre_args ?? []) as PreArgs);
+                pre_method?.(pre_args as PreArgs);
+                // pre_method?.((pre_args ?? {}) as PreArgs);
 
                 sendRequest(val ?? data, endpoint, fullpath)
                     .then(() => {
-                        post_method?.(...(post_args ?? []) as PostArgs);
+                        post_method?.(post_args as PostArgs);
                     });
             })
         } catch (err) {
@@ -199,3 +185,4 @@ function useRequestHandler<PreArgs extends unknown[], PostArgs extends unknown[]
 }
 
 export { sendRequest, useRequestHandler };
+export type { EndpointProps, ArgType};

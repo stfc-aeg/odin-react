@@ -1,10 +1,10 @@
 import type { ButtonProps } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 
-import type { EndpointProps } from "./util";
+import type { EndpointProps, ArgType } from "./util";
 import { useRequestHandler } from "./util";
 
-type EndpointButtonProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+type EndpointButtonProps<PreArgs extends ArgType, PostArgs extends ArgType> =
     EndpointProps<PreArgs, PostArgs> & Omit<ButtonProps, keyof EndpointProps<PreArgs, PostArgs>>;
 
 
@@ -20,7 +20,7 @@ type EndpointButtonProps<PreArgs extends unknown[], PostArgs extends unknown[]> 
  * PUTs the value prop if supplied, otherwise PUTs whatever the parameter is
  * on the Tree.
  */
-const EndpointButton = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+const EndpointButton = <PreArgs extends ArgType, PostArgs extends ArgType>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args,

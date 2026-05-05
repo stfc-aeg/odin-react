@@ -88,13 +88,13 @@ export const DisabledBecauseParam: Story = {
 export const PreTrigger: Story = {
   args: {
     pre_method: fn(),
-    pre_args: ["Pre Function Arg"]
+    pre_args: {message: "Pre Function Args"}
   },
   play: async ({canvas, args, userEvent}) => {
     const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
     await userEvent.click(canvas.getByRole("button"));
 
-    await expect(args.pre_method).toHaveBeenCalledWith(...(args.pre_args as string[]));
+    await expect(args.pre_method).toHaveBeenCalledWith(args.pre_args);
     await expect(put).toHaveBeenCalled();
   }
 }

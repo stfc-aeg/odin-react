@@ -24,7 +24,7 @@ const DemoPage = (
         changeMessage("Trigger Clicked\nAwaiting Data");
     }
 
-    const PostMethod = (num: number) => {
+    const PostMethod = ({num}: {num: number}) => {
         changeMessage("Post Method\nNumber: " + num);
     }
 
@@ -41,7 +41,7 @@ const DemoPage = (
                                 <InputGroup.Text>Trigger</InputGroup.Text>
                                 <EndpointButton endpoint={endpoint} fullpath='trigger' value={42}
                                     pre_method={PreMethod} post_method={PostMethod}
-                                    post_args={[endpoint.data.rand_num]}>
+                                    post_args={{num: endpoint.data.rand_num}}>
                                     Click me!
                                 </EndpointButton>
                                 <Form.Control as="textarea" readOnly value={triggeredStateMessage} />
