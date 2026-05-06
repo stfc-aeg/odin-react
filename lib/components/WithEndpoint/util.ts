@@ -1,11 +1,10 @@
 import { useMemo, useTransition } from "react";
-import type { AdapterEndpoint, ParamTree } from "../AdapterEndpoint";
+import type { AdapterEndpoint, ParamTree, ParamNode } from "../AdapterEndpoint";
 import { getValueFromPath, isMetadataValue, isParamNode } from "../AdapterEndpoint";
 import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
 
 import type { ArgType, EndpointProps } from "./utils.types";
-
 
 interface RequestHandler {
     requestHandler: (val?: ParamTree) => void;
@@ -32,7 +31,7 @@ const getLastPathPart = (path: string): [string, string] => {
  * @param endpoint AdapterEndpoint to handle the PUT request
  * @param path Path to the parameter
  */
-async function sendRequest<T extends ParamTree>(val: T, endpoint: AdapterEndpoint, path: string): Promise<void> {
+async function sendRequest<T extends ParamTree>(val: T, endpoint: AdapterEndpoint, path: string): Promise<ParamNode> {
 
     const [sendVal, sendPath] = (function () {
         if (isParamNode(val)) {
@@ -49,15 +48,17 @@ async function sendRequest<T extends ParamTree>(val: T, endpoint: AdapterEndpoin
     try {
         const response = await endpoint.put(sendVal, sendPath);
         endpoint.mergeData(response, sendPath);
+        return response;
     } catch (err) {
         console.debug("Error in PUT occurred in WithEndpoint component", err);
+        return {"error": "PUT Failed"}
     }
 }
 
 function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType>(
     { endpoint, fullpath, value, disabled,
-        pre_method, pre_args = [],
-        post_method, post_args = [] }: EndpointProps<PreArgs, PostArgs>
+        pre_method, pre_args,
+        post_method, post_args }: EndpointProps<PreArgs, PostArgs>
 ): RequestHandler {
 
     const [isPending, startTransition] = useTransition();
@@ -166,12 +167,40 @@ function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType>(
         try {
             val = validate(val);
             startTransition(async () => {
+                // check if pre_args has the value key, but has set it to undefined
+                // ideally, we'd have a way to check that the PreArgs type has "value"
+                // as a key and see that the pre_args object doesn't include it,
+                // but I need to find a way to make the PreArgs type accessible
+                // at runtime to do that
+                if(pre_args && Object.keys(pre_args).includes("value")) {
+                    if (pre_args.value == undefined || pre_args.value == null) {
+                        // if so, overwrite the value with the param to be put
+                        pre_args.value = val;
+                    }
+                }
+                const modVal = pre_method?.(pre_args as PreArgs);
 
-                pre_method?.(pre_args as PreArgs);
-                // pre_method?.((pre_args ?? {}) as PreArgs);
-
-                sendRequest(val ?? data, endpoint, fullpath)
-                    .then(() => {
+                sendRequest(modVal ?? val ?? data, endpoint, fullpath)
+                    .then((value) => {
+                        
+                        if(post_args && Object.keys(post_args).includes("value")) {
+                            if(post_args.value == undefined || post_args.value == null) {
+                                // depending on Odin Control version, and how
+                                // many Params we are PUTing, the returned response from sendRequest
+                                // can be of of these shapes:
+                                //   {value: param}  - single param, Odin 2.0
+                                //   {[param_name: param]} - single param, Odin 1.6
+                                //   {[param_name]: {param_1: x, param_2: y...}} - multiple param, Odin 1.6
+                                //   {param_1: x, param_2: y...} - multiple param, Odin 2.0
+                                if(Object.keys(value).length == 1){
+                                    // either Odin 1.6 with any number params, or 2.0 with single
+                                    post_args.value = value[Object.keys(value)[0]]
+                                } else {
+                                    // Odin 2.0, multiple params. Set full dict as value
+                                    post_args.value = value;
+                                }
+                            }
+                        }
                         post_method?.(post_args as PostArgs);
                     });
             })

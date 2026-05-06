@@ -246,7 +246,7 @@ const transformMockCode = async (source: string, _?: StoryContext, adapterName: 
         ret_string = [addEndpointString,
             "",
             "return (",
-            source.replace(/endpoint={{[\s\S]*updateFlag: Symbol\(mocked\)\s*}}/, ` endpoint={endpoint}`),
+            source.replaceAll(/endpoint={{[\s\S]*?updateFlag: Symbol\(mocked\),?\s*}}/g, ` endpoint={endpoint}`),
             ")"].join("\n");
     }
 
