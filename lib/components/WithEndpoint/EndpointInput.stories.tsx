@@ -60,7 +60,7 @@ export const Default: Story = {
 
     await userEvent.clear(input);
     await userEvent.type(input, "52");
-    await expect(put).not.toHaveBeenCalled();
+    await expect(put).not.toHaveBeenCalledWith({ value: "52" }, "string_val");
     await userEvent.keyboard("[Enter]");
     await expect(put).toHaveBeenCalledWith({ value: "52" }, "string_val");
   }

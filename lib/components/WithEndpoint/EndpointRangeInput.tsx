@@ -9,12 +9,20 @@ import { useRequestHandler, type EndpointProps } from './util';
 interface RangedAdditionalProps {
     /** 
      * Record of keys to display in the dropdown, and the corresponding
-     * value to multiply by if that option is selected.
+     * multiplication of that key. 
      * 
-     * 
-     * For example, for a Voltage param expecting V: {"V": 1, "kV": 1000, "mV": 1/1000}
+     * For example, for a Voltage parameter: {"V": 1, "kV": 1000, "mV": 1/1000}
      */
     ranges: Record<string, number>;
+
+    /**
+     * The default range of the input. Multiplication will be adjusted based off
+     * whatever the value of the default is
+     * 
+     * For example, if `ranges` is `{"V": 1, "kV": 1000, "mV": 1/1000}` and `default` is
+     * "mV", selecting "V" will multiply the parameter by 1000 before doing the PUT.
+     * */
+    defaultRange?: string;
     /** Minimum value of the input */
     min?: number;
     /** Maximum value of the input */
@@ -41,16 +49,20 @@ const EndpointMultipliedInput = <PreArgs extends Record<string, unknown>, PostAr
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,
-        ranges, title, step = 1,
+        defaultRange, ranges, title, step = 1,
         ...rest }: MultipliedInputProps<PreArgs, PostArgs>
 ) => {
 
     const { requestHandler, data: endVal, disable } = useRequestHandler({
         endpoint, fullpath, disabled, pre_method, pre_args, post_method, post_args
     });
+    /** base multiplication value. final value will be  */
+    const baseMult = defaultRange ??
+        Object.keys(ranges).find(key => ranges[key] === 1) ??
+        Object.keys(ranges)[0];
 
-    const [multiply, changeMultiply] = useState<string>(
-        Object.keys(ranges).find(key => ranges[key] === 1) ?? Object.keys(ranges)[0]);
+
+    const [multiply, changeMultiply] = useState(baseMult);
     const [compVal, changeCompVal] = useState<number>(0);
     const [editing, setEditing] = useState(false);
 
@@ -60,12 +72,13 @@ const EndpointMultipliedInput = <PreArgs extends Record<string, unknown>, PostAr
     const compMin = min ?? metaData?.min;
     const compMax = max ?? metaData?.max;
 
+    const adjustVal = ranges[multiply] / ranges[baseMult];
     const label = title || metaData?.name || fullpath.split("/").at(-1);
 
     const style: CSSProperties = editing ? { backgroundColor: "var(--bs-highlight-bg)" } : {};
 
     const onChangeHandler: FormControlProps["onChange"] = (event) => {
-        const val = (event.target as HTMLInputElement).valueAsNumber * ranges[multiply];
+        const val = (event.target as HTMLInputElement).valueAsNumber * adjustVal;
 
         changeCompVal(val);
 
@@ -101,10 +114,10 @@ const EndpointMultipliedInput = <PreArgs extends Record<string, unknown>, PostAr
             <InputGroup.Text>{label ?? "Value"}</InputGroup.Text>
             <Form.Control ref={component} type='number' style={style}
                 onChange={onChangeHandler} onKeyUp={onEnterHandler}
-                value={compVal / ranges[multiply]} disabled={disable}
-                min={compMin ? compMin / ranges[multiply] : undefined}
-                max={compMax ? compMax / ranges[multiply] : undefined}
-                step={step ? step / ranges[multiply] : undefined} />
+                value={compVal / adjustVal} disabled={disable}
+                min={compMin ? compMin / adjustVal : undefined}
+                max={compMax ? compMax / adjustVal : undefined}
+                step={step ? step / adjustVal : undefined} />
             <DropdownButton title={multiply} onSelect={onSelectHandler} disabled={disable}>
                 {Object.entries(ranges).sort((a, b) => a[1] - b[1]).map(
                     (selection) => (
