@@ -1,6 +1,6 @@
 {
-    "name": "odin-react",
-    "private": true,
+    "name": "@dssg/odin-react",
+    "private": false,
     "version": "2.1.1",
     "type": "module",
     "main": "./dist/odin-react.umd.cjs.js",
@@ -11,6 +11,7 @@
     ],
     "exports": {
         ".": {
+            "types": "./dist/main.d.ts",
             "import": "./dist/odin-react.js",
             "require": "./dist/odin-react.umd.cjs"
         }
