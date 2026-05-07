@@ -1,7 +1,7 @@
 {
     "name": "@dssg/odin-react",
     "private": false,
-    "version": "2.1.1",
+    "version": "2.1.2",
     "type": "module",
     "main": "./dist/odin-react.umd.cjs.js",
     "module": "./dist/odin-react.js",
