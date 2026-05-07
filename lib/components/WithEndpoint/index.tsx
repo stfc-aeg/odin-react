@@ -8,6 +8,7 @@ import { EndpointDoubleSlider } from "./EndpointDoubleSlider";
 import { EndpointDropdown } from "./EndpointDropdown";
 import { EndpointInput } from "./EndpointInput";
 import { EndpointSlider } from "./EndpointSlider";
+import { EndpointMultipliedInput } from "./EndpointRangeInput";
 import type { EndpointProps } from "./util";
 import { useRequestHandler } from "./util";
 // import { isEqual } from 'lodash';
@@ -245,7 +246,8 @@ export {
     EndpointDoubleSlider,
     EndpointDropdown,
     EndpointInput,
-    EndpointSlider
+    EndpointSlider,
+    EndpointMultipliedInput as EndpointRangeInput
 };
 
 export { WithEndpoint };
