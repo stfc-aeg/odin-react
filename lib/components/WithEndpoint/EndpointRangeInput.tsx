@@ -1,0 +1,136 @@
+import { ComponentProps, CSSProperties, useState, useEffect, useRef } from 'react';
+import type { InputGroupProps, FormControlProps } from 'react-bootstrap';
+import { Dropdown, DropdownButton, Form, InputGroup } from 'react-bootstrap';
+import { getValueFromPath } from '../AdapterEndpoint';
+import type { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
+import { useRequestHandler, type EndpointProps } from './util';
+
+
+interface RangedAdditionalProps {
+    /** 
+     * Record of keys to display in the dropdown, and the corresponding
+     * multiplication of that key. 
+     * 
+     * For example, for a Voltage parameter: {"V": 1, "kV": 1000, "mV": 1/1000}
+     */
+    ranges: Record<string, number>;
+
+    /**
+     * The default range of the input. Multiplication will be adjusted based off
+     * whatever the value of the default is
+     * 
+     * For example, if `ranges` is `{"V": 1, "kV": 1000, "mV": 1/1000}` and `default` is
+     * "mV", selecting "V" will multiply the parameter by 1000 before doing the PUT.
+     * */
+    defaultRange?: string;
+    /** Minimum value of the input */
+    min?: number;
+    /** Maximum value of the input */
+    max?: number;
+    /** Specifies the granularity of the value */
+    step?: number;
+}
+
+type MultipliedInputProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
+    EndpointProps<PreArgs, PostArgs> & Omit<InputGroupProps, keyof EndpointProps<PreArgs, PostArgs>> &
+    RangedAdditionalProps;
+
+
+/**
+ * An Endpoint Input with an included multiplier/range dropdown, for Parameters
+ * that may have multiple scaling ranges such as Voltage, Amps, Seconds, etc.
+ * 
+ * Whilst the displayed value scales based on the selected range, the underlying
+ * value sent to the Adapter does not get altered. This is designed purely so that
+ * the user can more easily view and enter values that might have wide range
+ * options.
+ */
+const EndpointMultipliedInput = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
+    { endpoint, fullpath, value, disabled, min, max,
+        pre_method, pre_args,
+        post_method, post_args,
+        defaultRange, ranges, title, step = 1,
+        ...rest }: MultipliedInputProps<PreArgs, PostArgs>
+) => {
+
+    const { requestHandler, data: endVal, disable } = useRequestHandler({
+        endpoint, fullpath, disabled, pre_method, pre_args, post_method, post_args
+    });
+    /** base multiplication value. final value will be  */
+    const baseMult = defaultRange ??
+        Object.keys(ranges).find(key => ranges[key] === 1) ??
+        Object.keys(ranges)[0];
+
+
+    const [multiply, changeMultiply] = useState(baseMult);
+    const [compVal, changeCompVal] = useState<number>(0);
+    const [editing, setEditing] = useState(false);
+
+    const component = useRef<HTMLInputElement>(null);
+
+    const metaData: MetadataValue | undefined = getValueFromPath(endpoint.metadata, fullpath);
+    const compMin = min ?? metaData?.min;
+    const compMax = max ?? metaData?.max;
+
+    const adjustVal = ranges[multiply] / ranges[baseMult];
+    const label = title || metaData?.name || fullpath.split("/").at(-1);
+
+    const style: CSSProperties = editing ? { backgroundColor: "var(--bs-highlight-bg)" } : {};
+
+    const onChangeHandler: FormControlProps["onChange"] = (event) => {
+        const val = (event.target as HTMLInputElement).valueAsNumber * adjustVal;
+
+        changeCompVal(val);
+
+        setEditing(!(val == endVal));
+    }
+
+    const onEnterHandler: FormControlProps["onKeyUp"] = (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            console.debug(fullpath, event);
+            requestHandler(compVal);
+            setEditing(false);
+        }
+    }
+
+    const onSelectHandler: ComponentProps<typeof DropdownButton>["onSelect"] = (eventKey) => {
+
+        changeMultiply(eventKey!);
+    };
+
+    useEffect(() => {
+        //Endpoint Value changed, update component value if need be.
+        const newVal = getValueFromPath<number>(endpoint.data, fullpath);
+
+        // check if the component is not currently active
+        if (document.activeElement !== component.current && !editing && typeof newVal !== "undefined") {
+            changeCompVal(newVal);
+        }
+
+    }, [endpoint.updateFlag, endVal]);
+
+    return (
+        <InputGroup {...rest}>
+            <InputGroup.Text>{label ?? "Value"}</InputGroup.Text>
+            <Form.Control ref={component} type='number' style={style}
+                onChange={onChangeHandler} onKeyUp={onEnterHandler}
+                value={compVal / adjustVal} disabled={disable}
+                min={compMin ? compMin / adjustVal : undefined}
+                max={compMax ? compMax / adjustVal : undefined}
+                step={step ? step / adjustVal : undefined} />
+            <DropdownButton title={multiply} onSelect={onSelectHandler} disabled={disable}>
+                {Object.entries(ranges).sort((a, b) => a[1] - b[1]).map(
+                    (selection) => (
+                        <Dropdown.Item key={selection[1]} eventKey={selection[0]} active={selection[0] == multiply}>
+                            {selection[0]}
+                        </Dropdown.Item>
+                    )
+                )}
+            </DropdownButton>
+        </InputGroup>
+    )
+
+
+}
+
+export { EndpointMultipliedInput };

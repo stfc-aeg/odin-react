@@ -13,7 +13,7 @@ interface  SliderAdditonalProps {
     tooltipPlacement?: OverlayTriggerProps["placement"];
 }
 
-type EndpointRangeProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+type EndpointRangeProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
     EndpointProps<PreArgs, PostArgs> & FormRangeProps & SliderAdditonalProps;
 
 type PutEvent = Parameters<Required<FormRangeProps>["onMouseUp"]>[0] 
@@ -31,7 +31,7 @@ type PutEvent = Parameters<Required<FormRangeProps>["onMouseUp"]>[0]
  * so all props available on that component can be set here.
  * 
  */
-const EndpointSlider = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+const EndpointSlider = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,

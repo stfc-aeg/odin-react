@@ -5,7 +5,7 @@ import { useRequestHandler } from "./util";
 import { getValueFromPath } from "../AdapterEndpoint";
 import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 
-type EndpointDropdownProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+type EndpointDropdownProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
     EndpointProps<PreArgs, PostArgs> & Partial<DropdownButtonProps>;
 
 
@@ -19,7 +19,7 @@ type EndpointDropdownProps<PreArgs extends unknown[], PostArgs extends unknown[]
  * Based on the [Bootstrap DropdownButton](https://react-bootstrap.netlify.app/docs/components/dropdowns),
  * so any props on that component can also be set here.
  */
-const EndpointDropdown = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+const EndpointDropdown = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args,

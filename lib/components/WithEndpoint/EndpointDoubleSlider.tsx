@@ -6,7 +6,7 @@ import { ComponentProps, useRef, useState, useEffect } from "react";
 import { getValueFromPath } from "../AdapterEndpoint";
 import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 
-type EndpointDoubleSliderProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+type EndpointDoubleSliderProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
     EndpointProps<PreArgs, PostArgs> & SliderProps;
 
 /**
@@ -19,7 +19,7 @@ type EndpointDoubleSliderProps<PreArgs extends unknown[], PostArgs extends unkno
  * Designed to be used with a Parameter that represents a min and max
  * value of some sort as a pair of numbers in an array.
  */
-const EndpointDoubleSlider = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+const EndpointDoubleSlider = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,

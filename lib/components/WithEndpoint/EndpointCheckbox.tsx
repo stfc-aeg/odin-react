@@ -6,7 +6,7 @@ import { useRequestHandler } from "./util";
 
 import style from './styles.module.css'
 
-type EndpointCheckboxProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+type EndpointCheckboxProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
     EndpointProps<PreArgs, PostArgs> & Omit<FormCheckProps, keyof EndpointProps<PreArgs, PostArgs>>;
 
 
@@ -19,7 +19,7 @@ type EndpointCheckboxProps<PreArgs extends unknown[], PostArgs extends unknown[]
  * Based on the [Bootstrap FormCheck](https://react-bootstrap.netlify.app/docs/forms/checks-radios),
  * so all props available on that component can be set here.
  */
-const EndpointCheckbox = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+const EndpointCheckbox = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args,

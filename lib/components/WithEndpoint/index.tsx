@@ -45,11 +45,11 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
     /**
      * Combined Props for resulting WithEndpoint Component.
      * Combines {@link EndpointProps} with the props of whatever component is being wrapped.*/
-    type WrappedComponentProps<PreArgs extends unknown[], PostArgs extends unknown[]> =
+    type WrappedComponentProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
         EndpointProps<PreArgs, PostArgs> & P;
 
 
-    const WithEndpointComponent = <PreArgs extends unknown[], PostArgs extends unknown[]>(
+    const WithEndpointComponent = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
         props: WrappedComponentProps<PreArgs, PostArgs>) => {
 
         const { endpoint, fullpath, value, disabled,
