@@ -88,6 +88,7 @@
         "vitest": "^4.1.0"
     },
     "dependencies": {
+        "@tanstack/react-query": "^5.100.9",
         "axios": "^1.8.1",
         "react": "^19.1.0",
         "react-bootstrap-icons": "^1.11.5",
