@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getConfig, status, MetadataValue } from "./AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
-
+import { useAdapterEndpoint } from "./QueryEndpoint";
 // odin control 2.0 no longer uses an API Version.
 
 enum updateFlag_enum {
@@ -55,7 +55,7 @@ function getValueFromPath<T = Parameter>(data: ParamTree, path: string): T | und
  * @param timeout An option Timeout for API requests, in ms.
  * @returns 
  */
-function useAdapterEndpoint<T extends ParamNode = ParamNode>(
+function useAdapterEndpointDEAD<T extends ParamNode = ParamNode>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number
 ): AdapterEndpoint<T> {
 
@@ -136,17 +136,17 @@ function useAdapterEndpoint<T extends ParamNode = ParamNode>(
         }
     };
 
-    const put = async <T = Parameter>(data: {[key: string]: T}, param_path='') => {
+    const put = async <T extends ParamNode>(data: T, param_path='') => {
         // const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
         console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
         
-        let result: typeof data = {};
-        let response: AxiosResponse<typeof result>;
+        // let result: typeof data = {};
+        // let response: AxiosResponse<typeof result>;
 
         try {
             changeAwaiting(true);
-            response = await axiosInstance.put(param_path, data);
-            result = response.data;
+            const response = await axiosInstance.put<T>(param_path, data);
+            const result = response.data;
             
             console.debug("Response: ", result);
             setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);

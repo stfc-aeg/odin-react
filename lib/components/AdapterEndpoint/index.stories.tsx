@@ -222,7 +222,7 @@ export const Default: Story = {
       await userEvent.type(pathTextbox, path);
       await userEvent.click(getButton);
       await expect(args.endpoint.get(path), `get: ${path}`)
-        .rejects.toThrow(`GET request failed with status 400 : Invalid Path: ${path}`);
+        .rejects.toThrow(`GET request to addr ${args.adapter}/${path} failed with status 400 : Invalid Path: ${path}`);
 
       path = "data/set_data";
       await userEvent.clear(pathTextbox)
@@ -269,8 +269,8 @@ export const Default: Story = {
       await userEvent.clear(putDataTextBox);
       await userEvent.type(putDataTextBox, "{{\"rand_num\": 55}");
       await userEvent.click(putButton);
-      await expect(args.endpoint.put({ "rand_num": 55 }))
-        .rejects.toThrow("PUT request failed with status 400 : Parameter rand_num is read-only");
+      await expect(args.endpoint.put({ "rand_num": 55 }), "Put: Invalid Option")
+        .rejects.toThrow(`PUT request to addr ${args.adapter} failed with status 400 : Parameter rand_num is read-only`);
     });
   }
 }
@@ -317,7 +317,7 @@ export const OlderOdinVersion: Story = {
       await userEvent.type(pathTextbox, path);
       await userEvent.click(getButton);
       await expect(args.endpoint.get(path), `get: ${path}`)
-        .rejects.toThrow(`GET request failed with status 400 : Invalid Path: ${path}`);
+        .rejects.toThrow(`GET request to addr ${args.adapter}/${path} failed with status 400 : Invalid Path: ${path}`);
 
       path = "data/set_data";
       await userEvent.clear(pathTextbox)
@@ -356,7 +356,7 @@ export const OlderOdinVersion: Story = {
       await userEvent.type(putDataTextBox, "{{\"rand_num\": 55}");
       await userEvent.click(putButton);
       await expect(args.endpoint.put({"rand_num": 55}))
-        .rejects.toThrow("PUT request failed with status 400 : Parameter rand_num is read-only");
+        .rejects.toThrow(`PUT request to addr ${args.adapter} failed with status 400 : Parameter rand_num is read-only`);
     });
   }
 };

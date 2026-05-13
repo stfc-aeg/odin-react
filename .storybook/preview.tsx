@@ -10,6 +10,9 @@ import { apiVersionHandler, getHandler, getHandlerUpdate, putHandler, putHandler
 import 'bootstrap/dist/css/bootstrap.min.css';
 import type { ParamNode } from '../lib/components/AdapterEndpoint';
 import { useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 /*
  * Initializes MSW
@@ -113,9 +116,11 @@ const preview: Preview = {
         "data-bs-theme", isDarkMode ? "dark" : "light"
       ))   
       return (
+        <QueryClientProvider client={queryClient}>
         <OdinErrorContext>
             <Story />
         </OdinErrorContext>
+        </QueryClientProvider>
       )
     }
   ],

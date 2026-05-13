@@ -56,7 +56,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
     const [input, changeInput] = useState(0);
     const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
 
-    const testFunc = (comment: string) => {
+    const testFunc = ({comment}: {comment: string}) => {
         console.log(comment);
     }
 
@@ -71,12 +71,12 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                     <TitleCard title="Click Button">
                         <Stack>
                             <EndpointButton endpoint={endpoint} fullpath="trigger" value={42}
-                                pre_method={testFunc} pre_args={["Hello World"]}
+                                pre_method={testFunc} pre_args={{comment: "Hello World"}}
                                 post_method={secondTestFunc}>
                                 Trigger New Button
                             </EndpointButton>
                             <EndpointInput endpoint={endpoint} fullpath="num_val"/>
-                            <Form.Label>{`Slider Val: ${endpoint.data.num_val ?? "Unknown"}`}</Form.Label>
+                            <Form.Label>{`Slider Val: ${endpoint.data?.num_val ?? "Unknown"}`}</Form.Label>
                             <EndpointSlider endpoint={endpoint} fullpath="num_val"/>
                             <OldEndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
                             <EndpointCheckbox type="switch" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
@@ -90,9 +90,9 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                         <InputGroup.Text>Enter Value:</InputGroup.Text>
                         <EndpointInput endpoint={endpoint} fullpath="data/set_data" type="number"/>
                         </InputGroup>
-                        <Alert>Half: {endpoint.data.data?.dict?.half}</Alert>
-                        <Alert>Is Even: {endpoint.data.data?.dict?.is_even?.toString()}</Alert>
-                        <EndpointButton endpoint={endpoint} fullpath="trigger" value={10} disabled={endpoint.data.data?.dict.is_even}>
+                        <Alert>Half: {endpoint.data?.data.dict.half}</Alert>
+                        <Alert>Is Even: {endpoint.data?.data.dict.is_even.toString()}</Alert>
+                        <EndpointButton endpoint={endpoint} fullpath="trigger" value={10} disabled={endpoint.data?.data.dict.is_even}>
                                     Disabled on Even
                         </EndpointButton>
                         <EndpointButton endpoint={endpoint} fullpath="num_val">
@@ -104,7 +104,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                     <TitleCard title="Dropdown Test">
                         <Stack>
                         <EndpointDropdown endpoint={endpoint} fullpath="selected"
-                            title={endpoint.data.selected || "Unknown"}>
+                            title={endpoint.data?.selected || "Unknown"}>
                                 {endpoint.metadata?.selected?.allowed_values ? endpoint.metadata.selected.allowed_values.map(
                                     (selection, index) => (
                                         <Dropdown.Item eventKey={selection} key={index}>{selection}</Dropdown.Item>
@@ -164,19 +164,19 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                         <Row>
                             <Col>
                         <FloatingLabel label="First Name">
-                            <Form.Control placeholder="John" defaultValue={endpoint.data.submit?.first_name ?? ""}
+                            <Form.Control placeholder="John" defaultValue={endpoint.data?.submit.first_name ?? ""}
                             onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {first_name: e.target.value}))}/>
                         </FloatingLabel>
                         </Col>
                         <Col>
                         <FloatingLabel label="Last Name">
-                            <Form.Control placeholder="Smith" defaultValue={endpoint.data.submit?.last_name ?? ""}
+                            <Form.Control placeholder="Smith" defaultValue={endpoint.data?.submit.last_name ?? ""}
                             onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {last_name: e.target.value}))}/>
                         </FloatingLabel>
                         </Col>
                         <Col>
                         <FloatingLabel label="Age" controlId="age">
-                            <Form.Control type="number" placeholder="42" defaultValue={endpoint.data.submit?.age ?? 0}
+                            <Form.Control type="number" placeholder="42" defaultValue={endpoint.data?.submit.age ?? 0}
                             onChange={(e) => changeFormData(oldForm => Object.assign(oldForm, {age: Number(e.target.value)}))}/>
                         </FloatingLabel>
                         </Col>
