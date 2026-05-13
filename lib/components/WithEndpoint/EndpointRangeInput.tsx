@@ -45,7 +45,7 @@ type MultipliedInputProps<PreArgs extends Record<string, unknown>, PostArgs exte
  * the user can more easily view and enter values that might have wide range
  * options.
  */
-const EndpointMultipliedInput = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
+const EndpointRangeInput = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,
@@ -107,7 +107,7 @@ const EndpointMultipliedInput = <PreArgs extends Record<string, unknown>, PostAr
             changeCompVal(newVal);
         }
 
-    }, [endpoint.updateFlag, endVal]);
+    }, [endpoint.data, fullpath, endVal]);
 
     return (
         <InputGroup {...rest}>
@@ -133,4 +133,4 @@ const EndpointMultipliedInput = <PreArgs extends Record<string, unknown>, PostAr
 
 }
 
-export { EndpointMultipliedInput };
+export { EndpointRangeInput };

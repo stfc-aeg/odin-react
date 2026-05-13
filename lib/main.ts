@@ -8,11 +8,12 @@ export { OdinLiveView, ZoomableImage } from './components/OdinLiveView';
 export { OdinTable, OdinTableRow } from './components/OdinTable';
 export { ParamController } from './components/ParamController';
 export { TitleCard } from './components/TitleCard';
-export { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointSlider, EndpointDoubleSlider, WithEndpoint } from './components/WithEndpoint';
-export { EndpointRangeInput } from './components/WithEndpoint'
+export { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput } from './components/WithEndpoint';
+export { EndpointRangeInput, EndpointSlider, EndpointDoubleSlider } from './components/WithEndpoint';
+export { WithEndpoint } from './components/WithEndpoint';
+
 
 export type { AdapterEndpoint, ParamNode, ParamTree } from "./components/AdapterEndpoint";
-export type { AdapterEndpoint_t } from "./components/AdapterEndpoint/AdapterEndpoint.types";
 export type { Log } from './components/OdinEventLog';
 export type { Axis, GraphData } from './components/OdinGraph';
 

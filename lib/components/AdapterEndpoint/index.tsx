@@ -1,17 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, getConfig, status, MetadataValue } from "./AdapterEndpoint.types";
+import { useMutation, useQuery, useQueryClient, type QueryFunctionContext } from "@tanstack/react-query";
+import axios, { AxiosRequestConfig, ResponseType } from "axios";
+import { useState } from "react";
 import { useError } from "../OdinErrorContext";
-import { useAdapterEndpoint } from "./QueryEndpoint";
-// odin control 2.0 no longer uses an API Version.
-
-enum updateFlag_enum {
-    INIT = "init",
-    FIRST = "first",
-    REFRESH = "refreshed",
-    MERGED = "merged",
-    ERROR = "error"
-}
+import type { AdapterEndpoint, getConfig, Metadata, MetadataValue, Parameter, ParamNode, ParamTree } from "./AdapterEndpoint.types";
 
 const isParamNode = (x: ParamTree): x is ParamNode => {
     return x !== null && typeof x === "object" && !Array.isArray(x);
@@ -21,9 +12,17 @@ const isMetadataValue = (x: Metadata): x is MetadataValue => {
     return isParamNode(x) && "writeable" in x
 }
 
+const smartPathSplit = (path: string) => {
+    return path.split("/").filter(Boolean);
+}
+
+const smartPathJoin = (path: string[]) => {
+    return path.filter(Boolean).join("/");
+}
+
 /**
- * Nagivates down a nested dict-like structure to get the value at the path
- * @param data the nested JSON dict-like structure to naviagate down
+ * Navigates down a nested dict-like structure to get the value at the path
+ * @param data the nested JSON dict-like structure to navigate down
  * @param path the path, separated by slashes, to navigate down
  * @returns the value at the specified path (which is either a single value, or a JSON Node with Key/Val pair(s))
  * or Undefined if the value was not found at that path
@@ -55,267 +54,150 @@ function getValueFromPath<T = Parameter>(data: ParamTree, path: string): T | und
  * @param timeout An option Timeout for API requests, in ms.
  * @returns 
  */
-function useAdapterEndpointDEAD<T extends ParamNode = ParamNode>(
+function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number
-): AdapterEndpoint<T> {
+): AdapterEndpoint<Tree> {
 
-    const data = useRef<T>({} as T);
-    const [metadata, setMetadata] = useState<Metadata<T>>({} as Metadata<T>);
-    const [error, setError] = useState<Error | null>(null);
-    const [updateFlag, setUpdateFlag] = useState(Symbol(updateFlag_enum.INIT));
-    const [statusFlag, setStatusFlag] = useState<status>("init");
+    const client = useQueryClient();
+    const errCtx = useError();
 
-    const [apiVersion, setApiVersion] = useState<string>("");
-    const [base_url, setBaseUrl] = useState<string>([endpoint_url,
-                                                    "api",
-                                                    apiVersion,
-                                                    adapter
-                                                    ].filter(Boolean).join("/"));
-    
-    const [awaiting, changeAwaiting] = useState(false);
+    const [apiVersion, setApiVersion] = useState<"" | "0.1">("");
+    const base_url = smartPathJoin([endpoint_url, "api", apiVersion]);
+    const queryKey = [endpoint_url, ...smartPathSplit(adapter)];
 
-    const ctx = useError();
-    const axiosInstance: AxiosInstance = axios.create({
+    const axiosInstance = axios.create({
         baseURL: base_url,
         timeout: timeout,
         headers: {
-            "Content-Type": "application/json",
-            // "Accept": "application/json,image/*"
+            "Content-Type": "application/json"
         }
     })
 
-    //** handles errors thrown by the http requests, setting it in the Error State*/
     const handleError = (err: unknown) => {
         let errorMsg: string = "";
-        if(axios.isAxiosError(err)){
-            if(err.response) {
+        if (axios.isAxiosError(err)) {
+            if (err.code == "ERR_CANCELED") {
+                // request was cancelled. Does not need to be reported
+                return null;
+            }
+            const addr = err.config?.url ?? "";
+            if (err.response) {
                 const method = err.response.config.method ? err.response.config.method.toUpperCase() : "UNDEFINED";
                 const reason = err.response.data?.error || "";
                 // const address = err.response
-                errorMsg = `${method} request failed with status ${err.response.status} : ${reason}`;
+                errorMsg = `${method} request to addr ${addr} failed with status ${err.response.status} : ${reason}`;
             }
             else if (err.request) {
-                errorMsg = `Network error sending request to ${base_url}: ${err.message}`;
+                errorMsg = `Network error sending request to ${addr}: ${err.message}`;
             }
         }
         else {
             errorMsg = `Unknown error sending request to ${base_url}`;
         }
         const error = new Error(errorMsg);
-        setError(error);
-        setStatusFlag("error");
-        ctx.setError(error);
+        errCtx.setError(error);
 
-        return error;  // rethrow error so it doesn't dissapear
-    };
-
-    const get = async <T = ParamNode>(param_path='', config?: getConfig) => {
-        console.debug(`GET: ${base_url}/${param_path}`);
-
-        const {wants_metadata=false, responseType='json'} = config ?? {};
-
-        let result: T;
-        let response: AxiosResponse<T>;
-
-        const request_config: AxiosRequestConfig = {responseType: responseType};
-        if(wants_metadata){
-            request_config.headers = {Accept: "application/json;metadata=true"};
-        }
-        
-        try {
-            //intentionally not setting the awaiting state here to avoid
-            //issues with the WithEndpoint component
-            response = await axiosInstance.get<T>(param_path, request_config);
-            result = response.data;
-            console.debug("Response Data: ", result);
-            setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);  // modified to ensure the init for metadata and data runs no matter what
-            return result;
-        }
-        catch (err) {
-            throw handleError(err);
-        }
-    };
-
-    const put = async <T extends ParamNode>(data: T, param_path='') => {
-        // const url = [base_url, param_path].join("/"); // assumes param_path does not start with a slash
-        console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
-        
-        // let result: typeof data = {};
-        // let response: AxiosResponse<typeof result>;
-
-        try {
-            changeAwaiting(true);
-            const response = await axiosInstance.put<T>(param_path, data);
-            const result = response.data;
-            
-            console.debug("Response: ", result);
-            setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);
-            return result;
-        }
-        catch (err: unknown) {
-            throw handleError(err);
-        }
-        finally {
-            changeAwaiting(false);
-        }
-    };
-
-    const post = async (data: ParamNode, param_path="") => {
-        console.debug(`POST: ${base_url}/${param_path}, data: `, data);
-
-        let result: ParamNode = {};
-        let response: AxiosResponse<typeof result>;
-
-        try {
-            changeAwaiting(true);
-            response = await axiosInstance.post(param_path, data);
-            result = response.data;
-            setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);
-        }
-        catch (err: unknown) {
-            throw handleError(err);
-        }
-        finally {
-            changeAwaiting(false);
-        }
-        console.debug("Response: ", result);
-        
-        return result;
-    };
-
-    const remove = async (param_path="") => {
-        console.debug(`DELETE: ${base_url}/${param_path}`);
-
-        let result: ParamNode = {};
-        let response: AxiosResponse<typeof result>;
-
-        try {
-            changeAwaiting(true);
-            response = await axiosInstance.delete(param_path);
-            result = response.data;
-            setStatusFlag(curStatus => curStatus != "init" ? "connected" : curStatus);
-        }
-        catch (err: unknown) {
-            throw handleError(err);
-        }
-        finally {
-            changeAwaiting(false);
-        }
-        console.debug("Response: ", result);
-        
-        return result;
+        return error;  // return error so it can be caught/thrown
     }
 
-    // some sort of looping attempt at first connection until we get a response? so if the adapter
-    // isn't running at first for whatever reason, we keep trying until it is?
-    const getInitialData = () => {
-        // discover Odin Control version (1.* or 2.*, changes what the full URL needs to be)
-        let url = [endpoint_url, "api"].filter(Boolean).join("/");
-        console.debug("Checking Odin Control Version");
-        let api_version = "";
-        //can't use the get function of the endpoint yet, because we don't know if the base_url is correct
-        // until we've worked out if we need the api "0.1" yet.
-        axios.get<{api?: number}>(url)
-        .then(result => {
-            api_version = result.data?.api ? result.data.api.toString() : "";
-        })
-        .catch(() => {
-            // might just be CORS error from previous Odin Control version
-            //try and do the get stuff with the api_version 0.1?
-            // throw handleError(err);
-            console.debug("No response from checking version. Assuming <2.0.0");
-            api_version = "0.1";
-        })
-        .finally(() => {
-            setApiVersion(api_version);
-            url = [url, api_version, adapter].filter(Boolean).join("/");
-            setBaseUrl(url);
+    const queryGet = async <DataType = Tree>({ queryKey, signal }: QueryFunctionContext<[ResponseType | "metadata", ...string[]]>) => {
+        const [wants_metadata, addr, ...path] = queryKey;
+        const adapter = smartPathJoin(path);
+        console.debug(`Query GET, addr "${addr}", adapter path "${adapter}"`);
 
-            const request_config: AxiosRequestConfig = {headers: {Accept: "application/json;metadata=true"}};
-            // using Promise.all to ensure we set the trees and flags only when
-            // both requests have returned
-            Promise.all([
-                axios.get<T>(url),
-                axios.get<Metadata<T>>(url, request_config)
-            ]).then(([dataResult, metadataResult]) => {
-                data.current = dataResult.data;
-                setMetadata(metadataResult.data);
-                setStatusFlag("connected");
-                setUpdateFlag(Symbol(updateFlag_enum.FIRST));
-            })
-            .catch(err => {
-                throw handleError(err);
-            });
-
-        });
-    }
-
-    useEffect(() => {
-        let init_timer: NodeJS.Timeout;
-
-        if(statusFlag !== "connected"){
-            init_timer = setInterval(getInitialData, interval ?? 1000);
+        const responseType = wants_metadata === "metadata" ? "json" : wants_metadata;
+        const request_config: AxiosRequestConfig = { signal: signal, responseType: responseType }
+        if (wants_metadata === "metadata") {
+            request_config.headers = { Accept: "application/json;metadata=true" };
         }
 
-        return () =>  clearInterval(init_timer);
+        try {
+            const response = await axiosInstance.get<DataType>(adapter, request_config);
+            return response.data;
+        } catch (err) {
+            if (axios.isAxiosError(err) && err.code == "ERR_NETWORK") {
+                console.warn(`Network Error for ${err.config?.baseURL}/${err.config?.url}`);
+                // Network error. could be caused by the wrong API type (Odin 1.6.* vs 2.*)
+                // try adding/removing the 0.1 from the URL and try again
+                const version = apiVersion ? "" : "0.1";
+                setApiVersion(version);
 
-    }, [statusFlag, interval]);
+                try {
+                    const response = await axiosInstance.get<DataType>(smartPathJoin([version, adapter]), request_config);
+                    return response.data;
+                } catch (err) {
+                    console.warn("Retry Failed");
 
-    useEffect(() => { // interval effect. refreshes data if the interval is set
-        let timer_id: NodeJS.Timeout;
-        if(interval && statusFlag == "connected") {
-            timer_id = setInterval(refreshData, interval);
-        }
-
-        return () => clearInterval(timer_id);
-
-    }, [interval, statusFlag]);
-
-    const refreshData = () => {
-        get("")
-        .then(result => {
-            data.current = result as T;
-            setUpdateFlag(Symbol(updateFlag_enum.REFRESH));
-        })
-        .catch(() => {
-            return  // error already handled by GET, so we can catch it here to avoid needless console messaging.
-        });
-    }
-    
-    const mergeData = (newData: ParamTree, param_path: string) => {
-        const splitPath = param_path.replace(/\/$/, "").split("/");
-        const paramName = splitPath.pop()!;
-
-        const tmpData = data.current;  // use tmpData as a copy of the Data that we can modify
-        let pointer: ParamTree = tmpData;  // pointer that can traverse down the nested data
-
-        if(splitPath[0]) {
-            splitPath.forEach((part_path) => {
-                if(isParamNode(pointer)){
-                    pointer = pointer[part_path];
+                    throw handleError(err);
                 }
-            });
-        }
-        // becasue pointer was a copy of tmpData, changes made to it will also be made to tmpData
-        if(isParamNode(newData)){
-            // const keys = Object.keys(newData);
 
-            if("value" in newData && Object.keys(newData).length == 1){
-                // test if merge data has only one key of "value". This likely means we're
-                // using Odin Control 2.0 and need to adjust to merge it into the larger tree
-                newData = {[paramName]: newData["value"]}
+            } else {
+                throw handleError(err);
             }
         }
-        Object.assign(pointer, newData);
-        data.current = tmpData;
-        setUpdateFlag(Symbol(updateFlag_enum.MERGED));
     }
-    
-    return { data: data.current, metadata, error, loading: awaiting, updateFlag, status: statusFlag, apiVersion, get, put, post, remove, refreshData, mergeData}
+
+    const queryPut = async ({ path = "", data }: { path?: string, data: ParamNode }) => {
+        const request_path = smartPathJoin([adapter, path]);
+        const response = await axiosInstance.put<typeof data>(request_path, data);
+        return response.data;
+    }
+
+    const query = useQuery({
+        queryKey: ["json", ...queryKey],
+        queryFn: queryGet<Tree>,
+        staleTime: interval || Infinity,
+        refetchInterval: interval
+    });
+
+    const { data: metadata } = useQuery({
+        queryKey: ["metadata", ...queryKey],
+        queryFn: queryGet<Metadata<Tree>>,
+        staleTime: Infinity
+    });
+
+    const mutation = useMutation({
+        mutationKey: queryKey,
+        mutationFn: queryPut
+    });
+
+    const put = async <T extends ParamNode>(data: T, param_path?: string) => {
+        console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
+        try {
+            return await mutation.mutateAsync(
+                { path: param_path, data: data },
+                { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
+            ) as T;
+        } catch (err) {
+            throw handleError(err);
+        }
+    }
+
+    const get = async <T = ParamNode>(param_path = "", config?: getConfig) => {
+        console.debug(`GET: ${base_url}/${param_path}`);
+
+        const { wants_metadata = false, responseType = 'json' } = config ?? {};
+        const key: [ResponseType | "metadata", ...string[]] = [
+            wants_metadata ? "metadata" : responseType,
+            endpoint_url,
+            ...smartPathSplit(adapter),
+            ...smartPathSplit(param_path)
+        ]
+        const data = await client.fetchQuery({ queryKey: key, queryFn: queryGet<T> });
+        return data;
+
+    }
+
+    return {
+        data: query.data as Tree,
+        metadata: metadata as Metadata<Tree>,
+        loading: mutation.isPending,
+        get, put, apiVersion
+    }
 }
 
-export { useAdapterEndpoint, isParamNode, isMetadataValue, getValueFromPath };
-export type { AdapterEndpoint, Parameter, ParamNode, Metadata, ParamTree };
+export { getValueFromPath, isMetadataValue, isParamNode, useAdapterEndpoint };
+export type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree };
 
 /**
  * @deprecated This is the old name for this type and should be replaced with {@link ParamTree}

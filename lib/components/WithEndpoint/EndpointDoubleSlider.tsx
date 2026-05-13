@@ -54,7 +54,7 @@ const EndpointDoubleSlider = <PreArgs extends Record<string, unknown>, PostArgs 
         if (typeof newVal !== "undefined" && !component.current?.contains(document.activeElement)) {
             changeCompVal(newVal);
         }
-    }, [endpoint.updateFlag, data]);
+    }, [endpoint.data, fullpath, data]);
 
 
 

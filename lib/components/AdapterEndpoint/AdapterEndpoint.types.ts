@@ -1,7 +1,5 @@
 import type { AxiosRequestConfig } from "axios";
 
-type status = "init" | "connected" | "error";
-
 interface AdapterEndpoint<T extends ParamNode = ParamNode> {
     /**
      *  Recursive Nested dictionary structure representing the adapter Param Tree. Should be read only
@@ -144,9 +142,4 @@ interface getConfig {
     responseType?: AxiosRequestConfig['responseType'];
 }
 
-export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig, status};
-
-/**
- * @deprecated This is the old name for this type and should be replaced with "AdapterEndpoint"
- */
-export type AdapterEndpoint_t<T extends ParamNode> = AdapterEndpoint<T>;
+export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig};

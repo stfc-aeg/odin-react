@@ -49,7 +49,7 @@ const EndpointDisplay = ({ endpoint }: Endpoint) => {
       });
   }
 
-  const displayFullTree = useMemo(() => { return endpoint.data }, [endpoint.updateFlag]);
+  const displayFullTree = endpoint.data;
 
   return (
     <Card>

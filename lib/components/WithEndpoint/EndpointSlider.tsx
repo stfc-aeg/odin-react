@@ -67,7 +67,7 @@ const EndpointSlider = <PreArgs extends Record<string, unknown>, PostArgs extend
         if(document.activeElement !== component.current && typeof newVal !== "undefined"){
             changeCompVal(newVal);
         }
-    }, [endpoint.updateFlag, data]);
+    }, [endpoint.data, fullpath, data]);
 
     const tooltip = (
         <Tooltip id="tooltip">

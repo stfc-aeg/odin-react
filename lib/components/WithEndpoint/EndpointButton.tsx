@@ -27,7 +27,7 @@ const EndpointButton = <PreArgs extends ArgType, PostArgs extends ArgType>(
         ...rest }: EndpointButtonProps<PreArgs, PostArgs>
 ) => {
     
-    const { requestHandler, disable } = useRequestHandler({
+    const { requestHandler, data, disable } = useRequestHandler({
         endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args
@@ -36,7 +36,7 @@ const EndpointButton = <PreArgs extends ArgType, PostArgs extends ArgType>(
     const onClickHandler: ButtonProps["onClick"] = (event) => {
         console.debug(fullpath, event);
 
-        requestHandler(value);
+        requestHandler(data);
     }
 
     return (

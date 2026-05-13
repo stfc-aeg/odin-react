@@ -35,7 +35,6 @@ const EndpointInput = <PreArgs extends Record<string, unknown>, PostArgs extends
     });
 
     const metaData: MetadataValue | undefined = getValueFromPath(endpoint.metadata, fullpath);
-    const [compVal, changeCompVal] = useState<FormControlProps['value']>("");
     const [editing, setEditing] = useState(false);
 
     const compMin = min ?? metaData?.min;
@@ -53,14 +52,14 @@ const EndpointInput = <PreArgs extends Record<string, unknown>, PostArgs extends
         const target = event.target;
         const val = type == "number" ? Number(target.value) : target.value;
 
-        changeCompVal(val);
         setEditing(!(val == endVal));
     }
 
     const onEnterHandler: FormControlProps["onKeyUp"] = (event) => {
         if (event.key === "Enter" && !event.shiftKey) {
-            console.debug(fullpath, event);
-            requestHandler(compVal);
+            const target = event.target as HTMLInputElement;
+            const val = type == "number" ? target.valueAsNumber : target.value;
+            requestHandler(val);
             setEditing(false);
         }
     }
@@ -71,13 +70,15 @@ const EndpointInput = <PreArgs extends Record<string, unknown>, PostArgs extends
 
         // check if the component is not currently active
         if (document.activeElement !== component.current && !editing && typeof newVal !== "undefined") {
-            changeCompVal(newVal);
+            if(component.current) {
+                component.current.value = newVal.toString();
+            }
         }
 
-    }, [endpoint.updateFlag, endVal]);
+    }, [endpoint.data, fullpath, editing, endVal]);
 
     return (
-        <Form.Control ref={component} onChange={onChangeHandler} onKeyUp={onEnterHandler} value={compVal}
+        <Form.Control ref={component} onChange={onChangeHandler} onKeyUp={onEnterHandler}
             min={compMin} max={compMax} disabled={disable} type={type} style={style} {...rest}  />
     )
 }
