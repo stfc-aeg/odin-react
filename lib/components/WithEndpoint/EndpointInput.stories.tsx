@@ -50,7 +50,7 @@ export const Default: Story = {
     const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
     const input = canvas.getByRole("textbox");
 
-    await expect(input).toHaveDisplayValue(args.endpoint.data.string_val as string);
+    await expect(input).toHaveDisplayValue(args.endpoint.data?.string_val as string);
 
     await userEvent.clear(input);
     await userEvent.type(input, "New Value");
@@ -74,7 +74,7 @@ export const Number: Story = {
     const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
     const input = canvas.getByRole("spinbutton");
 
-    await expect(input).toHaveDisplayValue(args.endpoint.data.num_val as string);
+    await expect(input).toHaveDisplayValue(args.endpoint.data?.num_val as string);
 
     await userEvent.clear(input);
     await userEvent.type(input, "52");
@@ -101,7 +101,7 @@ export const PreCapitalise: Story = {
     const input = canvas.getByRole("textbox");
     const put_string = "new value";
 
-    await expect(input).toHaveDisplayValue(args.endpoint.data.string_val as string);
+    await expect(input).toHaveDisplayValue(args.endpoint.data?.string_val as string);
 
     await userEvent.clear(input);
     await userEvent.type(input, put_string);

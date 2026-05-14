@@ -9,6 +9,7 @@ import { adapters, update_adapters } from '../../../.storybook/stories.mock';
 
 import { FloatingLabel, InputGroup, Form, Card, ButtonGroup, Button, Row, Col } from 'react-bootstrap';
 import { expect } from 'storybook/test';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 interface Endpoint {
   adapter: string;
@@ -18,6 +19,19 @@ interface Endpoint {
   endpoint: AdapterEndpoint;
 
 }
+
+const queryClient = new QueryClient()
+
+// TypeScript only:
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__:
+    import('@tanstack/query-core')
+    .QueryClient
+  }
+}
+
+window.__TANSTACK_QUERY_CLIENT__ = queryClient
 
 const EndpointDisplay = ({ endpoint }: Endpoint) => {
   // const endpoint = useAdapterEndpoint(adapter, endpoint_url, interval, timeout);
@@ -167,7 +181,16 @@ const meta = {
     for (const [_, adapter] of Object.entries(update_adapters)) {
       adapter.reset()
     }
-  }
+  },
+  decorators: [
+    (Story) => {
+      return (
+        <QueryClientProvider client={queryClient}>
+          <Story />
+        </QueryClientProvider>
+      )
+    }
+  ]
 } satisfies Meta<typeof EndpointDisplay>;
 
 export default meta;

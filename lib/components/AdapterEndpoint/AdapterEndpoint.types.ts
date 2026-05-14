@@ -44,6 +44,7 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
     get: <T = ParamNode>(param_path?: string, config?: getConfig) => Promise<T>;
+
     /**
      * Async http PUT method. Modify the data in the param tree at the provided path
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
@@ -60,28 +61,15 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
      * @param param_path  - the path you want to POST to. defaults to an empty string, for a top level POST
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    // post: (data: ParamNode, param_path?: string) => Promise<ParamNode>;
+    post: (data: ParamNode, param_path?: string) => Promise<ParamNode>;
 
     /**
-     * Async http DELETE method. Renamed because 'delete' is a reserved word in javascript. Not often
-     * implemented by adapters.
+     * Async http DELETE method. Not often implemented by adapters, but potentially used to remove
+     * some part of a mutable Parameter Tree.
      * @param param_path the path to the data you want to DELETE. Defaults to an empty string
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    // remove: (param_path?: string) => Promise<ParamNode>;
-    /**
-     * A method to automatically perform a top level GET request and refresh the AdapterEndpoint's current view of the data
-     * @returns 
-     */
-    // refreshData: () => void;
-    /**
-     * A method to merge one chunk of (potentially nested) data into the AdapterEndpoint's current view of the data,
-     * to update the data without having to GET from the entire adapter
-     * @param {ParamNode} newData - The new data to be merged in
-     * @param {string} param_path - the location that data within the ParamTree to merge it
-     * @returns 
-     */
-    // mergeData: (newData: ParamNode, param_path: string) => void;
+    delete: (param_path?: string) => Promise<ParamNode>;
 
 }
 

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, type QueryFunctionContext } from "@tanstack/react-query";
-import axios, { AxiosRequestConfig, ResponseType } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
 import { useState } from "react";
 import { useError } from "../OdinErrorContext";
 import type { AdapterEndpoint, getConfig, Metadata, MetadataValue, Parameter, ParamNode, ParamTree } from "./AdapterEndpoint.types";
@@ -137,9 +137,21 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
         }
     }
 
-    const queryPut = async ({ path = "", data }: { path?: string, data: ParamNode }) => {
+    const mutateFunc = async ({ path = "", data, method = "PUT" }: { path?: string, data: ParamNode, method?: "PUT" | "POST" | "DELETE" }) => {
         const request_path = smartPathJoin([adapter, path]);
-        const response = await axiosInstance.put<typeof data>(request_path, data);
+        let response: AxiosResponse<typeof data>;
+        switch(method) {
+            case "POST":
+                response = await axiosInstance.post(request_path, data);
+                break;
+            case "DELETE":
+                response = await axiosInstance.delete(request_path);
+                break;
+            case "PUT":
+            default:
+                response = await axiosInstance.put<typeof data>(request_path, data);
+                break;
+        }
         return response.data;
     }
 
@@ -158,20 +170,8 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
 
     const mutation = useMutation({
         mutationKey: queryKey,
-        mutationFn: queryPut
+        mutationFn: mutateFunc
     });
-
-    const put = async <T extends ParamNode>(data: T, param_path?: string) => {
-        console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
-        try {
-            return await mutation.mutateAsync(
-                { path: param_path, data: data },
-                { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
-            ) as T;
-        } catch (err) {
-            throw handleError(err);
-        }
-    }
 
     const get = async <T = ParamNode>(param_path = "", config?: getConfig) => {
         console.debug(`GET: ${base_url}/${param_path}`);
@@ -185,26 +185,52 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
         ]
         const data = await client.fetchQuery({ queryKey: key, queryFn: queryGet<T> });
         return data;
+    }
 
+    const put = async <T extends ParamNode>(data: T, param_path?: string) => {
+        console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
+        try {
+            return await mutation.mutateAsync(
+                { path: param_path, data: data },
+                { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
+            ) as T;
+        } catch (err) {
+            throw handleError(err);
+        }
+    }
+
+    const post = async <T extends ParamNode>(data: T, param_path?: string) => {
+        console.debug(`POST: ${base_url}/${param_path}, data:`, data);
+        try {
+            return await mutation.mutateAsync(
+                {path: param_path, data: data, method: "POST"},
+                { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
+            ) as T;
+        } catch (err) {
+            throw handleError(err);
+        }
+    }
+
+    const remove = async (param_path?: string) => {
+        console.debug(`DELETE: ${base_url}/${param_path}`);
+
+        try {
+            return await mutation.mutateAsync(
+                {path: param_path, method: "DELETE", data: {}},
+                { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
+            )
+        } catch (err) { 
+            throw handleError(err);
+        }
     }
 
     return {
         data: query.data as Tree,
         metadata: metadata as Metadata<Tree>,
         loading: mutation.isPending,
-        get, put, apiVersion
+        get, put, post, delete: remove, apiVersion
     }
 }
 
 export { getValueFromPath, isMetadataValue, isParamNode, useAdapterEndpoint };
 export type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree };
-
-/**
- * @deprecated This is the old name for this type and should be replaced with {@link ParamTree}
- */
-export type JSON = ParamTree
-
-/**
- * @deprecated This is the old name for this type, and should be replaced with {@link ParamNode}
- */
-export type NodeJSON = ParamNode

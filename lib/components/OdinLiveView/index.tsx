@@ -194,18 +194,18 @@ const OdinLiveView = (
 
     const div = useRef<HTMLDivElement>(null);
 
-    const refreshImage = useCallback(() => {
+    const refreshImage = () => {
         endpoint.get<Blob>(img_path, { responseType: "blob" })
             .then(result => {
                 URL.revokeObjectURL(imgPath);  // memory management
                 const img_url = URL.createObjectURL(result);
                 setImgPath(img_url);
-                endpoint.refreshData();
+                endpoint.get("");
             }).catch((error) => {
                 console.error("IMAGE GET FAILED: ", error);
                 setImgPath(defaultImg);
             })
-    }, [endpoint.updateFlag]);
+    }
 
     useEffect(() => {
         let timer_id: NodeJS.Timeout;
@@ -224,7 +224,7 @@ const OdinLiveView = (
         setFrameNum(getValueFromPath(endpoint.data, frame_num_addr) ?? -1);
 
 
-    }, [endpoint.updateFlag]);
+    }, [endpoint.data]);
 
     const renderOptions = (
         <Popover>

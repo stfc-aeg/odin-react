@@ -161,6 +161,7 @@ class BaseMockAdapter<T extends ParamNode> implements BaseAdapter {
         console.log(this.getValueFromMetadata(path));
         let metadata = this.getValueFromMetadata(path)[paramName] as MetadataValue<U>;
         console.log(metadata);
+        console.groupEnd() // VALIDATE
         if (!(metadata?.writeable ?? true)) {
             throw new AdapterError(`Parameter ${paramName} is read-only`, "read_only");
         }
@@ -193,8 +194,6 @@ class BaseMockAdapter<T extends ParamNode> implements BaseAdapter {
                 `Type mismatch setting ${paramName}: got ${typeof val} expected ${metadata?.type ?? "dict"}`,
                 "type_mismatch"
             )
-        } finally {
-            console.groupEnd() // VALIDATE
         }
 
         if (metadata?.allowed_values != undefined && !metadata.allowed_values.includes(val)) {

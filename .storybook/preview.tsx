@@ -2,7 +2,7 @@ import type { Preview } from '@storybook/react-vite';
 import { themes } from 'storybook/theming';
 import { useDarkMode } from 'storybook-dark-mode';
 import { DocsContainer } from '@storybook/addon-docs/blocks';
-import { http, passthrough } from 'msw';
+import { http, HttpResponse, passthrough } from 'msw';
 import { initialize, mswLoader } from 'msw-storybook-addon';
 import { OdinErrorContext } from '../lib/components/OdinErrorContext';
 import { apiVersionHandler, getHandler, getHandlerUpdate, putHandler, putHandlerUpdate } from './stories.mock';
@@ -12,7 +12,6 @@ import type { ParamNode } from '../lib/components/AdapterEndpoint';
 import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const queryClient = new QueryClient();
 
 /*
  * Initializes MSW
@@ -57,8 +56,9 @@ const preview: Preview = {
         http.get<{ adapter: string, path: string[] }>("http://localhost:1337/api/0.1/:adapter/:path+", getHandler),
         http.put<{ adapter: string }, ParamNode>("http://localhost:1337/api/0.1/:adapter", putHandler),
         http.put<{ adapter: string, path: string[] }, ParamNode>("http://localhost:1337/api/0.1/:adapter/:path+", putHandler),
+        http.get<{ adapter: string }>("http://localhost:1337/api/:adapter", () => { return HttpResponse.error() }),
 
-        // Odin 2.0 GET/PUT requests. Note differnt path (no API version)
+        // Odin 2.0 GET/PUT requests. Note different path (no API version)
         http.get<{ adapter: string }>("http://localhost:1338/api/:adapter", getHandlerUpdate),
         http.get<{ adapter: string, path: string[] }>("http://localhost:1338/api/:adapter/:path+", getHandlerUpdate),
         http.put<{ adapter: string }, ParamNode>("http://localhost:1338/api/:adapter", putHandlerUpdate),
@@ -114,13 +114,11 @@ const preview: Preview = {
       const isDarkMode = useDarkMode();
       useEffect(() => document.documentElement?.setAttribute(
         "data-bs-theme", isDarkMode ? "dark" : "light"
-      ))   
+      ))
       return (
-        <QueryClientProvider client={queryClient}>
-        <OdinErrorContext>
+          <OdinErrorContext>
             <Story />
-        </OdinErrorContext>
-        </QueryClientProvider>
+          </OdinErrorContext>
       )
     }
   ],
