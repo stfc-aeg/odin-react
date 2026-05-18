@@ -1,7 +1,7 @@
 {
     "name": "@dssg/odin-react",
     "private": false,
-    "version": "2.1.2",
+    "version": "2.2.0",
     "type": "module",
     "description": "Component library designed to work with the Odin Detector Control API",
     "author": {
