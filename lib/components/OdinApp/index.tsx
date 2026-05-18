@@ -249,12 +249,15 @@ const ScrollableNavList = ({ navLinks }: ScrollableNavListProps) => {
  * Component designed to encapsulate the entire GUI. Provides a Nav Bar
  * with routing for GUIs with multiple pages,that also displays
  * an Icon, App title, a button to toggle between dark and light mode,
- * and a button to display any errors that may have occured.
+ * and a button to display any errors that may have occurred.
  * This Nav Bar is pinned to the top of the screen and so is always visible.
  * 
  * An error boundary is included in this component, so feedback for any
  * rendering errors caused by React is displayed, rather than a blank
  * page.
+ * 
+ * Each individual child of this component is treated as a separate Page,
+ * and connected to each of the provided navLinks in order.
  * 
  
  */
