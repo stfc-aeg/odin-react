@@ -1,22 +1,20 @@
 import type { AxiosRequestConfig } from "axios";
 
-type status = "init" | "connected" | "error";
-
-interface AdapterEndpoint<T extends ParamNode = ParamNode> {
+interface AdapterEndpoint<T extends Record<string, ParamTree> = ParamNode> {
     /**
      *  Recursive Nested dictionary structure representing the adapter Param Tree. Should be read only
      * from this interface
      */
-    data: Readonly<T>;
+    data?: Readonly<T>;
 
     /**
-     * Dictionary structure containing the adapter Metadata, if its implimented by the adapter
+     * Dictionary structure containing the adapter Metadata, if its implemented by the adapter
      */
-    metadata: Readonly<Metadata<T>>;
+    metadata?: Readonly<Metadata<T>>;
     /**
      *  Any Errors that occur during http methods or otherwise will be accessible here
      */
-    error: null | Error;
+    // error: null | Error;
     /**
      * State of the http client connection to the adapter. 
      * If true, the AdapterEndpoint is awaiting a response from the adapter.
@@ -26,18 +24,18 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
     /**
      * Flag token that will change whenever the data has changed, to alert WithEndpoint components
      */
-    updateFlag: symbol;
+    // updateFlag: symbol;
 
     /**
      * Connection status for the AdapterEndpoint.
      */
-    status: status;
+    // status: status;
 
     /**
      * Api String. Used to differentiate between Odin Control versions.
      * If blank, Odin Control is v2.*
      */
-    apiVersion: string;
+    apiVersion: "" | "0.1";
     /**
      * Async http GET method. Request the provided value(s) from the parameter tree.
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
@@ -46,6 +44,7 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
     get: <T = ParamNode>(param_path?: string, config?: getConfig) => Promise<T>;
+
     /**
      * Async http PUT method. Modify the data in the param tree at the provided path
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
@@ -53,7 +52,7 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
      * @param {string} param_path - the path you want to PUT to. Defaults to an empty string for a top level PUT
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    put: <T = Parameter>(data: {[key: string]: T}, param_path?: string) => Promise<{[Property in keyof typeof data]: T}>;
+    put: <T extends ParamNode>(data: T, param_path?: string) => Promise<T>;
 
     /**
      * Async http POST method. Not often implemented by Adapters, but potentially used to post data
@@ -65,36 +64,23 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
     post: (data: ParamNode, param_path?: string) => Promise<ParamNode>;
 
     /**
-     * Async http DELETE method. Renamed because 'delete' is a reserved word in javascript. Not often
-     * implemented by adapters.
+     * Async http DELETE method. Not often implemented by adapters, but potentially used to remove
+     * some part of a mutable Parameter Tree.
      * @param param_path the path to the data you want to DELETE. Defaults to an empty string
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    remove: (param_path?: string) => Promise<ParamNode>;
-    /**
-     * A method to automatically perform a top level GET request and refresh the AdapterEndpoint's current view of the data
-     * @returns 
-     */
-    refreshData: () => void;
-    /**
-     * A method to merge one chunk of (potentially nested) data into the AdapterEndpoint's current view of the data,
-     * to update the data without having to GET from the entire adapter
-     * @param {ParamNode} newData - The new data to be merged in
-     * @param {string} param_path - the location that data within the ParamTree to merge it
-     * @returns 
-     */
-    mergeData: (newData: ParamNode, param_path: string) => void;
+    delete: (param_path?: string) => Promise<ParamNode>;
 
 }
 
-/** Defines allowed values for paramater primatives. */
+/** Defines allowed values for parameter primitives. */
 type Parameter = string | number | boolean | null | undefined;
 
 /** Dict structure for the Parameters. */
 type ParamNode = {[key:string]: ParamTree};
 
 /** Any possible value from the Param Tree (Basically any possible JSON value)
- * This could be a primative value, a dict structure, or an array of any of these values.
+ * This could be a primitive value, a dict structure, or an array of any of these values.
  * This flexibility allows for the recursive nested structure of the Parameter Tree
 */
 type ParamTree = Parameter | ParamTree[] | ParamNode;
@@ -144,9 +130,4 @@ interface getConfig {
     responseType?: AxiosRequestConfig['responseType'];
 }
 
-export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig, status};
-
-/**
- * @deprecated This is the old name for this type and should be replaced with "AdapterEndpoint"
- */
-export type AdapterEndpoint_t<T extends ParamNode> = AdapterEndpoint<T>;
+export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig};

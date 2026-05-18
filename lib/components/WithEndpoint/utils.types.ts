@@ -13,26 +13,6 @@ interface BasicEndpointProps {
     disabled?: boolean;
 }
 
-interface PreMethodWithArgs<Args extends ArgType> extends BasicEndpointProps {
-    pre_method: (args: Args) => void;
-    pre_args: Args;
-}
-
-interface PreMethodNoArgs extends BasicEndpointProps {
-    pre_method?: () => void;
-    pre_args?: undefined;
-}
-
-interface PostMethodWithArgs<Args extends ArgType> extends BasicEndpointProps {
-    post_method: (args: Args) => void;
-    post_args: Args;
-}
-
-interface PostMethodNoArgs extends BasicEndpointProps {
-    post_method?: () => void;
-    post_args?: undefined;
-}
-
 // export type EndpointProps<PreArgs extends ArgType, PostArgs extends ArgType> =
 //     (PreMethodNoArgs | PreMethodWithArgs<NonNullable<PreArgs>>) &
 //     (PostMethodNoArgs | PostMethodWithArgs<NonNullable<PostArgs>>)

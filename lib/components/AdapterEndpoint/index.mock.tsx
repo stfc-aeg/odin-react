@@ -171,17 +171,10 @@ const MockedEndpoint: AdapterEndpoint<EndpointData> = {
     get: fn(mockGet).mockName("get"),
     // @ts-ignore
     put: fn(mockPut).mockName("put"),
-    post: fn().mockName("post"),
-    remove: fn(),
-    refreshData: fn(),
-    mergeData: fn(),
     data: testAdapterData,
     metadata: testMetadata,
-    status: "connected",
     apiVersion: "",
-    error: null,
     loading: false,
-    updateFlag: Symbol("mocked")
 }
 
 const MockedLiveEndpoint: AdapterEndpoint<LiveViewData> = {
@@ -189,19 +182,11 @@ const MockedLiveEndpoint: AdapterEndpoint<LiveViewData> = {
     get: fn(mockGet).mockName("get"),
     // @ts-ignore
     put: fn(mockPut).mockName("put"),
-    post: fn().mockName("post"),
-    remove: fn(),
-    refreshData: fn(),
-    mergeData: fn(),
     data: testLiveData,
     // @ts-ignore
-    metadata: testLiveData,
-    status: "connected",
+    metadata: testLiveData, 
     apiVersion: "",
-    error: null,
     loading: false,
-    updateFlag: Symbol("mocked")
-
 }
 
 const MockedLiveEndpointNoControls: AdapterEndpoint<{}> = {
@@ -209,18 +194,11 @@ const MockedLiveEndpointNoControls: AdapterEndpoint<{}> = {
     get: fn(mockGet).mockName("get"),
     // @ts-ignore
     put: fn(mockPut).mockName("put"),
-    post: fn().mockName("post"),
-    remove: fn(),
-    refreshData: fn(),
-    mergeData: fn(),
     data: {},
     // @ts-ignore
     metadata: {},
-    status: "connected",
     apiVersion: "",
-    error: null,
     loading: false,
-    updateFlag: Symbol("mocked")
 }
 
 const useAdapterEndpoint = fn(

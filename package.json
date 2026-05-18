@@ -1,8 +1,22 @@
 {
     "name": "@dssg/odin-react",
     "private": false,
-    "version": "2.1.2",
+    "version": "2.2.0",
     "type": "module",
+    "description": "Component library designed to work with the Odin Detector Control API",
+    "author": {
+        "name": "Ashley Neaves",
+        "email": "asley.neaves@stfc.ac.uk"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/stfc-aeg/odin-react"
+    },
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/stfc-aeg/odin-react/issues"
+    },
+    "homepage": "https://stfc-aeg.github.io/odin-react",
     "main": "./dist/odin-react.umd.cjs.js",
     "module": "./dist/odin-react.js",
     "types": "./dist/main.d.ts",
@@ -47,6 +61,7 @@
         "@storybook/addon-themes": "^10.2.17",
         "@storybook/addon-vitest": "^10.2.17",
         "@storybook/react-vite": "^10.2.17",
+        "@tanstack/react-query-devtools": "^5.100.10",
         "@types/node": "^24.0.10",
         "@types/plotly.js": "^3.0.2",
         "@types/react": "^19.0.8",
@@ -74,6 +89,7 @@
         "vitest": "^4.1.0"
     },
     "dependencies": {
+        "@tanstack/react-query": "^5.100.9",
         "axios": "^1.8.1",
         "react": "^19.1.0",
         "react-bootstrap-icons": "^1.11.5",

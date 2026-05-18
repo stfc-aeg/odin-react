@@ -8,6 +8,7 @@ import { EndpointDoubleSlider } from "./EndpointDoubleSlider";
 import { EndpointDropdown } from "./EndpointDropdown";
 import { EndpointInput } from "./EndpointInput";
 import { EndpointSlider } from "./EndpointSlider";
+import { EndpointRangeInput } from "./EndpointRangeInput";
 import type { EndpointProps } from "./util";
 import { useRequestHandler } from "./util";
 // import { isEqual } from 'lodash';
@@ -112,7 +113,7 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
                     setComponentValue(newVal);
                 }
             }
-        }, [endpoint.updateFlag, endpointValue]);
+        }, [endpoint.data, fullpath, endpointValue]);
 
         const handleRequest = (val: typeof value) => {
 
@@ -245,7 +246,8 @@ export {
     EndpointDoubleSlider,
     EndpointDropdown,
     EndpointInput,
-    EndpointSlider
+    EndpointSlider,
+    EndpointRangeInput
 };
 
 export { WithEndpoint };

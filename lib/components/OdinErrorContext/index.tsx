@@ -3,6 +3,7 @@ import { useContext, createContext, useState, PropsWithChildren, CSSProperties, 
 import { Alert, AlertProps, Badge } from "react-bootstrap";
 
 import Style from './styles.module.css';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 interface ErrorContext_t {
     /**
@@ -20,6 +21,9 @@ interface ErrorContext_t {
      * Removes all errors from the ErrorList, resetting it to an empty array.
      */
     clearAllError: () => void;
+
+    /** List of all errors. */
+    errors: OdinError[];
 }
 
 /**
@@ -50,6 +54,30 @@ interface ErrorAction {
     type: ErrorActionType;
     error?: Error | OdinError;
 }
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            // as we are usually talking to a local Odin Control API, we
+            // don't care about the network status
+            networkMode: "always"  
+        },
+        mutations: {
+            networkMode: "always"
+        }
+    }
+});
+
+// TypeScript only:
+declare global {
+    interface Window {
+        __TANSTACK_QUERY_CLIENT__:
+        import('@tanstack/query-core')
+        .QueryClient
+    }
+}
+
+window.__TANSTACK_QUERY_CLIENT__ = queryClient
 
 const errorsReducer = (errors: OdinError[], action: ErrorAction) => {
     const err = action.error;
@@ -91,8 +119,6 @@ const errorsReducer = (errors: OdinError[], action: ErrorAction) => {
     }
 }
 
-
-const ErrorContext = createContext<OdinError[]>([]);
 const ErrorDispatchContext = createContext<ErrorContext_t | null>(null);
 
 /**
@@ -120,14 +146,14 @@ const OdinErrorContext = (props: PropsWithChildren) => {
         type: ErrorActionType.CLEAR
     });
 
-    const context = useMemo<ErrorContext_t>(() => ({ setError, clearError, clearAllError }), [errors]);
+    const context = useMemo<ErrorContext_t>(() => ({ setError, clearError, clearAllError, errors }), [errors]);
 
     return (
-        <ErrorContext value={errors}>
-            <ErrorDispatchContext value={context}>
+        <ErrorDispatchContext value={context}>
+            <QueryClientProvider client={queryClient}>
                 {props.children}
-            </ErrorDispatchContext>
-        </ErrorContext>
+            </QueryClientProvider>
+        </ErrorDispatchContext>
     )
 }
 
@@ -246,7 +272,6 @@ const SingleErrorOutlet = ({ delay = 5000 }: SingleErrorOutletProps) => {
  * Custom Hook, providing access to the error list and the methods from the context.
  */
 const useError = () => {
-    const errors = useContext(ErrorContext);
     const methods = useContext(ErrorDispatchContext);
 
     if (methods == null) {
@@ -255,7 +280,7 @@ const useError = () => {
         );
     }
 
-    return { errors, ...methods };
+    return { ...methods };
 }
 
 export { OdinErrorContext, OdinErrorOutlet, SingleErrorOutlet, useError };

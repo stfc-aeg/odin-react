@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { EndpointMultipliedInput } from './EndpointRangeInput';
+import { EndpointRangeInput } from './EndpointRangeInput';
 import { useAdapterEndpoint, resetMockData, transformMockCode } from '../AdapterEndpoint/index.mock';
 import { expect, spyOn } from 'storybook/test';
 
 const meta = {
-  component: EndpointMultipliedInput,
+  component: EndpointRangeInput,
   args: {
     endpoint: undefined,
     fullpath: "volt",
@@ -35,13 +35,13 @@ const meta = {
   },
   render: (args) => {
     args.endpoint = useAdapterEndpoint("test", "http://localhost:1338");
-    return <EndpointMultipliedInput {...args} />
+    return <EndpointRangeInput {...args} />
   },
   beforeEach: async () => {
     resetMockData();
   },
 
-} satisfies Meta<typeof EndpointMultipliedInput>;
+} satisfies Meta<typeof EndpointRangeInput>;
 
 export default meta;
 

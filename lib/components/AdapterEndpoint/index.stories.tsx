@@ -2,13 +2,15 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useAdapterEndpoint } from './index';
 
-import { ComponentProps, useMemo, useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import type { AdapterEndpoint, ParamNode } from './index';
 
 import { adapters, update_adapters } from '../../../.storybook/stories.mock';
 
 import { FloatingLabel, InputGroup, Form, Card, ButtonGroup, Button, Row, Col } from 'react-bootstrap';
 import { expect } from 'storybook/test';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 interface Endpoint {
   adapter: string;
@@ -18,6 +20,19 @@ interface Endpoint {
   endpoint: AdapterEndpoint;
 
 }
+
+const queryClient = new QueryClient()
+
+// TypeScript only:
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__:
+    import('@tanstack/query-core')
+    .QueryClient
+  }
+}
+
+window.__TANSTACK_QUERY_CLIENT__ = queryClient
 
 const EndpointDisplay = ({ endpoint }: Endpoint) => {
   // const endpoint = useAdapterEndpoint(adapter, endpoint_url, interval, timeout);
@@ -49,7 +64,7 @@ const EndpointDisplay = ({ endpoint }: Endpoint) => {
       });
   }
 
-  const displayFullTree = useMemo(() => { return endpoint.data }, [endpoint.updateFlag]);
+  const displayFullTree = endpoint.data;
 
   return (
     <Card>
@@ -167,7 +182,17 @@ const meta = {
     for (const [_, adapter] of Object.entries(update_adapters)) {
       adapter.reset()
     }
-  }
+  },
+  decorators: [
+    (Story) => {
+      return (
+        <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools />
+          <Story />
+        </QueryClientProvider>
+      )
+    }
+  ]
 } satisfies Meta<typeof EndpointDisplay>;
 
 export default meta;
@@ -222,7 +247,7 @@ export const Default: Story = {
       await userEvent.type(pathTextbox, path);
       await userEvent.click(getButton);
       await expect(args.endpoint.get(path), `get: ${path}`)
-        .rejects.toThrow(`GET request failed with status 400 : Invalid Path: ${path}`);
+        .rejects.toThrow(`GET request to addr ${args.adapter}/${path} failed with status 400 : Invalid Path: ${path}`);
 
       path = "data/set_data";
       await userEvent.clear(pathTextbox)
@@ -269,8 +294,8 @@ export const Default: Story = {
       await userEvent.clear(putDataTextBox);
       await userEvent.type(putDataTextBox, "{{\"rand_num\": 55}");
       await userEvent.click(putButton);
-      await expect(args.endpoint.put({ "rand_num": 55 }))
-        .rejects.toThrow("PUT request failed with status 400 : Parameter rand_num is read-only");
+      await expect(args.endpoint.put({ "rand_num": 55 }), "Put: Invalid Option")
+        .rejects.toThrow(`PUT request to addr ${args.adapter} failed with status 400 : Parameter rand_num is read-only`);
     });
   }
 }
@@ -317,7 +342,7 @@ export const OlderOdinVersion: Story = {
       await userEvent.type(pathTextbox, path);
       await userEvent.click(getButton);
       await expect(args.endpoint.get(path), `get: ${path}`)
-        .rejects.toThrow(`GET request failed with status 400 : Invalid Path: ${path}`);
+        .rejects.toThrow(`GET request to addr ${args.adapter}/${path} failed with status 400 : Invalid Path: ${path}`);
 
       path = "data/set_data";
       await userEvent.clear(pathTextbox)
@@ -356,7 +381,7 @@ export const OlderOdinVersion: Story = {
       await userEvent.type(putDataTextBox, "{{\"rand_num\": 55}");
       await userEvent.click(putButton);
       await expect(args.endpoint.put({"rand_num": 55}))
-        .rejects.toThrow("PUT request failed with status 400 : Parameter rand_num is read-only");
+        .rejects.toThrow(`PUT request to addr ${args.adapter} failed with status 400 : Parameter rand_num is read-only`);
     });
   }
 };
