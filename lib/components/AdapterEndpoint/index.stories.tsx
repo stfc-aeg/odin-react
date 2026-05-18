@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { useAdapterEndpoint } from './index';
 
-import { ComponentProps, useMemo, useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import type { AdapterEndpoint, ParamNode } from './index';
 
 import { adapters, update_adapters } from '../../../.storybook/stories.mock';
@@ -10,6 +10,7 @@ import { adapters, update_adapters } from '../../../.storybook/stories.mock';
 import { FloatingLabel, InputGroup, Form, Card, ButtonGroup, Button, Row, Col } from 'react-bootstrap';
 import { expect } from 'storybook/test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 interface Endpoint {
   adapter: string;
@@ -186,6 +187,7 @@ const meta = {
     (Story) => {
       return (
         <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools />
           <Story />
         </QueryClientProvider>
       )

@@ -1,6 +1,6 @@
 import type { AxiosRequestConfig } from "axios";
 
-interface AdapterEndpoint<T extends ParamNode = ParamNode> {
+interface AdapterEndpoint<T extends Record<string, ParamTree> = ParamNode> {
     /**
      *  Recursive Nested dictionary structure representing the adapter Param Tree. Should be read only
      * from this interface
@@ -8,7 +8,7 @@ interface AdapterEndpoint<T extends ParamNode = ParamNode> {
     data?: Readonly<T>;
 
     /**
-     * Dictionary structure containing the adapter Metadata, if its implimented by the adapter
+     * Dictionary structure containing the adapter Metadata, if its implemented by the adapter
      */
     metadata?: Readonly<Metadata<T>>;
     /**

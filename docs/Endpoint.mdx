@@ -54,7 +54,8 @@ using typescript to specify what Parameters we expect to get from the Adapter
 
 ```typescript
 
-import type { ParamNode } from "odin-react";
+import { type ParamNode } from "odin-react";
+import { useAdapterEndpoint } from "odin-react";
 
 // We extend the type "ParamNode" so that the AdapterEndpoint knows
 // that we are specifying a nested Dictionary shaped oject
@@ -122,18 +123,11 @@ The object returned by the `useAdapterEndpoint` hook has the following relevant 
         </td>
     </tr>
     <tr>
-        <td>updateFlag</td>
-        <td>symbol</td>
+        <td>loading</td>
+        <td>boolean</td>
         <td>
-        Flag token that will change whenever the data has changed,
-        to alert components using the data to re-render.
-        </td>
-    </tr>
-    <tr>
-        <td>status</td>
-        <td>"init" | "connected" | "error"</td>
-        <td>
-        Connection status for the AdapterEndpoint.
+        State of the http connection. If `true`, the Endpoint is awaiting
+        a response to a PUT request
         </td>
     </tr>
     <tr>
@@ -141,9 +135,6 @@ The object returned by the `useAdapterEndpoint` hook has the following relevant 
         <td>async \<T = ParamNode\>(param_path, config) => Promise\<T\></td>
         <td>
         Async http GET method. Request the provided value(s) from the parameter tree.
-        
-        This method does NOT automatically merge the response into the
-        `Endpoint.Data` object.
 
         - `param_path`: the path of the data desired. defaults to an Empty String
         to get the entire param tree.
@@ -169,25 +160,6 @@ The object returned by the `useAdapterEndpoint` hook has the following relevant 
         - `param_path`: the path you want to PUT to. Defaults to an empty string for a top level PUT
 
         Returns a Promise that will resolve to the data within the HTTP response.
-        </td>
-    </tr>
-        <tr>
-        <td>refreshData</td>
-        <td>() => void</td>
-        <td>
-        Function that performs a top level GET request to refresh the 
-        `endpoint.data` object.
-        </td>
-    </tr>
-        <tr>
-        <td>mergeData</td>
-        <td>(newData, param_path) => void</td>
-        <td>
-        A method to merge one chunk of (potentially nested) data into the
-        `endpoint.data` object, to apply any changes.
-        
-        Often used after a PUT or GET request to update the `endpoint.data`
-        object with the response.
         </td>
     </tr>
     </tbody>
