@@ -3,6 +3,7 @@ import { Table } from "react-bootstrap";
 
 import * as EndpointStories from "../lib/components/AdapterEndpoint/index.stories";
 import * as EndpointInputStories from "../lib/components/WithEndpoint/EndpointInput.stories";
+import { transformMockCode } from "../lib/components/AdapterEndpoint/index.mock";
 
 import "./storydocs.css"
 
@@ -60,7 +61,6 @@ import { useAdapterEndpoint } from "odin-react";
 // We extend the type "ParamNode" so that the AdapterEndpoint knows
 // that we are specifying a nested Dictionary shaped oject
 interface AdapterParams extends ParamNode {
-
     string_val: string;
     num_val: number;
     toggle: boolean;
@@ -83,12 +83,10 @@ Defining this means that when we come to use the data from the adapter,
 the IDE being used should be able to tell what parameters are available for
 use when accessing `endpoint.data` or `endpoint.metadata`.
 
-<blockquote class="github-alert">
-**Note:** Because Typescript compiles to standard Javascript,providing
+<blockquote>**Note:** Because Typescript compiles to standard Javascript,providing
 this Interface does not restrict or limit what the AdapterEndpoint can
 actually receive from the Adapter. It's used for hinting during development
-and reduces the need for explicit type checks.
-</blockquote>
+and reduces the need for explicit type checks.</blockquote>
 
 With this defined, we can avoid annoying errors in the IDE when using the data.
 
@@ -172,7 +170,7 @@ a parameter from the Adapter easily, without having to do our own GET request:
 
 return (
     // It's worth setting a default value in case of connection issues
-    <p>String Value: {endpoint.data.string_val ?? "Unknown"}</p>
+    <p>String Value: {endpoint.data?.string_val ?? "Unknown"}</p>
 )
 ```
 
@@ -193,7 +191,7 @@ when a user triggers a relevant event (such as clicking a button).
 These components just require the `AdapterEndpoint` object created by the hook,
 and a path specifying which parameter they interact with.
 
-<Canvas of={EndpointInputStories.Default} sourceState="shown"/>
+<Canvas of={EndpointInputStories.Default} sourceState="shown" source={{transform: transformMockCode}}/>
 
 See the relevant documentation for each of these components under the `WithEndpoint`
 directory in the sidebar of Storybook.

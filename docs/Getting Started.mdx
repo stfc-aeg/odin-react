@@ -4,64 +4,36 @@ import "./storydocs.css"
 
 Odin React was developed with the use of NodeJS and Vite in mind.
 
-<blockquote class="github-alert">It's useful to already have your Odin Control instance running the
+<blockquote>It's useful to already have your Odin Control instance running the
 adapter(s) you wish you interact with using the GUI, before starting
 development of the GUI. Whilst the GUI can run in development mode without
 it, any components that try to interact with it will throw errors.</blockquote>
 
 ## Project Setup
 
-A [Template](https://github.com/stfc-aeg/odin-react-template) is provided to
+A [Template](https://www.npmjs.com/package/@dssg/create-odin-react) is provided to
 set up an Odin React project ready for development quickly and easily.
 
-Navigate to the location which will contain your Odin React Project in a terminal.
-You can then use a python library called [Cookiecutter](https://www.cookiecutter.io/)
-to copy and initialise the project template, with the following commands:
-
+From within your Odin Control project, run the following command:
 ```bash
-# Install the Cookiecutter library into your python environment
-pip install cookiecutter
-
-# Using Cookiecutter, create the start of your project using the template
-cookiecutter git+ssh://git@github.com/stfc-aeg/odin-react-template
+npm create @dssg/odin-react@latest
 ```
 
-This will then prompt you on the command line to select which template to
-use, and setup other values for the project. It's recommended you use the
-**Typescript** template, which provides stricter variable typing during
-development to reduce the chances of unexpected bugs.
+This will prompt you to provide a project Name, a root directory for the
+GUI project, and some settings to ensure it connects to your Adapter automatically.
 
-The prompts shown by Cookiecutter are:
-- **Select a Template**: Select which template to download and setup.
-1. **Set the Name of the Project**: The name of the GUI project.
-Sets the name in the GUIs Nav Bar.
-1. **Set the name of the package**: Will default to a lower case version
-of the project name. Sets the name in the `package.json`
-1. **Adapter Name**: The name of an adapter to connect to. The template provides
-an [Adapter Endpoint](../?path=/docs/components-adapterendpoint--docs) in the 
-`App.tsx/jsx` file setup to connect to this adapter. It can be changed after
-installation, and additional endpoints can be created if needed.
-1. **Project Folder**: the name of the directory to contain the project.
-1. **Default Odin Control Endpoint**: the address, along with port number,
-that the Odin Control API is accessible on.
-1. **Include Plotly**: The plotly package allows the creation of graphs
-to display data. It is not a small package and so has been made optional
-if it's not required.
+Simply follow the prompts to copy the templated project and get started.
+The template script will by default automatically install the required
+packages and start running the development server.
 
-Once the project is created from the template, you need to install the dependencies
-and run the project in Development Mode.
-
+if you need to manually restart the development server, use the following command
+from the GUI project's root:
 ```bash
-# Move into the directory created by the tempalte
-cd app  # You may have chosen a different name for the project folder.
-
-npm install  # this step can take a few minutes
-
-npm run dev  # runs the development server, making it available to see in the web browser
+npm run dev
 ```
 
 Once running, the terminal will display the address of the served webpage. Vite
-will also montior the codebase and reload the server when changes are made.
+will also monitor the codebase and reload the server when changes are made.
 
 ```bash
 # Terminal Output once running

@@ -7,6 +7,13 @@ Component Library designed for Odin Control Interfaces, build with [Vite](https:
 
 ## Install
 
+### From the NPM Package Manager
+
+```bash
+cd <project_dir>
+npm install @dssg/odin-react
+```
+
 ### From Github Repository
 
 ```bash
@@ -18,11 +25,14 @@ npm install --save git@github.com:stfc-aeg/odin-react.git
 
 Basic React knowledge will be required to use this component library. [Tutorials](https://react.dev/learn) are available that cover the basics of React.
 
-It's recommended that the React App is created using the [Cookiecutter](https://www.cookiecutter.io/) [Template](https://github.com/stfc-aeg/odin-react-template).
+It's recommended that the React App is created using the [Template](https://github.com/stfc-aeg/odin-react-template).
+```bash
+npm create @dssg/odin-react
+```
+
 
 This git repository includes an [Example App](https://github.com/stfc-aeg/odin-react/tree/master/src), along with an example [Odin Control Adapter](https://github.com/stfc-aeg/odin-react/tree/master/control), that can be used as reference for how the components may look and interact with Odin Control.
 
-See the [Wiki](https://github.com/stfc-aeg/odin-react/wiki) for detailed information about each component
 
 ## Requirements
 
