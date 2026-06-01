@@ -46,19 +46,6 @@ h1 a,h2 a,h3 a,h4 a,h5 a {
     text-decoration: underline !important;
 }
 
-blockquote.github-alert {
-    border-left: .25em solid;
-}
-
-body.light blockquote.github-alert {
-    border-left-color: #0969da;
-    color: rgb(46, 51, 56);
-}
-body.dark blockquote.github-alert {
-    border-left-color: #1f6feb;
-    color: rgb(201, 204, 207);
-}
-
 pre > div.docblock-source {
     margin-top: .5rem;
     margin-bottom: .5rem;
