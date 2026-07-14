@@ -111,7 +111,11 @@ const EndpointRangeInput = <PreArgs extends Record<string, unknown>, PostArgs ex
 
     return (
         <InputGroup {...rest}>
-            <InputGroup.Text>{label ?? "Value"}</InputGroup.Text>
+            <InputGroup.Text
+              className={disabled ? "text-secondary" : ""}
+            >
+              {label ?? "Value"}
+            </InputGroup.Text>
             <Form.Control ref={component} type='number' style={style}
                 onChange={onChangeHandler} onKeyUp={onEnterHandler}
                 value={compVal / adjustVal} disabled={disable}
