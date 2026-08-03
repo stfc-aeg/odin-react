@@ -1,12 +1,17 @@
-import type { AdapterEndpoint, ParamTree } from "../AdapterEndpoint";
+import type { AdapterEndpoint, ParamNode, ParamTree, ParamPath } from "../AdapterEndpoint";
 
 export type ArgType = Record<string, unknown> | undefined;
 
-interface BasicEndpointProps {
+/**
+ * Basic Properties common to every Endpoint component
+ * 
+ * @template Tree The shape of the Parameter Tree of the provided Endpoint
+ */
+interface BasicEndpointProps<Tree extends Record<Extract<keyof Tree, string>, ParamTree>> {
     /** Endpoint to connect to */
-    endpoint: AdapterEndpoint;
+    endpoint: AdapterEndpoint<Tree>;
     /** Path to the Parameter(s) to control with this component */
-    fullpath: string;
+    fullpath: ParamPath<Tree>;
     /** Optional value to override the value read from the adapter*/
     value?: ParamTree;
     /** Disable the component, so it cannot be interacted with*/
@@ -17,8 +22,22 @@ interface BasicEndpointProps {
 //     (PreMethodNoArgs | PreMethodWithArgs<NonNullable<PreArgs>>) &
 //     (PostMethodNoArgs | PostMethodWithArgs<NonNullable<PostArgs>>)
 
-export interface EndpointProps<PreArgs extends ArgType, PostArgs extends ArgType>
-    extends BasicEndpointProps {
+/**
+ * Properties common to every Endpoint component, including optional pre/post methods and args
+ * 
+ * @template PreArgs The inferred kwarg dictionary object of arguments to pass to
+ * the pre_method, if the function exists and has arguments.
+ * 
+ * @template PostArgs The inferred kwarg dictionary object of arguments to pass to
+ * the post_method, if the function exists and has arguments
+ * 
+ * @template Tree The shape of the Parameter Tree of the provided Endpoint
+ */
+export interface EndpointProps<
+    PreArgs extends ArgType,
+    PostArgs extends ArgType,
+    Tree extends Record<Extract<keyof Tree, string>, ParamTree>>
+    extends BasicEndpointProps<Tree> {
     /** 
      * A method to run before the PUT request. Accepts a Dictionary of
      * kwargs. If "value" is one of those keys, the param value will be
@@ -32,7 +51,7 @@ export interface EndpointProps<PreArgs extends ArgType, PostArgs extends ArgType
      * param value to the method, include a "value" key with a value
      * that is Null or Undefined.
      */
-    pre_args?: PreArgs;
+    pre_args?: NoInfer<PreArgs>;
     /**
      * A method to run after the PUT request succeeds. Accepts a Dictionary of
      * kwargs. If "value" is one of those keys, the returned param value will be
@@ -43,5 +62,5 @@ export interface EndpointProps<PreArgs extends ArgType, PostArgs extends ArgType
     * returned param value to the method, include a "value" key that is Null
     * or Undefined.
     */
-    post_args?: PostArgs;
+    post_args?: NoInfer<PostArgs>;
 }

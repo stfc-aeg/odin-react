@@ -208,7 +208,7 @@ const OdinLiveView = (
     }
 
     useEffect(() => {
-        let timer_id: NodeJS.Timeout;
+        let timer_id: ReturnType<typeof setInterval>;
         if (enable) {
             timer_id = setInterval(refreshImage, interval);
         }

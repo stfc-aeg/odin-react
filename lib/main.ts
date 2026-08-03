@@ -13,7 +13,7 @@ export { EndpointRangeInput, EndpointSlider, EndpointDoubleSlider } from './comp
 export { WithEndpoint } from './components/WithEndpoint';
 
 
-export type { AdapterEndpoint, ParamNode, ParamTree } from "./components/AdapterEndpoint";
+export type { AdapterEndpoint, ParamNode, ParamTree, ParamPath } from "./components/AdapterEndpoint";
 export type { Log } from './components/OdinEventLog';
 export type { Axis, GraphData } from './components/OdinGraph';
 

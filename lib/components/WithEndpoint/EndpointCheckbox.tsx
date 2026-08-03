@@ -1,13 +1,14 @@
 import type { FormCheckProps } from "react-bootstrap";
 import { FormCheck } from "react-bootstrap";
 
-import type { EndpointProps } from "./util";
+import type { ParamTree } from "../AdapterEndpoint";
+import type { EndpointProps, ArgType } from "./util";
 import { useRequestHandler } from "./util";
 
 import style from './styles.module.css'
 
-type EndpointCheckboxProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
-    EndpointProps<PreArgs, PostArgs> & Omit<FormCheckProps, keyof EndpointProps<PreArgs, PostArgs>>;
+type EndpointCheckboxProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
+    EndpointProps<PreArgs, PostArgs, Tree> & Omit<FormCheckProps, keyof EndpointProps<PreArgs, PostArgs, Tree>>;
 
 
 /** 
@@ -19,11 +20,11 @@ type EndpointCheckboxProps<PreArgs extends Record<string, unknown>, PostArgs ext
  * Based on the [Bootstrap FormCheck](https://react-bootstrap.netlify.app/docs/forms/checks-radios),
  * so all props available on that component can be set here.
  */
-const EndpointCheckbox = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
+const EndpointCheckbox = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args,
-        ...rest }: EndpointCheckboxProps<PreArgs, PostArgs>
+        ...rest }: EndpointCheckboxProps<PreArgs, PostArgs, Tree>
 ) => {
 
     const { requestHandler, data, disable } = useRequestHandler({

@@ -1,7 +1,7 @@
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
 import { getValueFromPath } from "../AdapterEndpoint";
-import type { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
+import type { MetadataValue, ParamTree } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { EndpointButton } from "./EndpointButton";
 import { EndpointCheckbox } from "./EndpointCheckbox";
 import { EndpointDoubleSlider } from "./EndpointDoubleSlider";
@@ -9,7 +9,7 @@ import { EndpointDropdown } from "./EndpointDropdown";
 import { EndpointInput } from "./EndpointInput";
 import { EndpointSlider } from "./EndpointSlider";
 import { EndpointRangeInput } from "./EndpointRangeInput";
-import type { EndpointProps } from "./util";
+import type { ArgType, EndpointProps } from "./util";
 import { useRequestHandler } from "./util";
 // import { isEqual } from 'lodash';
 
@@ -46,12 +46,12 @@ const WithEndpoint = <P extends object>(WrappedComponent: React.FC<P>) => {
     /**
      * Combined Props for resulting WithEndpoint Component.
      * Combines {@link EndpointProps} with the props of whatever component is being wrapped.*/
-    type WrappedComponentProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
-        EndpointProps<PreArgs, PostArgs> & P;
+    type WrappedComponentProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
+        EndpointProps<PreArgs, PostArgs, Tree> & P;
 
 
-    const WithEndpointComponent = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
-        props: WrappedComponentProps<PreArgs, PostArgs>) => {
+    const WithEndpointComponent = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
+        props: WrappedComponentProps<PreArgs, PostArgs, Tree>) => {
 
         const { endpoint, fullpath, value, disabled,
             pre_method, pre_args, post_method, post_args,

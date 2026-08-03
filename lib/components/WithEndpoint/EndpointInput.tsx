@@ -3,12 +3,12 @@ import { CSSProperties, useEffect, useRef, useState } from 'react';
 import type { FormControlProps } from 'react-bootstrap';
 import { Form } from 'react-bootstrap';
 import { getValueFromPath } from '../AdapterEndpoint';
-import type { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
-import { useRequestHandler, type EndpointProps } from './util';
+import type { MetadataValue, ParamTree } from '../AdapterEndpoint/AdapterEndpoint.types';
+import { ArgType, useRequestHandler, type EndpointProps } from './util';
 
 
-type EndpointInputProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
-    EndpointProps<PreArgs, PostArgs> & Omit<FormControlProps, keyof EndpointProps<PreArgs, PostArgs>>;
+type EndpointInputProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
+    EndpointProps<PreArgs, PostArgs, Tree> & Omit<FormControlProps, keyof EndpointProps<PreArgs, PostArgs, Tree>>;
 
 
 /**
@@ -21,11 +21,11 @@ type EndpointInputProps<PreArgs extends Record<string, unknown>, PostArgs extend
  * 
  * Can be used for both string and number based Parameters.
  */
-const EndpointInput = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
+const EndpointInput = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,
-        ...rest }: EndpointInputProps<PreArgs, PostArgs>
+        ...rest }: EndpointInputProps<PreArgs, PostArgs, Tree>
 ) => {
 
     const { requestHandler, data: endVal, disable } = useRequestHandler({

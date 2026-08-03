@@ -1,13 +1,13 @@
-import { type EndpointProps, useRequestHandler } from "./util";
+import { type EndpointProps, type ArgType, useRequestHandler } from "./util";
 
 import { OdinDoubleSlider } from "../OdinDoubleSlider";
 import type { SliderProps } from "../OdinDoubleSlider";
 import { ComponentProps, useRef, useState, useEffect } from "react";
 import { getValueFromPath } from "../AdapterEndpoint";
-import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
+import { MetadataValue, ParamTree } from "../AdapterEndpoint/AdapterEndpoint.types";
 
-type EndpointDoubleSliderProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
-    EndpointProps<PreArgs, PostArgs> & SliderProps;
+type EndpointDoubleSliderProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
+    EndpointProps<PreArgs, PostArgs, Tree> & SliderProps;
 
 /**
  * Specialised Double Slider component designed to perform PUT request to
@@ -19,11 +19,11 @@ type EndpointDoubleSliderProps<PreArgs extends Record<string, unknown>, PostArgs
  * Designed to be used with a Parameter that represents a min and max
  * value of some sort as a pair of numbers in an array.
  */
-const EndpointDoubleSlider = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
+const EndpointDoubleSlider = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,
-        ...rest }: EndpointDoubleSliderProps<PreArgs, PostArgs>
+        ...rest }: EndpointDoubleSliderProps<PreArgs, PostArgs, Tree>
 ) => {
 
     const { requestHandler, data, disable } = useRequestHandler({
@@ -60,7 +60,7 @@ const EndpointDoubleSlider = <PreArgs extends Record<string, unknown>, PostArgs 
 
     return (
         <OdinDoubleSlider {...rest} ref={component} min={compMin} max={compMax} value={compVal}
-            onChange={onChange} onMouseUp={onMouseUp} disabled={disable}  />
+            onChange={onChange} onMouseUp={onMouseUp} disabled={disable} />
     )
 
 }
