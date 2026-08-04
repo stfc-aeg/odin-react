@@ -22,6 +22,12 @@ const getLastPathPart = (path: string): [string, string] => {
     return [name, splitPath.join("/")];
 
 }
+interface ArgWithValue extends ArgType {
+    value: unknown;
+}
+const ArgsHasValue = (x: ArgType): x is ArgWithValue => {
+    return Object.keys(x).includes("value");
+}
 
 /**
  * Handles PUT requests for WithEndpoint components. Checks versioning of Odin Control
@@ -176,8 +182,8 @@ function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType, Tr
                 // as a key and see that the pre_args object doesn't include it,
                 // but I need to find a way to make the PreArgs type accessible
                 // at runtime to do that
-                if (pre_args && Object.keys(pre_args).includes("value")) {
-                    if (pre_args.value == undefined || pre_args.value == null) {
+                if (pre_args && ArgsHasValue(pre_args)) {
+                    if (pre_args.value === undefined || pre_args.value === null) {
                         // if so, overwrite the value with the param to be put
                         pre_args.value = val;
                     }
@@ -187,7 +193,7 @@ function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType, Tr
                 sendRequest(modVal ?? val ?? data, endpoint, fullpath)
                     .then((value) => {
 
-                        if (post_args && Object.keys(post_args).includes("value")) {
+                        if (post_args && ArgsHasValue(post_args)) {
                             if (post_args.value == undefined || post_args.value == null) {
                                 // depending on Odin Control version, and how
                                 // many Params we are PUTing, the returned response from sendRequest

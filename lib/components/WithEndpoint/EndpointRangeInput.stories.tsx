@@ -18,6 +18,14 @@ const meta = {
         readonly: true
       }
     },
+    fullpath: {
+      table: {
+        type: {
+          summary: "string",
+          detail: "Typescript can validate the path based on the AdapterEndpoint's Tree"
+        }
+      }
+    },
     value: {
       table: {
         readonly: true
@@ -50,7 +58,7 @@ type Story = StoryObj<typeof meta>;
 /** Standard use, with Voltage options as a demonstration */
 export const Default: Story = {
   args: {},
-  play: async ({args, canvas, userEvent}) => {
+  play: async ({ args, canvas, userEvent }) => {
     const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
     const input = canvas.getByRole("spinbutton");
     const dropdown = canvas.getByRole("button");
@@ -59,7 +67,7 @@ export const Default: Story = {
     await userEvent.type(input, "1600");
 
     await userEvent.keyboard("[Enter]");
-    await expect(put).toHaveBeenCalledWith({value: 1600}, args.fullpath);
+    await expect(put).toHaveBeenCalledWith({ value: 1600 }, args.fullpath);
 
     await userEvent.click(dropdown);
     const VoltButton = canvas.getByText("V");
@@ -72,7 +80,7 @@ export const Default: Story = {
     await userEvent.type(input, "2");
     await userEvent.keyboard("[Enter]");
 
-    await expect(put).toHaveBeenCalledWith({value: 2000}, args.fullpath);
+    await expect(put).toHaveBeenCalledWith({ value: 2000 }, args.fullpath);
   }
 };
 
@@ -80,7 +88,7 @@ export const Default: Story = {
 /** Can also be used with non-decimal ranges, such as seconds/minutes */
 export const Time: Story = {
   args: {
-    ranges: {"Minutes": 60, "s": 1, "ms": 1e-3},
+    ranges: { "Minutes": 60, "s": 1, "ms": 1e-3 },
     defaultRange: "ms",
     fullpath: "data/set_data",
     title: "Time"

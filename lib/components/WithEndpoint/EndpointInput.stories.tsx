@@ -16,6 +16,14 @@ const meta = {
         readonly: true
       }
     },
+    fullpath: {
+      table: {
+        type: {
+          summary: "string",
+          detail: "Typescript can validate the path based on the AdapterEndpoint's Tree"
+        }
+      }
+    },
     value: {
       table: {
         readonly: true
@@ -85,7 +93,7 @@ export const Number: Story = {
   }
 }
 
-const preCapMethod = ({value}: {value?: string}) => {
+const preCapMethod = ({ value }: { value?: string }) => {
   console.log(`Pre Func called with ${value}`);
   return value?.toUpperCase();
 }
@@ -94,9 +102,9 @@ const preCapMethod = ({value}: {value?: string}) => {
 export const PreCapitalise: Story = {
   args: {
     pre_method: fn(preCapMethod),
-    pre_args: {value: undefined}
+    pre_args: { value: undefined }
   },
-  play: async({args, canvas, userEvent}) => {
+  play: async ({ args, canvas, userEvent }) => {
     const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
     const input = canvas.getByRole("textbox");
     const put_string = "new value";
@@ -109,8 +117,8 @@ export const PreCapitalise: Story = {
     await expect(put).not.toHaveBeenCalled();
     await userEvent.keyboard("[Enter]");
 
-    await expect(args.pre_method).toHaveBeenCalledWith({value: put_string});
-    await expect(put).toHaveBeenCalledWith({"value": put_string.toUpperCase()}, args.fullpath);
+    await expect(args.pre_method).toHaveBeenCalledWith({ value: put_string });
+    await expect(put).toHaveBeenCalledWith({ "value": put_string.toUpperCase() }, args.fullpath);
     await expect(input).toHaveDisplayValue(put_string.toUpperCase());
 
 

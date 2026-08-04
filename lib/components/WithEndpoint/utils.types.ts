@@ -1,6 +1,6 @@
 import type { AdapterEndpoint, ParamNode, ParamTree, ParamPath } from "../AdapterEndpoint";
 
-export type ArgType = Record<string, unknown> | undefined;
+export type ArgType = Record<string, unknown>;
 
 /**
  * Basic Properties common to every Endpoint component

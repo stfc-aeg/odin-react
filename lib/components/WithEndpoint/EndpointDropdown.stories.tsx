@@ -18,6 +18,14 @@ const meta = {
         readonly: true
       }
     },
+    fullpath: {
+      table: {
+        type: {
+          summary: "string",
+          detail: "Typescript can validate the path based on the AdapterEndpoint's Tree"
+        }
+      }
+    },
     children: {
       table: {
         disable: true
