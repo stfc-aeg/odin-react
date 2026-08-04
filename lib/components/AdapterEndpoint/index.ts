@@ -59,7 +59,7 @@ function getValueFromPath<T = Parameter>(data?: ParamNode, path?: string): T | u
  * @returns 
  */
 function useAdapterEndpoint<
-    Tree extends Record<Extract<keyof Tree, string>, ParamTree>
+    Tree extends Record<Extract<keyof Tree, string>, ParamTree> = ParamNode
 >(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number
 ): AdapterEndpoint<Tree> {

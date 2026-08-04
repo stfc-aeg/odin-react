@@ -1,7 +1,7 @@
 import { Container, Row, Col, Stack, Form, InputGroup, Alert, Dropdown, FloatingLabel } from "react-bootstrap"
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "odin-react"
 import { EndpointInput, EndpointSlider, EndpointDoubleSlider, EndpointButton, EndpointDropdown, EndpointCheckbox } from "odin-react";
-import type { ParamNode, Log} from "odin-react";
+import type { ParamNode, Log, ParamPath, ParamTree} from "odin-react";
 import { useState } from "react";
 import { AdapterEndpoint } from "odin-react";
 
@@ -10,13 +10,13 @@ import type { ReactNode } from "react";
 const OldEndpointInput = WithEndpoint(Form.Control);
 const EndpointSelect = WithEndpoint((props: React.HTMLAttributes<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
-interface FormData_T extends ParamNode{
+type FormData_T = {
     first_name: string;
     last_name: string;
     age: number;
 }
 
-export interface EndpointData extends ParamNode{
+export interface EndpointData {
     string_val: string;
     num_val: number;
     float_val: number;
@@ -54,14 +54,14 @@ export interface EndpointData extends ParamNode{
 export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> = ({endpoint}) => {
 
     const [input, changeInput] = useState(0);
-    const [formData, changeFormData] = useState<FormData_T>({first_name: "", last_name: "", age: 0});
+    const [formData, changeFormData] = useState<EndpointData["submit"]>({first_name: "", last_name: "", age: 0});
 
     const testFunc = ({comment}: {comment: string}) => {
         console.log(comment);
     }
 
     const secondTestFunc = () => {
-        console.log("Second Test Funciton");
+        console.log("Second Test Function");
     }
 
     return (
@@ -79,7 +79,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                             <Form.Label>{`Slider Val: ${endpoint.data?.num_val ?? "Unknown"}`}</Form.Label>
                             <EndpointSlider endpoint={endpoint} fullpath="num_val"/>
                             <OldEndpointInput endpoint={endpoint} fullpath="num_val" type="number"/>
-                            <EndpointCheckbox type="switch" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
+                            <EndpointCheckbox type="switch" label="Toggle" endpoint={endpoint} fullpath="toggle" />
                             <EndpointCheckbox type="checkbox" label="Toggle" endpoint={endpoint} fullpath="toggle"/>
                         </Stack>
                     </TitleCard>
