@@ -11,7 +11,6 @@ import { EndpointSlider } from "./EndpointSlider";
 import { EndpointRangeInput } from "./EndpointRangeInput";
 import type { ArgType, EndpointProps } from "./util";
 import { useRequestHandler } from "./util";
-// import { isEqual } from 'lodash';
 
 
 
@@ -24,16 +23,22 @@ type selectEvent_t = {
 };
 
 /**
- * A Generic Higher Order Compoennt that provides parameter read/write to the provided component
+ * 
+ * @deprecated Pre-defined specific Endpoint components should be used instead
+ * of the WithEndpoint HOC. Creating new Endpoint components using this wrapper is fragile,
+ * due to the way it needs to handle unknown methods of input.
+ * 
+ * A Generic Higher Order Component that provides parameter read/write to the provided component
  * This allows near any component that has some user interactivity (buttons, text boxes, etc)
  * to automatically and directly control a parameter on an Adapter.
  * 
  * For the most part, the specific components already created should be used,
- * as they cover the most commonly used options:
- * {@link EndpointButton}
- * {@link EndpointInput}
- * {@link EndpointDropdown}
- * {@link EndpointCheckbox}
+ * as they cover the most common requirements:
+ * - {@link EndpointButton}
+ * - {@link EndpointInput}
+ * - {@link EndpointDropdown}
+ * - {@link EndpointCheckbox}
+ * - {@link EndpointSlider}
  * 
  * @example
  * //Created a Button that connects to a parameter

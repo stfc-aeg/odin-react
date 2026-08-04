@@ -2,18 +2,17 @@ import type { ReactNode } from 'react';
 import type { AdapterEndpoint as AdapterEndpoint, ParamNode } from '../AdapterEndpoint';
 import { getValueFromPath } from '../AdapterEndpoint';
 
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import defaultImg from '../../assets/odin.png';
 
-import { Row, Col, Button, Dropdown, ButtonGroup, OverlayTriggerProps } from 'react-bootstrap';
+import { Row, Col, Button, Dropdown, ButtonGroup } from 'react-bootstrap';
 import { OverlayTrigger, Popover, Card } from 'react-bootstrap';
 
 import { ZoomIn, ZoomOut, PauseFill, PlayFill, List, ArrowsAngleContract, ArrowsAngleExpand } from 'react-bootstrap-icons';
 
 import style from './styles.module.css';
-import { WithEndpoint } from '../WithEndpoint';
-import { OdinDoubleSlider } from '../OdinDoubleSlider';
+import { EndpointDropdown, EndpointDoubleSlider } from '../WithEndpoint';
 
 interface LiveViewProps {
     /** What to display in the Card Header */
@@ -32,11 +31,6 @@ interface LiveViewProps {
     justImage?: boolean;
 }
 
-interface ControlsProps {
-    ref: HTMLDivElement;
-    placement?: OverlayTriggerProps["placement"];
-
-}
 
 interface ZoomableImageProps {
     /** The URL Source of the image*/
@@ -65,9 +59,6 @@ interface LiveViewerAddrs {
     colormap_selected_addr: string;
     frame_num_addr: string;
 }
-
-const EndpointDropdown = WithEndpoint(Dropdown);
-const EndpointSlider = WithEndpoint(OdinDoubleSlider);
 
 /**
  * An image rendering component that provides the ability to zoom into
@@ -230,30 +221,23 @@ const OdinLiveView = (
         <Popover>
             <Popover.Header>Options</Popover.Header>
             <Popover.Body>
-                <div className='d-grid gap-2'>
                     {(colormap_selected && colormap_options) &&
-                        <EndpointDropdown endpoint={endpoint} event_type='select' fullpath={colormap_selected_addr}
+                        <EndpointDropdown endpoint={endpoint} fullpath={colormap_selected_addr}
                             className="d-grid">
-                            <Dropdown.Toggle id="colormap_dropdown">
-                                {colormap_options[colormap_selected]}
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                {colormap_options ?
-                                    Object.entries(colormap_options).map(([key, value], index) => (
-                                        <Dropdown.Item eventKey={key} key={index} active={key == colormap_selected}>
-                                            {value}
-                                        </Dropdown.Item>
-                                    )) : <></>
+                            {colormap_options ?
+                                Object.entries(colormap_options).map(([key, value], index) => (
+                                    <Dropdown.Item eventKey={key} key={index} active={key == colormap_selected}>
+                                        {value}
+                                    </Dropdown.Item>
+                                )) : <></>
 
-                                }
-                            </Dropdown.Menu>
+                            }
                         </EndpointDropdown>
                     }
                     {clip_range &&
-                        <EndpointSlider endpoint={endpoint} title='Data Clipping' fullpath={clip_range_addr}
+                        <EndpointDoubleSlider endpoint={endpoint} title='Data Clipping' fullpath={clip_range_addr}
                             min={data_min_max?.[0] ?? 0} max={data_min_max?.[1] ?? 1024} />
                     }
-                </div>
             </Popover.Body>
         </Popover>
     )
