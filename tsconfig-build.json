@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
   "include": ["lib"],
-  "exclude": ["**/*.stories.tsx"]
+  "exclude": ["**/*.stories.tsx", "**/*.mock.tsx"]
 }

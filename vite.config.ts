@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
-import dts from 'vite-plugin-dts';
+import dts from 'unplugin-dts/vite';
 import { libInjectCss } from 'vite-plugin-lib-inject-css';
 // import libAssetsPlugin from '@laynezh/vite-plugin-lib-assets';
 
@@ -17,7 +17,6 @@ const dirname = typeof import.meta.dirname !== 'undefined' ? import.meta.dirname
 export default defineConfig({
   plugins: [react(), libInjectCss(), dts(
     {
-      rollupTypes: true,
       tsconfigPath: './tsconfig-build.json',
     }
   )],
