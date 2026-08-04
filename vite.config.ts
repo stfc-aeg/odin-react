@@ -11,7 +11,7 @@ import { libInjectCss } from 'vite-plugin-lib-inject-css';
 import path from 'node:path';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
-const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+const dirname = typeof import.meta.dirname !== 'undefined' ? import.meta.dirname : path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
@@ -31,7 +31,7 @@ export default defineConfig({
     // manifest: true,
     emitAssets: true,
     lib: {
-      entry: resolve(__dirname, 'lib/main.ts'),
+      entry: resolve(dirname, 'lib/main.ts'),
       name: "odin-react",
       fileName: "odin-react"
     },
