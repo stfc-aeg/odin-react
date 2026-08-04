@@ -18,7 +18,7 @@ const DemoPage = (
 
     const [triggeredStateMessage, changeMessage] = useState("Default\nNot Yet Set");
 
-    const [input, changeInput] = useState(endpoint.data.string_val ?? "");
+    const [input, changeInput] = useState(endpoint.data?.string_val ?? "");
 
     const PreMethod = () => {
         changeMessage("Trigger Clicked\nAwaiting Data");

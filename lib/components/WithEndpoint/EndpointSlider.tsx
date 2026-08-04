@@ -3,8 +3,8 @@ import { OverlayTrigger, Tooltip, type OverlayTriggerProps } from 'react-bootstr
 import type { FormRangeProps } from "react-bootstrap/FormRange";
 import FormRange from "react-bootstrap/FormRange";
 import { getValueFromPath } from "../AdapterEndpoint";
-import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
-import { EndpointProps, useRequestHandler } from "./util";
+import { MetadataValue, ParamTree } from "../AdapterEndpoint/AdapterEndpoint.types";
+import { ArgType, EndpointProps, useRequestHandler } from "./util";
 
 interface  SliderAdditonalProps {
     /** Show a tooltip with value when manipulating the slider */
@@ -13,8 +13,8 @@ interface  SliderAdditonalProps {
     tooltipPlacement?: OverlayTriggerProps["placement"];
 }
 
-type EndpointRangeProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
-    EndpointProps<PreArgs, PostArgs> & FormRangeProps & SliderAdditonalProps;
+type EndpointRangeProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
+    EndpointProps<PreArgs, PostArgs, Tree> & FormRangeProps & SliderAdditonalProps;
 
 type PutEvent = Parameters<Required<FormRangeProps>["onMouseUp"]>[0] 
               | Parameters<Required<FormRangeProps>["onBlur"]>[0]
@@ -31,12 +31,12 @@ type PutEvent = Parameters<Required<FormRangeProps>["onMouseUp"]>[0]
  * so all props available on that component can be set here.
  * 
  */
-const EndpointSlider = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
+const EndpointSlider = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,
         showTooltip = true, tooltipPlacement = "auto",
-        ...rest}: EndpointRangeProps<PreArgs, PostArgs>
+        ...rest}: EndpointRangeProps<PreArgs, PostArgs, Tree>
 ) => {
 
     const {requestHandler, data, disable}  = useRequestHandler({
@@ -45,7 +45,7 @@ const EndpointSlider = <PreArgs extends Record<string, unknown>, PostArgs extend
     });
 
     const [compVal, changeCompVal] = useState(0);
-    const metadata: MetadataValue| undefined = getValueFromPath(endpoint.metadata, fullpath);
+    const metadata: MetadataValue<number> | undefined = getValueFromPath(endpoint.metadata, fullpath);
     const compMin = min ?? metadata?.min;
     const compMax = max ?? metadata?.max;
 

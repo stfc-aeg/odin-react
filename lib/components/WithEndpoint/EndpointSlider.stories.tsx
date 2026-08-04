@@ -34,6 +34,14 @@ const meta = {
         readonly: true
       }
     },
+    fullpath: {
+      table: {
+        type: {
+          summary: "string",
+          detail: "Typescript can validate the path based on the AdapterEndpoint's Tree"
+        }
+      }
+    },
     tooltipPlacement: {
       options: PlacementOptionsList
     }
@@ -48,7 +56,7 @@ const meta = {
   },
   render: (args) => {
     args.endpoint = useAdapterEndpoint("test", "http://localhost:1338");
-    return ( <EndpointSlider {...args} /> )
+    return (<EndpointSlider {...args} />)
   },
   beforeEach: async () => {
     resetMockData();
@@ -61,15 +69,15 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {},
-  play: async ({args, canvas, userEvent}) => {
+  play: async ({ args, canvas, userEvent }) => {
     const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
     const slider = canvas.getByRole("slider") as HTMLInputElement;
-    
+
     await userEvent.pointer({ keys: `[MouseLeft>]`, target: slider })
     //simulate the mouse movement by setting the slider value
     await waitFor(() => slider.value = "75");
     await userEvent.pointer({ keys: `[/MouseLeft]`, target: slider })
-    await expect(put).toHaveBeenCalledWith({ value: 75}, args.fullpath);
+    await expect(put).toHaveBeenCalledWith({ value: 75 }, args.fullpath);
 
     await userEvent.pointer({ keys: `[MouseLeft>]`, target: slider })
     //simulate the mouse movement by setting the slider value. Massive value to test maximum

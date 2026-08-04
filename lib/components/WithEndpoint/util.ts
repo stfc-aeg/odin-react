@@ -1,5 +1,5 @@
 import { useMemo, useTransition } from "react";
-import type { AdapterEndpoint, ParamTree, ParamNode } from "../AdapterEndpoint";
+import type { AdapterEndpoint, ParamTree, ParamNode, ParamPath } from "../AdapterEndpoint";
 import { getValueFromPath, isMetadataValue, isParamNode } from "../AdapterEndpoint";
 import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
 import { useError } from "../OdinErrorContext";
@@ -22,6 +22,12 @@ const getLastPathPart = (path: string): [string, string] => {
     return [name, splitPath.join("/")];
 
 }
+interface ArgWithValue extends ArgType {
+    value: unknown;
+}
+const ArgsHasValue = (x: ArgType): x is ArgWithValue => {
+    return Object.keys(x).includes("value");
+}
 
 /**
  * Handles PUT requests for WithEndpoint components. Checks versioning of Odin Control
@@ -31,10 +37,10 @@ const getLastPathPart = (path: string): [string, string] => {
  * @param endpoint AdapterEndpoint to handle the PUT request
  * @param path Path to the parameter
  */
-async function sendRequest<T extends ParamTree>(
+async function sendRequest<T extends ParamTree, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     val: T,
-    endpoint: AdapterEndpoint,
-    path: string
+    endpoint: AdapterEndpoint<Tree>,
+    path: ParamPath<Tree>
 ): Promise<ParamNode> {
 
     const [sendVal, sendPath] = (function () {
@@ -43,12 +49,13 @@ async function sendRequest<T extends ParamTree>(
         }
         else if (endpoint.apiVersion) {
             const [name, splitPath] = getLastPathPart(path);
-            return [{ [name]: val }, splitPath];
+            return [{ [name]: val }, splitPath as ParamPath<Tree>];
         }
         else {
             return [{ value: val }, path];
         }
     })();
+
     try {
         const response = await endpoint.put(sendVal, sendPath);
         return response;
@@ -58,16 +65,16 @@ async function sendRequest<T extends ParamTree>(
     }
 }
 
-function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType>(
+function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
-        post_method, post_args }: EndpointProps<PreArgs, PostArgs>
+        post_method, post_args }: EndpointProps<PreArgs, PostArgs, Tree>
 ): RequestHandler {
 
     const [isPending, startTransition] = useTransition();
     const { setError } = useError();
-    const data: ParamTree = value ?? getValueFromPath(endpoint.data, fullpath);
-    const metadata: MetadataValue = getValueFromPath(endpoint.metadata, fullpath)
+    const data: ParamTree = value ?? getValueFromPath(endpoint.data ?? {}, fullpath);
+    const metadata: MetadataValue = getValueFromPath(endpoint.metadata ?? {}, fullpath)
         ?? {
         value: data,
         type: typeof data == "number" ? "int" : "str",
@@ -175,8 +182,8 @@ function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType>(
                 // as a key and see that the pre_args object doesn't include it,
                 // but I need to find a way to make the PreArgs type accessible
                 // at runtime to do that
-                if (pre_args && Object.keys(pre_args).includes("value")) {
-                    if (pre_args.value == undefined || pre_args.value == null) {
+                if (pre_args && ArgsHasValue(pre_args)) {
+                    if (pre_args.value === undefined || pre_args.value === null) {
                         // if so, overwrite the value with the param to be put
                         pre_args.value = val;
                     }
@@ -186,7 +193,7 @@ function useRequestHandler<PreArgs extends ArgType, PostArgs extends ArgType>(
                 sendRequest(modVal ?? val ?? data, endpoint, fullpath)
                     .then((value) => {
 
-                        if (post_args && Object.keys(post_args).includes("value")) {
+                        if (post_args && ArgsHasValue(post_args)) {
                             if (post_args.value == undefined || post_args.value == null) {
                                 // depending on Odin Control version, and how
                                 // many Params we are PUTing, the returned response from sendRequest

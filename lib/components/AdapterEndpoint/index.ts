@@ -2,13 +2,13 @@ import { useMutation, useQuery, useQueryClient, type QueryFunctionContext } from
 import axios, { AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
 import { useState } from "react";
 import { useError } from "../OdinErrorContext";
-import type { AdapterEndpoint, getConfig, Metadata, MetadataValue, Parameter, ParamNode, ParamTree } from "./AdapterEndpoint.types";
+import type { AdapterEndpoint, getConfig, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, ParamPath } from "./AdapterEndpoint.types";
 
 const isParamNode = (x: ParamTree): x is ParamNode => {
     return x !== null && typeof x === "object" && !Array.isArray(x);
 }
 
-const isMetadataValue = (x: Metadata): x is MetadataValue => {
+const isMetadataValue = (x: Metadata<ParamNode>): x is MetadataValue => {
     return isParamNode(x) && "writeable" in x
 }
 
@@ -27,18 +27,22 @@ const smartPathJoin = (path: string[]) => {
  * @returns the value at the specified path (which is either a single value, or a JSON Node with Key/Val pair(s))
  * or Undefined if the value was not found at that path
  */
-function getValueFromPath<T = Parameter>(data: ParamTree, path: string): T | undefined {
+function getValueFromPath<T = Parameter>(data?: ParamNode, path?: string): T | undefined {
+    if (data === undefined || path === undefined) {
+        return undefined;
+    }
+    let paramData = data as ParamTree;
     const splitPath = path.split("/");
-    if(splitPath[0]){
+    if (splitPath[0]) {
         splitPath.forEach((pathPart) => {
-            if(isParamNode(data)){
-                data = data[pathPart];
+            if (isParamNode(paramData)) {
+                paramData = paramData[pathPart];
             }
         });
     }
-    if(data != null){
-        return data as T;
-    }else{
+    if (paramData != null) {
+        return paramData as T;
+    } else {
         return undefined;
     }
 }
@@ -54,7 +58,9 @@ function getValueFromPath<T = Parameter>(data: ParamTree, path: string): T | und
  * @param timeout An option Timeout for API requests, in ms.
  * @returns 
  */
-function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
+function useAdapterEndpoint<
+    Tree extends Record<Extract<keyof Tree, string>, ParamTree> = ParamNode
+>(
     adapter: string, endpoint_url: string, interval?: number, timeout?: number
 ): AdapterEndpoint<Tree> {
 
@@ -140,7 +146,7 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
     const mutateFunc = async ({ path = "", data, method = "PUT" }: { path?: string, data: ParamNode, method?: "PUT" | "POST" | "DELETE" }) => {
         const request_path = smartPathJoin([adapter, path]);
         let response: AxiosResponse<typeof data>;
-        switch(method) {
+        switch (method) {
             case "POST":
                 response = await axiosInstance.post(request_path, data);
                 break;
@@ -173,7 +179,7 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
         mutationFn: mutateFunc
     });
 
-    const get = async <T = ParamNode>(param_path = "", config?: getConfig) => {
+    const get = async <T = ParamNode>(param_path?: ParamPath<Tree>, config?: getConfig) => {
         console.debug(`GET: ${base_url}/${param_path}`);
 
         const { wants_metadata = false, responseType = 'json' } = config ?? {};
@@ -181,7 +187,7 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
             wants_metadata ? "metadata" : responseType,
             endpoint_url,
             ...smartPathSplit(adapter),
-            ...smartPathSplit(param_path)
+            ...smartPathSplit(param_path ?? "")
         ]
         const data = await client.fetchQuery({ queryKey: key, queryFn: queryGet<T> });
         return data;
@@ -203,7 +209,7 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
         console.debug(`POST: ${base_url}/${param_path}, data:`, data);
         try {
             return await mutation.mutateAsync(
-                {path: param_path, data: data, method: "POST"},
+                { path: param_path, data: data, method: "POST" },
                 { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
             ) as T;
         } catch (err) {
@@ -216,10 +222,10 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
 
         try {
             return await mutation.mutateAsync(
-                {path: param_path, method: "DELETE", data: {}},
+                { path: param_path, method: "DELETE", data: {} },
                 { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
             )
-        } catch (err) { 
+        } catch (err) {
             throw handleError(err);
         }
     }
@@ -233,4 +239,4 @@ function useAdapterEndpoint<Tree extends Record<string, ParamTree> = ParamNode>(
 }
 
 export { getValueFromPath, isMetadataValue, isParamNode, useAdapterEndpoint };
-export type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree };
+export type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, ParamPath };

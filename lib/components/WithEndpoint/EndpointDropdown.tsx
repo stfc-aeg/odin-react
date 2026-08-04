@@ -1,12 +1,12 @@
 import type { DropdownButtonProps } from "react-bootstrap";
 import { Dropdown, DropdownButton } from "react-bootstrap";
-import type { EndpointProps } from "./util";
+import type { ArgType, EndpointProps } from "./util";
 import { useRequestHandler } from "./util";
 import { getValueFromPath } from "../AdapterEndpoint";
-import { MetadataValue } from "../AdapterEndpoint/AdapterEndpoint.types";
+import { MetadataValue, ParamTree } from "../AdapterEndpoint/AdapterEndpoint.types";
 
-type EndpointDropdownProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
-    EndpointProps<PreArgs, PostArgs> & Partial<DropdownButtonProps>;
+type EndpointDropdownProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
+    EndpointProps<PreArgs, PostArgs, Tree> & Partial<DropdownButtonProps>;
 
 
 /**
@@ -19,11 +19,11 @@ type EndpointDropdownProps<PreArgs extends Record<string, unknown>, PostArgs ext
  * Based on the [Bootstrap DropdownButton](https://react-bootstrap.netlify.app/docs/components/dropdowns),
  * so any props on that component can also be set here.
  */
-const EndpointDropdown = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
+const EndpointDropdown = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args,
-        title, ...rest }: EndpointDropdownProps<PreArgs, PostArgs>
+        title, ...rest }: EndpointDropdownProps<PreArgs, PostArgs, Tree>
 ) => {
 
     const { requestHandler, data, disable } = useRequestHandler({

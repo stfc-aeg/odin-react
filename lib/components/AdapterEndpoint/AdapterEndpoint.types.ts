@@ -1,16 +1,22 @@
 import type { AxiosRequestConfig } from "axios";
 
-interface AdapterEndpoint<T extends Record<string, ParamTree> = ParamNode> {
+/**
+ * Interface of returned values from the useAdapterEndpoint custom hook
+ */
+interface AdapterEndpoint
+    <
+        Tree extends Record<Extract<keyof Tree, string>, ParamTree> = ParamNode
+    > {
     /**
      *  Recursive Nested dictionary structure representing the adapter Param Tree. Should be read only
      * from this interface
      */
-    data?: Readonly<T>;
+    data?: Readonly<Tree>;
 
     /**
      * Dictionary structure containing the adapter Metadata, if its implemented by the adapter
      */
-    metadata?: Readonly<Metadata<T>>;
+    metadata?: Readonly<Metadata<Tree>>;
     /**
      *  Any Errors that occur during http methods or otherwise will be accessible here
      */
@@ -39,20 +45,20 @@ interface AdapterEndpoint<T extends Record<string, ParamTree> = ParamNode> {
     /**
      * Async http GET method. Request the provided value(s) from the parameter tree.
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
-     * @param {string} [param_path=""] - the path of the data desired. defaults to an Empty String to get the entire param tree
+     * @param {ParamPath<Tree>} [param_path=""] - the path of the data desired. defaults to an Empty String to get the entire param tree
      * @param {boolean} [get_metadata] - set to true to request Metadata. Defaults to false
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    get: <T = ParamNode>(param_path?: string, config?: getConfig) => Promise<T>;
+    get: <T = ParamNode>(param_path?: ParamPath<Tree>, config?: getConfig) => Promise<T>;
 
     /**
      * Async http PUT method. Modify the data in the param tree at the provided path
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
      * @param {ParamNode} data - The data, with a key, that you wish to PUT to the Param Tree
-     * @param {string} param_path - the path you want to PUT to. Defaults to an empty string for a top level PUT
+     * @param {ParamPath<Tree>} param_path - the path you want to PUT to. Defaults to an empty string for a top level PUT
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    put: <T extends ParamNode>(data: T, param_path?: string) => Promise<T>;
+    put: <T extends ParamNode>(data: T, param_path?: ParamPath<Tree>) => Promise<T>;
 
     /**
      * Async http POST method. Not often implemented by Adapters, but potentially used to post data
@@ -61,7 +67,7 @@ interface AdapterEndpoint<T extends Record<string, ParamTree> = ParamNode> {
      * @param param_path  - the path you want to POST to. defaults to an empty string, for a top level POST
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    post: (data: ParamNode, param_path?: string) => Promise<ParamNode>;
+    post: (data: ParamNode, param_path?: ParamPath<Tree>) => Promise<ParamNode>;
 
     /**
      * Async http DELETE method. Not often implemented by adapters, but potentially used to remove
@@ -69,7 +75,7 @@ interface AdapterEndpoint<T extends Record<string, ParamTree> = ParamNode> {
      * @param param_path the path to the data you want to DELETE. Defaults to an empty string
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    delete: (param_path?: string) => Promise<ParamNode>;
+    delete: (param_path?: ParamPath<Tree>) => Promise<ParamNode>;
 
 }
 
@@ -77,7 +83,7 @@ interface AdapterEndpoint<T extends Record<string, ParamTree> = ParamNode> {
 type Parameter = string | number | boolean | null | undefined;
 
 /** Dict structure for the Parameters. */
-type ParamNode = {[key:string]: ParamTree};
+type ParamNode = { [property: string]: ParamTree };
 
 /** Any possible value from the Param Tree (Basically any possible JSON value)
  * This could be a primitive value, a dict structure, or an array of any of these values.
@@ -116,18 +122,33 @@ interface MetadataValue<T extends ParamTree = ParamTree> extends ParamNode {
 }
 
 /** Structure for the full Metadata Tree of an Adapter */
-type Metadata<T extends ParamNode = ParamNode> = {
-    [Property in keyof T]: 
-        T[Property] extends ParamNode ? 
-            Metadata<T[Property]> :
-            T[Property] extends Parameter ?
-                MetadataValue<T[Property]> :
-                T[Property] // ????
+type Metadata<T = ParamNode> = {
+    [Property in keyof T]:
+    T[Property] extends ParamNode ?
+    Metadata<T[Property]> :
+    T[Property] extends Parameter ?
+    MetadataValue<T[Property]> :
+    T[Property] // ????
 }
+
+/** Type to translate a ParamNode struct into possible paths
+ * does not work if the tree T has a generic [key: string]: unknown structure
+ * because then it just infers down to string
+ */
+type ParamPath<T> = {
+    // for each key in T
+    [Key in keyof T & string]:
+    // if T[Key] is also an object that has key/value pairs
+    T[Key] extends { [key: string]: unknown } ?
+    // add "key/..." keys to possible paths, with ... as recursed ParamPath
+    Key | `${Key}/${ParamPath<T[Key]>}` :
+    // add just the key
+    Key
+}[keyof T & (string)]
 
 interface getConfig {
     wants_metadata?: boolean;
     responseType?: AxiosRequestConfig['responseType'];
 }
 
-export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig};
+export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig, ParamPath };

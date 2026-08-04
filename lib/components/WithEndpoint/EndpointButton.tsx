@@ -1,11 +1,17 @@
 import type { ButtonProps } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 
+import type { ParamTree } from '../AdapterEndpoint';
 import type { EndpointProps, ArgType } from "./util";
 import { useRequestHandler } from "./util";
 
-type EndpointButtonProps<PreArgs extends ArgType, PostArgs extends ArgType> =
-    EndpointProps<PreArgs, PostArgs> & Omit<ButtonProps, keyof EndpointProps<PreArgs, PostArgs>>;
+type EndpointButtonProps
+    <
+        PreArgs extends ArgType,
+        PostArgs extends ArgType,
+        Tree extends Record<Extract<keyof Tree, string>, ParamTree>
+
+    > = EndpointProps<PreArgs, PostArgs, Tree> & Omit<ButtonProps, keyof EndpointProps<PreArgs, PostArgs, Tree>>;
 
 
 
@@ -20,13 +26,13 @@ type EndpointButtonProps<PreArgs extends ArgType, PostArgs extends ArgType> =
  * PUTs the value prop if supplied, otherwise PUTs whatever the parameter is
  * on the Tree.
  */
-const EndpointButton = <PreArgs extends ArgType, PostArgs extends ArgType>(
+const EndpointButton = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     { endpoint, fullpath, value, disabled,
         pre_method, pre_args,
         post_method, post_args,
-        ...rest }: EndpointButtonProps<PreArgs, PostArgs>
+        ...rest }: EndpointButtonProps<PreArgs, PostArgs, Tree>
 ) => {
-    
+
     const { requestHandler, data, disable } = useRequestHandler({
         endpoint, fullpath, value, disabled,
         pre_method, pre_args,
@@ -40,7 +46,7 @@ const EndpointButton = <PreArgs extends ArgType, PostArgs extends ArgType>(
     }
 
     return (
-        <Button {...rest} onClick={onClickHandler}  disabled={disable}>
+        <Button {...rest} onClick={onClickHandler} disabled={disable}>
             {rest.children}
         </Button>
     )

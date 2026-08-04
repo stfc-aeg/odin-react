@@ -2,8 +2,8 @@ import { ComponentProps, CSSProperties, useState, useEffect, useRef } from 'reac
 import type { InputGroupProps, FormControlProps } from 'react-bootstrap';
 import { Dropdown, DropdownButton, Form, InputGroup } from 'react-bootstrap';
 import { getValueFromPath } from '../AdapterEndpoint';
-import type { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
-import { useRequestHandler, type EndpointProps } from './util';
+import type { MetadataValue, ParamTree } from '../AdapterEndpoint/AdapterEndpoint.types';
+import { ArgType, useRequestHandler, type EndpointProps } from './util';
 
 
 interface RangedAdditionalProps {
@@ -31,8 +31,8 @@ interface RangedAdditionalProps {
     step?: number;
 }
 
-type MultipliedInputProps<PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>> =
-    EndpointProps<PreArgs, PostArgs> & Omit<InputGroupProps, keyof EndpointProps<PreArgs, PostArgs>> &
+type MultipliedInputProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
+    EndpointProps<PreArgs, PostArgs, Tree> & Omit<InputGroupProps, keyof EndpointProps<PreArgs, PostArgs, Tree>> &
     RangedAdditionalProps;
 
 
@@ -45,12 +45,12 @@ type MultipliedInputProps<PreArgs extends Record<string, unknown>, PostArgs exte
  * the user can more easily view and enter values that might have wide range
  * options.
  */
-const EndpointRangeInput = <PreArgs extends Record<string, unknown>, PostArgs extends Record<string, unknown>>(
+const EndpointRangeInput = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
     { endpoint, fullpath, value, disabled, min, max,
         pre_method, pre_args,
         post_method, post_args,
         defaultRange, ranges, title, step = 1,
-        ...rest }: MultipliedInputProps<PreArgs, PostArgs>
+        ...rest }: MultipliedInputProps<PreArgs, PostArgs, Tree>
 ) => {
 
     const { requestHandler, data: endVal, disable } = useRequestHandler({
