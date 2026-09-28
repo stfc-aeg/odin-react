@@ -25,6 +25,10 @@ export interface EndpointData extends actual.ParamNode {
         },
         clip_data: number[];
     };
+    double: {
+        min: number;
+        max: number;
+    }
     deep: {
         long: {
             nested: {
@@ -66,6 +70,10 @@ const testAdapterData: EndpointData = {
             is_even: !(10 % 2)
         }
     },
+    double: {
+        min: 10,
+        max: 55
+    },
     deep: {
         long: {
             nested: {
@@ -104,7 +112,9 @@ const metadataPaths: { [key: string]: Partial<MetadataValue> } = {
     "clip_data": {min: -25, max: 25},
     "rand_num": { writeable: false },
     "dict": { writeable: false, type: "dict" },
-    "volt": {min: 100, max: 5000, units: "mV", name: "Voltage" }
+    "volt": {min: 100, max: 5000, units: "mV", name: "Voltage" },
+    "min": {min: 5},
+    "max": {max: 78}
 }
 
 const testMetadata = createMetadata(testAdapterData, metadataPaths);
