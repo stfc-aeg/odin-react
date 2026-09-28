@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { EndpointSelect } from './EndpointSelect';
 import { useAdapterEndpoint, resetMockData, transformMockCode } from '../AdapterEndpoint/index.mock';
+import { expect, spyOn } from 'storybook/test';
+import { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
 
 const meta = {
   component: EndpointSelect,
@@ -62,7 +64,19 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
   args: { },
-  
+  play: async ({args, canvas, userEvent}) => {
+    const put = spyOn(args.endpoint, "put").mockName("endpoint.put");
+    const input = canvas.getByRole("combobox");
+    const options: HTMLOptionElement[] = canvas.getAllByRole("option");
+
+    const metadata = args.endpoint.metadata?.selected as MetadataValue<string>;
+
+    await expect(input).toHaveDisplayValue(args.endpoint.data?.selected as string);
+    await expect(options.length).toEqual(metadata.allowed_values?.length);
+
+    await userEvent.selectOptions(input, options[1]);
+    await expect(put).toHaveBeenCalledWith({value: options[1].value}, args.fullpath);
+  }
 };
 
 /**
