@@ -46,6 +46,10 @@ export interface EndpointData {
     logging: Log[];
     logging_no_level: Log[];
     submit: FormData_T;
+    range: {
+        min: number;
+        max: number;
+    }
 }
 
 
@@ -204,6 +208,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                     <OdinDoubleSlider showTooltip={false} showMinMaxValues={true}/>
                     <OdinDoubleSlider showMinMaxValues={false}/>
                     <OdinDoubleSlider/>
+                    <EndpointDoubleSlider title="Two Params" endpoint={endpoint} fullpath={["range/min", "range/max"]} />
                 </TitleCard>
                 </Col>
             </Row>
