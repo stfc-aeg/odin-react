@@ -6,6 +6,7 @@ import { EndpointButton } from "./EndpointButton";
 import { EndpointCheckbox } from "./EndpointCheckbox";
 import { EndpointDoubleSlider } from "./EndpointDoubleSlider";
 import { EndpointDropdown } from "./EndpointDropdown";
+import { EndpointSelect } from "./EndpointSelect";
 import { EndpointInput } from "./EndpointInput";
 import { EndpointSlider } from "./EndpointSlider";
 import { EndpointRangeInput } from "./EndpointRangeInput";
@@ -252,7 +253,8 @@ export {
     EndpointDropdown,
     EndpointInput,
     EndpointSlider,
-    EndpointRangeInput
+    EndpointRangeInput,
+    EndpointSelect
 };
 
 export { WithEndpoint };
