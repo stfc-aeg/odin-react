@@ -55,8 +55,9 @@ const EndpointInput = <PreArgs extends ArgType, PostArgs extends ArgType, Tree e
         setEditing(!(val == endVal));
     }
 
-    const onEnterHandler: FormControlProps["onKeyUp"] = (event) => {
+    const onEnterHandler: FormControlProps["onKeyDown"] = (event) => {
         if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault(); // Prevent default actions, such as Form Submission.
             const target = event.target as HTMLInputElement;
             const val = type == "number" ? target.valueAsNumber : target.value;
             requestHandler(val);
@@ -78,7 +79,7 @@ const EndpointInput = <PreArgs extends ArgType, PostArgs extends ArgType, Tree e
     }, [endpoint.data, fullpath, editing, endVal]);
 
     return (
-        <Form.Control ref={component} onChange={onChangeHandler} onKeyUp={onEnterHandler}
+        <Form.Control ref={component} onChange={onChangeHandler} onKeyDown={onEnterHandler}
             min={compMin} max={compMax} disabled={disable} type={type} style={style} {...rest}  />
     )
 }
