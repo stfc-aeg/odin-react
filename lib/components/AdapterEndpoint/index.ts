@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient, type QueryFunctionContext } from
 import axios, { AxiosRequestConfig, AxiosResponse, ResponseType } from "axios";
 import { useState } from "react";
 import { useError } from "../OdinErrorContext";
-import type { AdapterEndpoint, getConfig, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, ParamPath } from "./AdapterEndpoint.types";
+import type { AdapterEndpoint, getConfig, Metadata, MetadataValue, MutateProps, Parameter, ParamNode, ParamPath, ParamTree } from "./AdapterEndpoint.types";
 
 const isParamNode = (x: ParamTree): x is ParamNode => {
     return x !== null && typeof x === "object" && !Array.isArray(x);
@@ -146,21 +146,22 @@ function useAdapterEndpoint<
         }
     }
 
-    const mutateFunc = async ({ path = "", data, method = "PUT" }: { path?: string, data: ParamNode, method?: "PUT" | "POST" | "DELETE" }) => {
+    const mutateFunc = async ({ path = "", data, method = "PUT", ContentType }: MutateProps) => {
         const request_path = smartPathJoin([adapter, path]);
-        let response: AxiosResponse<typeof data>;
-        switch (method) {
-            case "POST":
-                response = await axiosInstance.post(request_path, data);
-                break;
-            case "DELETE":
-                response = await axiosInstance.delete(request_path);
-                break;
-            case "PUT":
-            default:
-                response = await axiosInstance.put<typeof data>(request_path, data);
-                break;
-        }
+        console.log(ContentType);
+        let response: AxiosResponse<ParamNode>;
+        const config: AxiosRequestConfig = {
+            url: request_path,
+            responseType: "json",
+            method: method,
+            headers: {
+                "Content-Type": ContentType
+            },
+            data: data
+        };
+
+        response = await axiosInstance.request(config);
+
         return response.data;
     }
 
@@ -196,11 +197,11 @@ function useAdapterEndpoint<
         return data;
     }
 
-    const put = async <T extends ParamNode>(data: T, param_path?: string) => {
+    const put = async <T extends ParamNode>(data: T, param_path?: string, ContentType?: string) => {
         console.debug(`PUT: ${base_url}/${param_path}, data: `, data);
         try {
             return await mutation.mutateAsync(
-                { path: param_path, data: data },
+                { path: param_path, data, ContentType },
                 { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
             ) as T;
         } catch (err) {
@@ -208,13 +209,13 @@ function useAdapterEndpoint<
         }
     }
 
-    const post = async <T extends ParamNode>(data: T, param_path?: string) => {
+    const post = async <T extends MutateProps['data'] = ParamNode>(data: T, param_path?: string, ContentType?: string) => {
         console.debug(`POST: ${base_url}/${param_path}, data:`, data);
         try {
             return await mutation.mutateAsync(
-                { path: param_path, data: data, method: "POST" },
+                { path: param_path, data, method: "POST", ContentType },
                 { onSuccess: async () => { await client.invalidateQueries({ queryKey: ["json", ...queryKey] }) } }
-            ) as T;
+            );
         } catch (err) {
             throw handleError(err);
         }
@@ -242,4 +243,5 @@ function useAdapterEndpoint<
 }
 
 export { getValueFromPath, isMetadataValue, isParamNode, useAdapterEndpoint };
-export type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamTree, ParamPath };
+export type { AdapterEndpoint, Metadata, Parameter, ParamNode, ParamPath, ParamTree };
+
