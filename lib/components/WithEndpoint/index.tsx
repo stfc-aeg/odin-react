@@ -10,7 +10,6 @@ import { EndpointSelect } from "./EndpointSelect";
 import { EndpointInput } from "./EndpointInput";
 import { EndpointSlider } from "./EndpointSlider";
 import { EndpointRangeInput } from "./EndpointRangeInput";
-import { EndpointUpload } from "./EndpointUpload";
 import type { ArgType, EndpointProps } from "./util";
 import { useRequestHandler } from "./util";
 
@@ -255,8 +254,7 @@ export {
     EndpointInput,
     EndpointSlider,
     EndpointRangeInput,
-    EndpointSelect,
-    EndpointUpload
+    EndpointSelect
 };
 
 export { WithEndpoint };

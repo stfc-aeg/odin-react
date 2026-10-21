@@ -1,6 +1,6 @@
 import { Container, Row, Col, Stack, Form, InputGroup, Alert, Dropdown, FloatingLabel } from "react-bootstrap"
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "odin-react"
-import { EndpointInput, EndpointSlider, EndpointDoubleSlider, EndpointButton, EndpointDropdown, EndpointCheckbox, EndpointSelect, EndpointUpload } from "odin-react";
+import { EndpointInput, EndpointSlider, EndpointDoubleSlider, EndpointButton, EndpointDropdown, EndpointCheckbox, EndpointSelect, FileUpload } from "odin-react";
 import type { Log } from "odin-react";
 import { useState } from "react";
 import { AdapterEndpoint } from "odin-react";
@@ -218,7 +218,7 @@ export const EndpointPage: React.FC<{ endpoint: AdapterEndpoint<EndpointData> }>
           <TitleCard title="POST request handling">
             <InputGroup>
               <InputGroup.Text>FIle Upload Test</InputGroup.Text>
-              <EndpointUpload endpoint={endpoint} fullpath={"upload"} multiple />
+              <FileUpload endpoint={endpoint} fullpath={"upload"} multiple />
             </InputGroup>
           </TitleCard>
         </Col>
