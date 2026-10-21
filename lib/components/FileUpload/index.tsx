@@ -1,24 +1,50 @@
 import { useRef, useTransition } from 'react';
 import type { FormControlProps } from 'react-bootstrap';
 import { Form } from 'react-bootstrap';
+import type { AdapterEndpoint, ParamNode, ParamPath, ParamTree } from '../AdapterEndpoint';
 import { getValueFromPath } from "../AdapterEndpoint";
-import type { ParamNode, ParamTree, ParamPath, AdapterEndpoint } from '../AdapterEndpoint';
 import type { MetadataValue } from '../AdapterEndpoint/AdapterEndpoint.types';
 import { useError } from "../OdinErrorContext";
-import { ArgType, type EndpointProps } from '../WithEndpoint/util';
+import type { ArgType } from '../WithEndpoint/util';
 
 
-interface UploadProps<
-    PreArgs extends ArgType,
-    PostArgs extends ArgType,
-    Tree extends Record<Extract<keyof Tree, string>, ParamTree>>
-    extends Omit<EndpointProps<PreArgs, PostArgs, Tree>, "pre_method"> {
-
+interface UploadProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> {
+    /** Endpoint to connect to */
+    endpoint: AdapterEndpoint<Tree>;
+    /** Path to the Parameter(s) to control with this component */
+    fullpath: ParamPath<Tree>;
+    /** Disable the component, so it cannot be interacted with*/
+    disabled?: boolean;
+    /** 
+     * A method to run before the POST request. Accepts a Dictionary of
+     * kwargs. If "value" is one of those keys, the File List will be
+     * inserted into the dictionary.
+     * 
+     * The function can optionally return a File List that will be send to
+     * Odin Control.
+    */
     pre_method?: (args: PreArgs) => void | FileList;
+    /** The Dictionary of kwargs to pass to pre_method. To pass the
+     * param value to the method, include a "value" key with a value
+     * that is Null or Undefined.
+     */
+    pre_args?: NoInfer<PreArgs>;
+    /**
+     * A method to run after the POST request succeeds. Accepts a Dictionary of
+     * kwargs. If "value" is one of those keys, the returned param value will be
+     * inserted into the dictionary.
+    */
+    post_method?: (args: PostArgs) => void;
+    /** The Dictionary of kwargs to pass to post_method. To pass the
+    * returned param value to the method, include a "value" key that is Null
+    * or Undefined.
+    */
+    post_args?: NoInfer<PostArgs>;
+
 }
 
-type EndpointUploadProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
-    UploadProps<PreArgs, PostArgs, Tree> & Omit<FormControlProps, keyof EndpointProps<PreArgs, PostArgs, Tree> | "type">;
+type FileUploadProps<PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>> =
+    UploadProps<PreArgs, PostArgs, Tree> & Omit<FormControlProps, "type">;
 
 interface ArgWithValue extends ArgType {
     value: unknown;
@@ -50,23 +76,23 @@ async function sendRequest<Tree extends Record<Extract<keyof Tree, string>, Para
 
 /**
  * Specialised Input component designed to upload files using the Endpoint POST method.
- * Unable to use the standard RequestHandler methods used by other Endpoint components since this uses the POST method, not the PUT method,
- * but much of the logic can be replicated.
+ * 
+ * Allows for single or multiple file upload. The Adapter connected will need to handle POST requests with a Content Type of "multipart/form-data"
  */
 const FileUpload = <PreArgs extends ArgType, PostArgs extends ArgType, Tree extends Record<Extract<keyof Tree, string>, ParamTree>>(
-    { endpoint, fullpath, value, disabled, min, max,
+    { endpoint, fullpath, disabled,
         pre_method, pre_args,
         post_method, post_args,
-        ...rest }: EndpointUploadProps<PreArgs, PostArgs, Tree>
+        ...rest }: FileUploadProps<PreArgs, PostArgs, Tree>
 ) => {
 
     const [isPending, startTransition] = useTransition();
     const { setError } = useError();
-    const data: ParamTree = value ?? getValueFromPath(endpoint.data ?? {}, fullpath);
+    
     const metadata: MetadataValue = getValueFromPath(endpoint.metadata ?? {}, fullpath)
         ?? {
-        value: data,
-        type: typeof data == "number" ? "int" : "str",
+        value: null,
+        type: "NoneType",
         writeable: true
     };
 
@@ -84,7 +110,7 @@ const FileUpload = <PreArgs extends ArgType, PostArgs extends ArgType, Tree exte
                         pre_args.value = files;
                     }
                 }
-                const modFiles = pre_method?.(pre_args as PreArgs);
+                const modFiles = pre_method?.(pre_args as PreArgs) as void | FileList;
 
                 sendRequest(modFiles ?? files, endpoint, fullpath)
                     .then((value) => {
@@ -103,12 +129,12 @@ const FileUpload = <PreArgs extends ArgType, PostArgs extends ArgType, Tree exte
                     });
             })
         } catch (err) {
-            setError(err instanceof Error ? err: Error("Unknown Error Occured"));
+            setError(err instanceof Error ? err : Error("Unknown Error Occured"));
         }
     }
 
     return (
-        <Form.Control ref={component} type="file" disabled={disable} onChange={onChangeHandler} {...rest} />
+        <Form.Control ref={component} type="file" disabled={disable} onChange={onChangeHandler} role='upload' {...rest} />
     )
 
 }
