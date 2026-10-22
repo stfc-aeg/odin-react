@@ -171,6 +171,20 @@ function mockPut<T = Parameter>(data: { [key: string]: T }, param_path = '') {
 
 }
 
+function mockPost<T extends ParamNode | FormData>(data: T, param_path?: string) {
+    console.debug("Mock Post Called: ", param_path);
+    if(data instanceof FormData) {
+        const files = data.getAll("file") as File[];
+        const ret = {"File(s) uploaded": files.map((file) => `${param_path}/${file.name}`)};
+        console.log("POST:", ret);
+        return ret
+    } else {
+        return data
+    }
+    
+    
+}
+
 const resetMockData = () => {
     Object.assign(testAdapterData, originalData);
 }
@@ -181,6 +195,7 @@ const MockedEndpoint: AdapterEndpoint<EndpointData> = {
     get: fn(mockGet).mockName("get"),
     // @ts-ignore
     put: fn(mockPut).mockName("put"),
+    post: fn(mockPost).mockName("post"),
     data: testAdapterData,
     metadata: testMetadata,
     apiVersion: "",

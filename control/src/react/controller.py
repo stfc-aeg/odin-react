@@ -148,4 +148,10 @@ class ReactController(BaseController):
         logging.info("PUT: %s to path %s", data, path)
         self.param_tree.set(path, data)
         return self.param_tree.get(path)
-    
+
+    def create(self, path, data):
+        if hasattr(data, "filename"):
+            logging.info(f"POST: creating file {data.filename}")
+        else:
+            logging.info("POST: %s to path %s", data, path)
+        return {"value": "A File"}

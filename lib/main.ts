@@ -10,6 +10,7 @@ export { ParamController } from './components/ParamController';
 export { TitleCard } from './components/TitleCard';
 export { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointSelect } from './components/WithEndpoint';
 export { EndpointRangeInput, EndpointSlider, EndpointDoubleSlider } from './components/WithEndpoint';
+export { FileUpload } from "./components/FileUpload";
 export { WithEndpoint } from './components/WithEndpoint';
 
 

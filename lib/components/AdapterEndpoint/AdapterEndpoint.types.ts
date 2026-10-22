@@ -56,18 +56,20 @@ interface AdapterEndpoint
      * It is worth noting that this method does NOT automatically merge the response into the Endpoint.Data object.
      * @param {ParamNode} data - The data, with a key, that you wish to PUT to the Param Tree
      * @param {ParamPath<Tree>} param_path - the path you want to PUT to. Defaults to an empty string for a top level PUT
+     * @param {string} ContentType - the MIME type Content-type header for the request
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    put: <T extends ParamNode>(data: T, param_path?: ParamPath<Tree>) => Promise<T>;
+    put: <T extends ParamNode>(data: T, param_path?: ParamPath<Tree>, ContentType?: string) => Promise<T>;
 
     /**
      * Async http POST method. Not often implemented by Adapters, but potentially used to post data
      * files or some other new data to the adapter
      * @param {ParamNode} data - The data, with a key, that you wish to POST to the adapter
      * @param param_path  - the path you want to POST to. defaults to an empty string, for a top level POST
+     * @param {string} ContentType - the MIME type Content-type header for the request
      * @returns An Async promise, that when resolved will return the data within the HTTP response
      */
-    post: (data: ParamNode, param_path?: ParamPath<Tree>) => Promise<ParamNode>;
+    post: <T extends MutateProps["data"]>(data: T, param_path?: ParamPath<Tree>, ContentType?: string) => Promise<ParamNode>;
 
     /**
      * Async http DELETE method. Not often implemented by adapters, but potentially used to remove
@@ -151,4 +153,11 @@ interface getConfig {
     responseType?: AxiosRequestConfig['responseType'];
 }
 
-export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig, ParamPath };
+interface MutateProps {
+    path?: string;
+    data: ParamNode | Blob | FormData;
+    method?: "PUT" | "POST" | "DELETE";
+    ContentType?: string;
+}
+
+export type { AdapterEndpoint, Metadata, MetadataValue, Parameter, ParamNode, ParamTree, getConfig, ParamPath, MutateProps };
