@@ -106,7 +106,7 @@ function useAdapterEndpoint<
         return error;  // return error so it can be caught/thrown
     }
 
-    const queryGet = async <DataType = Tree>({ queryKey, signal }: QueryFunctionContext<[ResponseType | "metadata", ...string[]]>) => {
+    const queryGet = async <DataType = Tree>({ queryKey, signal, client }: QueryFunctionContext<[ResponseType | "metadata", ...string[]]>) => {
         const [wants_metadata, addr, ...path] = queryKey;
         const adapter = smartPathJoin(path);
         console.debug(`Query GET, addr "${addr}", adapter path "${adapter}"`);
@@ -123,17 +123,20 @@ function useAdapterEndpoint<
         } catch (err) {
             if (axios.isAxiosError(err) && err.code == "ERR_NETWORK") {
                 console.warn(`Network Error for ${err.config?.baseURL}/${err.config?.url}`);
-                // Network error. could be caused by the wrong API type (Odin 1.6.* vs 2.*)
-                // try adding/removing the 0.1 from the URL and try again
-                const version = apiVersion ? "" : "0.1";
-                setApiVersion(version);
+                if (!client.getQueryState(queryKey)?.dataUpdateCount) {
+                    // Network error. could be caused by the wrong API type (Odin 1.6.* vs 2.*)
+                    // try adding/removing the 0.1 from the URL and try again
+                    const version = apiVersion ? "" : "0.1";
+                    setApiVersion(version);
+                    try {
+                        const response = await axiosInstance.get<DataType>(smartPathJoin([version, adapter]), request_config);
+                        return response.data;
+                    } catch (err) {
+                        console.warn("Retry Failed");
 
-                try {
-                    const response = await axiosInstance.get<DataType>(smartPathJoin([version, adapter]), request_config);
-                    return response.data;
-                } catch (err) {
-                    console.warn("Retry Failed");
-
+                        throw handleError(err);
+                    }
+                } else {
                     throw handleError(err);
                 }
 

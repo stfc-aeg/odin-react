@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, spyOn, waitFor } from 'storybook/test';
 import { resetMockData, useAdapterEndpoint, transformMockCode } from '../AdapterEndpoint/index.mock';
 
 import { EndpointDoubleSlider } from './EndpointDoubleSlider';
@@ -12,14 +13,16 @@ const meta = {
   argTypes: {
     endpoint: {
       table: {
-        readonly: true
-      }
+        readonly: true,
+        
+      },
+      
     },
     fullpath: {
       table: {
         type: {
-          summary: "string",
-          detail: "Typescript can validate the path based on the AdapterEndpoint's Tree"
+          summary: "string | [string, string]",
+          detail: "Typescript can validate the path(s) based on the AdapterEndpoint's Tree"
         }
       }
     },
@@ -55,4 +58,19 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+/** Standard Double Slider. Connects to single Parameter, which should be an array of 2 values */
+export const Default: Story = {
+  args: {
+    title: "Default",
+    min: -25,
+    max: 25
+  }
+};
+
+/** Slider with two separate paths to Parameters. It is assumed the first path shows the smaller of two values */
+export const TwoPaths: Story = {
+  args: {
+    title: "Separate Parameters",
+    fullpath: ["double/min", "double/max"]
+  }
+}

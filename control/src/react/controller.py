@@ -18,6 +18,9 @@ class ReactController(BaseController):
         self.data_val = 10
         self.clip_data = [-10, 5]
 
+        self.min = 10
+        self.max = 50
+
         self.string_val = "String Value Test"
         self.num_val = 15
         self.random_num = random.randint(0, 100)
@@ -68,7 +71,14 @@ class ReactController(BaseController):
             },
             "logging": (self.logger.events, None),
             "logging_no_level": (self.logger.eventsWithoutLevel, None),
-            "slow_put": (lambda: self.slow_put, self.set_slow_response_val)
+            "slow_put": (lambda: self.slow_put, self.set_slow_response_val),
+            "range": {
+                "min": (lambda: self.min, lambda val: setattr(self, "min", val),
+                        {"min": 2}
+                       ),
+                "max": (lambda: self.max, lambda val: setattr(self, "max", val),
+                        {"max": 78})
+            }
         })
 
     def looping_update(self):

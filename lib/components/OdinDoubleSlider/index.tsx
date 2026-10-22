@@ -68,7 +68,7 @@ const OptionalOverlay = (props: OverlayTriggerProps) => {
 const OdinDoubleSlider = ({
     min = 0, max = 100, step = 1, value = [min, max],
     title, showTooltip = true, tooltipPosition = "auto", disabled, showMinMaxValues = true,
-    onChange, onMouseUp }: SliderProps) => {
+    onChange, onMouseUp, ref }: SliderProps) => {
 
     const [vals, changeVals] = useState<value_t>({ low: value[0], high: value[1] });
 
@@ -126,7 +126,7 @@ const OdinDoubleSlider = ({
         </div>
     )
     return (
-        <div>
+        <div ref={ref}>
             {titleDiv}
             <OptionalOverlay placement={tooltipPosition} overlay={tooltip} show={showTooltip}>
                 <Div ref={divRef} value={[vals.low, vals.high]} className={style.div}>

@@ -1,6 +1,6 @@
 import { Container, Row, Col, Stack, Form, InputGroup, Alert, Dropdown, FloatingLabel } from "react-bootstrap"
 import { TitleCard, WithEndpoint, OdinDoubleSlider } from "odin-react"
-import { EndpointInput, EndpointSlider, EndpointDoubleSlider, EndpointButton, EndpointDropdown, EndpointCheckbox } from "odin-react";
+import { EndpointInput, EndpointSlider, EndpointDoubleSlider, EndpointButton, EndpointDropdown, EndpointCheckbox, EndpointSelect } from "odin-react";
 import type { Log } from "odin-react";
 import { useState } from "react";
 import { AdapterEndpoint } from "odin-react";
@@ -8,7 +8,6 @@ import { AdapterEndpoint } from "odin-react";
 import type { ReactNode } from "react";
 
 const OldEndpointInput = WithEndpoint(Form.Control);
-const EndpointSelect = WithEndpoint((props: React.HTMLAttributes<HTMLSelectElement>) => (<select {...props}>{props.children as ReactNode}</select>))
 
 type FormData_T = {
     first_name: string;
@@ -47,6 +46,10 @@ export interface EndpointData {
     logging: Log[];
     logging_no_level: Log[];
     submit: FormData_T;
+    range: {
+        min: number;
+        max: number;
+    }
 }
 
 
@@ -111,7 +114,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                                     )): <></>
                                 }
                         </EndpointDropdown>
-                        <label>Choose Option:
+                        <FloatingLabel label="Choose Option">
                             <EndpointSelect endpoint={endpoint} fullpath="selected">
                                 {endpoint.metadata?.selected?.allowed_values ? endpoint.metadata.selected.allowed_values.map(
                                     (selection, index) => {
@@ -119,7 +122,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                                 }) : <option value="">Unknown</option>
                                     }
                             </EndpointSelect>
-                        </label>
+                            </FloatingLabel>
 
                         <Form>
                             <EndpointCheckbox endpoint={endpoint} fullpath={"selected"}
@@ -205,6 +208,7 @@ export const EndpointPage: React.FC<{endpoint: AdapterEndpoint<EndpointData>}> =
                     <OdinDoubleSlider showTooltip={false} showMinMaxValues={true}/>
                     <OdinDoubleSlider showMinMaxValues={false}/>
                     <OdinDoubleSlider/>
+                    <EndpointDoubleSlider title="Two Params" endpoint={endpoint} fullpath={["range/min", "range/max"]} />
                 </TitleCard>
                 </Col>
             </Row>
