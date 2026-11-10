@@ -4,6 +4,7 @@ about: Suggest an idea for this project
 title: "[FEATURE]: <Component Name>:"
 labels: enhancement
 assignees: ''
+type: Feature
 
 ---
 
